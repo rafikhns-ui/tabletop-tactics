@@ -2,38 +2,74 @@
 // RULERS OF ARDONIA - Core Game Data
 // ============================================================
 
+// Territory coordinates are mapped to the actual Ardonia map image (720x510 canvas)
 export const TERRITORIES = {
-  ironkeep:   { id: 'ironkeep',   name: 'Ironkeep',      x: 120, y: 100, biome: 'mountain', coastal: false },
-  frostholm:  { id: 'frostholm',  name: 'Frostholm',     x: 290, y: 55,  biome: 'tundra',   coastal: false },
-  ashvale:    { id: 'ashvale',    name: 'Ashvale',        x: 205, y: 175, biome: 'forest',   coastal: false },
-  stonepeak:  { id: 'stonepeak',  name: 'Stonepeak',      x: 390, y: 130, biome: 'mountain', coastal: false },
-  emberhall:  { id: 'emberhall',  name: 'Emberhall',      x: 95,  y: 275, biome: 'desert',   coastal: true  },
-  duskwood:   { id: 'duskwood',   name: 'Duskwood',       x: 225, y: 295, biome: 'forest',   coastal: false },
-  goldwater:  { id: 'goldwater',  name: 'Goldwater',      x: 365, y: 235, biome: 'plains',   coastal: false },
-  wraithfen:  { id: 'wraithfen',  name: 'Wraithfen',      x: 490, y: 195, biome: 'forest',   coastal: false },
-  sunspire:   { id: 'sunspire',   name: 'Sunspire',       x: 570, y: 115, biome: 'desert',   coastal: false },
-  crimsonpass:{ id: 'crimsonpass',name: 'Crimson Pass',   x: 510, y: 315, biome: 'mountain', coastal: false },
-  tidehaven:  { id: 'tidehaven',  name: 'Tidehaven',      x: 115, y: 400, biome: 'ocean',    coastal: true  },
-  mirewood:   { id: 'mirewood',   name: 'Mirewood',       x: 280, y: 420, biome: 'forest',   coastal: false },
-  sandreach:  { id: 'sandreach',  name: 'Sandreach',      x: 425, y: 445, biome: 'desert',   coastal: false },
-  vaultstone: { id: 'vaultstone', name: 'Vaultstone',     x: 590, y: 400, biome: 'mountain', coastal: true  },
+  // Onishiman Empire (west, large)
+  onishiman_north: { id: 'onishiman_north', name: 'Onishiman North', x: 148, y: 210, biome: 'plains',   coastal: false, faction: 'onishiman' },
+  onishiman_south: { id: 'onishiman_south', name: 'Onishiman South', x: 148, y: 340, biome: 'plains',   coastal: false, faction: 'onishiman' },
+  onishiman_coast: { id: 'onishiman_coast', name: 'Onishiman Coast', x: 100, y: 430, biome: 'ocean',    coastal: true,  faction: 'onishiman' },
+
+  // Gojeon Kingdom (northwest)
+  gojeon:          { id: 'gojeon',          name: 'Gojeon Kingdom', x: 120, y: 100, biome: 'forest',   coastal: false, faction: 'kadjimaran' },
+
+  // Inuvak Confederacy (north-central)
+  inuvak:          { id: 'inuvak',          name: 'Inuvak Confederacy', x: 268, y: 80, biome: 'tundra',  coastal: false, faction: 'kadjimaran' },
+
+  // Ruskel Federation (north-east)
+  ruskel:          { id: 'ruskel',          name: 'Ruskel Federation', x: 450, y: 130, biome: 'tundra',  coastal: false, faction: 'kadjimaran' },
+
+  // Icebound Horde (far north-east)
+  icebound:        { id: 'icebound',        name: 'Icebound Horde',  x: 600, y: 80,  biome: 'tundra',  coastal: false, faction: 'kadjimaran' },
+
+  // Kadjimaran Kingdom (central)
+  kadjimaran_n:    { id: 'kadjimaran_n',    name: 'Kadjimaran North', x: 490, y: 230, biome: 'desert',  coastal: false, faction: 'kadjimaran' },
+  kadjimaran_s:    { id: 'kadjimaran_s',    name: 'Kadjimaran South', x: 490, y: 330, biome: 'desert',  coastal: false, faction: 'kadjimaran' },
+
+  // Silver Union (central island/neutral)
+  silver_union:    { id: 'silver_union',    name: 'Silver Union',    x: 340, y: 265, biome: 'plains',  coastal: false, faction: null },
+
+  // Republic of Oakhaven (east)
+  oakhaven:        { id: 'oakhaven',        name: 'Rep. of Oakhaven', x: 620, y: 220, biome: 'forest',  coastal: false, faction: 'republic' },
+
+  // Nimrudan Empire (south-east)
+  nimrudan_n:      { id: 'nimrudan_n',      name: 'Nimrudan North',  x: 590, y: 340, biome: 'mountain', coastal: false, faction: 'sultanate' },
+  nimrudan_s:      { id: 'nimrudan_s',      name: 'Nimrudan South',  x: 640, y: 420, biome: 'desert',  coastal: true,  faction: 'sultanate' },
+
+  // Scorched Lands (far east)
+  scorched:        { id: 'scorched',        name: 'Scorched Lands',  x: 690, y: 310, biome: 'desert',  coastal: false, faction: null },
+
+  // Greater Kintei (central-south)
+  kintei:          { id: 'kintei',          name: 'Greater Kintei',  x: 300, y: 390, biome: 'plains',  coastal: true,  faction: 'onishiman' },
+
+  // Hestia (south-central)
+  hestia:          { id: 'hestia',          name: 'Hestia',          x: 490, y: 440, biome: 'ocean',   coastal: true,  faction: 'republic' },
+
+  // Moor Sultanate (south-east)
+  moor_sultanate:  { id: 'moor_sultanate',  name: 'Moor Sultanate',  x: 600, y: 480, biome: 'desert',  coastal: true,  faction: 'sultanate' },
+
+  // Tlalocayotlan League (south-west)
+  tlalocayotlan:   { id: 'tlalocayotlan',   name: 'Tlalocayotlan',   x: 175, y: 490, biome: 'forest',  coastal: true,  faction: 'republic' },
 };
 
 export const ADJACENCY = {
-  ironkeep:    ['frostholm', 'ashvale', 'emberhall'],
-  frostholm:   ['ironkeep', 'ashvale', 'stonepeak'],
-  ashvale:     ['ironkeep', 'frostholm', 'duskwood', 'goldwater'],
-  stonepeak:   ['frostholm', 'goldwater', 'wraithfen', 'sunspire'],
-  emberhall:   ['ironkeep', 'duskwood', 'tidehaven'],
-  duskwood:    ['emberhall', 'ashvale', 'goldwater', 'mirewood'],
-  goldwater:   ['ashvale', 'duskwood', 'stonepeak', 'wraithfen', 'mirewood'],
-  wraithfen:   ['stonepeak', 'goldwater', 'sunspire', 'crimsonpass'],
-  sunspire:    ['stonepeak', 'wraithfen', 'crimsonpass'],
-  crimsonpass: ['wraithfen', 'sunspire', 'vaultstone', 'sandreach'],
-  tidehaven:   ['emberhall', 'mirewood'],
-  mirewood:    ['duskwood', 'goldwater', 'tidehaven', 'sandreach'],
-  sandreach:   ['mirewood', 'crimsonpass', 'vaultstone'],
-  vaultstone:  ['crimsonpass', 'sandreach'],
+  gojeon:          ['inuvak', 'onishiman_north'],
+  inuvak:          ['gojeon', 'ruskel', 'onishiman_north', 'silver_union'],
+  ruskel:          ['inuvak', 'icebound', 'kadjimaran_n', 'oakhaven'],
+  icebound:        ['ruskel', 'oakhaven'],
+  onishiman_north: ['gojeon', 'inuvak', 'onishiman_south', 'silver_union'],
+  onishiman_south: ['onishiman_north', 'onishiman_coast', 'kintei', 'silver_union'],
+  onishiman_coast: ['onishiman_south', 'tlalocayotlan', 'kintei'],
+  silver_union:    ['inuvak', 'onishiman_north', 'onishiman_south', 'kadjimaran_n', 'kintei'],
+  kadjimaran_n:    ['ruskel', 'silver_union', 'kadjimaran_s', 'oakhaven'],
+  kadjimaran_s:    ['kadjimaran_n', 'hestia', 'nimrudan_n', 'kintei'],
+  oakhaven:        ['ruskel', 'icebound', 'kadjimaran_n', 'nimrudan_n', 'scorched'],
+  nimrudan_n:      ['oakhaven', 'kadjimaran_s', 'nimrudan_s', 'scorched'],
+  nimrudan_s:      ['nimrudan_n', 'moor_sultanate', 'hestia'],
+  scorched:        ['oakhaven', 'nimrudan_n'],
+  kintei:          ['onishiman_south', 'onishiman_coast', 'silver_union', 'kadjimaran_s', 'hestia', 'tlalocayotlan'],
+  hestia:          ['kadjimaran_s', 'kintei', 'nimrudan_s', 'moor_sultanate'],
+  moor_sultanate:  ['hestia', 'nimrudan_s'],
+  tlalocayotlan:   ['onishiman_coast', 'kintei'],
 };
 
 export const BIOME_COLORS = {
