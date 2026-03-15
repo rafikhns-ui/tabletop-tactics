@@ -212,7 +212,7 @@ export const executeAttack = (gameState, attackerId, defenderId, result) => {
 export const checkObjective = (obj, player, gameState) => {
   const owned = Object.values(gameState.territories).filter(t => t.owner === player.id);
   switch (obj.id) {
-    case 'conquer_3': return owned.length >= 7;
+    case 'conquer_3': return owned.length >= 12;
     case 'destroy_capital': return Object.values(gameState.territories).some(t => t.isCapital && t.owner === player.id && !gameState.players.find(p => p.id !== player.id && Object.values(gameState.territories).some(t2 => t2.isCapital && t2.owner === p.id && t2.id === t.id)));
     case 'fortified_city': return owned.filter(t => t.biome === 'mountain').length >= 2;
     case 'amass_gold': return player.resources.gold >= 20;
