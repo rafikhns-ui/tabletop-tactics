@@ -35,12 +35,6 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
         boxShadow: '0 0 0 1px rgba(0,0,0,0.4)',
       }}
     >
-      {/* Map title */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none z-10 text-center">
-        <div className="text-xs tracking-widest opacity-30" style={{ fontFamily: "'Cinzel',serif", color: '#3a1a00' }}>
-          ✦ ARDONIA ✦
-        </div>
-      </div>
 
       {/* Adjacency lines */}
       <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%', zIndex: 1 }}>
