@@ -7,9 +7,7 @@ export default function EventModal({ event, onClose }) {
         style={{ background: 'linear-gradient(160deg, hsl(35,25%,13%), hsl(35,20%,9%))', border: '2px solid hsl(43,70%,45%)' }}>
         <div className="py-6 px-6">
           <div className="text-5xl mb-3">{event.emoji}</div>
-          <div className="text-xs tracking-widest opacity-50 mb-1" style={{ fontFamily: "'Cinzel',serif" }}>
-            WORLD EVENT
-          </div>
+          <div className="text-xs tracking-widest opacity-50 mb-1" style={{ fontFamily: "'Cinzel',serif" }}>WORLD EVENT</div>
           <h2 className="text-xl font-bold mb-3" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,58%)' }}>
             {event.name}
           </h2>
