@@ -3,7 +3,7 @@ import GameBoard from '../components/game/GameBoard';
 import GameSidebar from '../components/game/GameSidebar';
 import GameMenu from '../components/game/GameMenu';
 import BattleModal from '../components/game/BattleModal';
-import { createInitialGameState, executeAttack, aiTurn } from '../lib/gameLogic';
+import { createInitialGameState, executeAttack, aiTurn } from '../components/game/gameLogic';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
