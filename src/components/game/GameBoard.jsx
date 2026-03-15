@@ -1,163 +1,136 @@
 import React from 'react';
-import { ADJACENCY, BIOME_COLORS, PLAYER_COLORS } from './gameLogic';
+import { ADJACENCY, BIOME_COLORS, BIOME_ICONS } from './ardoniaData';
 
-const BIOME_ICONS = {
-  mountain: '⛰️',
-  tundra: '❄️',
-  forest: '🌲',
-  desert: '🏜️',
-  ocean: '🌊',
-};
+export default function GameBoard({ gameState, selectedTerritory, phase, currentPlayer, onTerritoryClick }) {
+  const { territories, players } = gameState;
 
-export default function GameBoard({ gameState, selectedTerritory, phase, onTerritoryClick }) {
-  const { territories, adjacency, players } = gameState;
-  const currentPlayer = players[gameState.currentPlayerIndex];
-
-  const getPlayerColor = (ownerId) => {
-    const player = players.find(p => p.id === ownerId);
-    return player?.color || '#888';
-  };
+  const getPlayerColor = (ownerId) => players.find(p => p.id === ownerId)?.color || '#666';
 
   const isAttackable = (id) => {
     if (phase !== 'attack' || !selectedTerritory) return false;
     const t = territories[id];
-    return t.owner !== currentPlayer.id && adjacency[selectedTerritory]?.includes(id);
+    return t.owner !== currentPlayer.id && (ADJACENCY[selectedTerritory] || []).includes(id);
   };
 
   const isFortifiable = (id) => {
     if (phase !== 'fortify' || !selectedTerritory) return false;
     const t = territories[id];
-    return t.owner === currentPlayer.id && adjacency[selectedTerritory]?.includes(id) && id !== selectedTerritory;
+    return t.owner === currentPlayer.id && (ADJACENCY[selectedTerritory] || []).includes(id) && id !== selectedTerritory;
+  };
+
+  const isDeployable = (id) => {
+    if (phase !== 'deploy') return false;
+    return territories[id].owner === currentPlayer.id && currentPlayer.troopsToDeploy > 0;
   };
 
   return (
-    <div className="relative w-full" style={{ minHeight: '520px' }}>
-      {/* Parchment map background */}
-      <div
-        className="relative rounded-xl overflow-hidden fantasy-border"
-        style={{
-          background: 'radial-gradient(ellipse at 30% 40%, #d4b896 0%, #c4a070 40%, #b08050 100%)',
-          minHeight: '520px',
-          backgroundImage: `
-            radial-gradient(ellipse at 30% 40%, rgba(255,240,200,0.4) 0%, transparent 60%),
-            radial-gradient(ellipse at 70% 60%, rgba(180,140,80,0.3) 0%, transparent 60%)
-          `,
-        }}
-      >
-        {/* Decorative map title */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 text-center z-10 pointer-events-none">
-          <div className="text-xs font-bold tracking-widest opacity-40"
-            style={{ fontFamily: "'Cinzel', serif", color: '#5a3a10' }}>
-            ✦ THE REALM ✦
-          </div>
+    <div
+      className="relative rounded-xl overflow-hidden"
+      style={{
+        minHeight: '500px',
+        background: 'radial-gradient(ellipse at 35% 45%, #c9a86c 0%, #b8925a 40%, #a07840 100%)',
+        border: '2px solid hsl(43,70%,50%)',
+        boxShadow: '0 0 0 1px rgba(0,0,0,0.4), inset 0 0 60px rgba(80,40,0,0.3)',
+      }}
+    >
+      {/* Map title */}
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none z-10 text-center">
+        <div className="text-xs tracking-widest opacity-30" style={{ fontFamily: "'Cinzel',serif", color: '#3a1a00' }}>
+          ✦ ARDONIA ✦
         </div>
-
-        {/* SVG connections */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
-          {Object.entries(adjacency).flatMap(([fromId, neighbors]) =>
-            neighbors
-              .filter(toId => fromId < toId)
-              .map(toId => {
-                const from = territories[fromId];
-                const to = territories[toId];
-                return (
-                  <line
-                    key={`${fromId}-${toId}`}
-                    x1={`${(from.x / 700) * 100}%`}
-                    y1={`${(from.y / 520) * 100}%`}
-                    x2={`${(to.x / 700) * 100}%`}
-                    y2={`${(to.y / 520) * 100}%`}
-                    stroke="rgba(100,70,30,0.35)"
-                    strokeWidth="1.5"
-                    strokeDasharray="4,3"
-                  />
-                );
-              })
-          )}
-        </svg>
-
-        {/* Territory nodes */}
-        {Object.values(territories).map((territory) => {
-          const playerColor = getPlayerColor(territory.owner);
-          const isSelected = selectedTerritory === territory.id;
-          const canAttack = isAttackable(territory.id);
-          const canFortify = isFortifiable(territory.id);
-          const isOwned = territory.owner === currentPlayer.id;
-          const biomeColor = BIOME_COLORS[territory.biome] || '#888';
-
-          return (
-            <div
-              key={territory.id}
-              className={`absolute transform -translate-x-1/2 -translate-y-1/2 territory ${isSelected ? 'selected' : ''} ${canAttack ? 'attackable' : ''}`}
-              style={{
-                left: `${(territory.x / 700) * 100}%`,
-                top: `${(territory.y / 520) * 100}%`,
-                zIndex: 2,
-              }}
-              onClick={() => onTerritoryClick(territory.id)}
-            >
-              {/* Territory hex */}
-              <div
-                className="relative flex flex-col items-center justify-center rounded-full"
-                style={{
-                  width: '64px',
-                  height: '64px',
-                  background: `radial-gradient(circle at 35% 35%, ${lightenColor(biomeColor, 30)}, ${biomeColor})`,
-                  border: `3px solid ${playerColor}`,
-                  boxShadow: isSelected
-                    ? `0 0 0 3px ${playerColor}, 0 0 16px rgba(255,200,50,0.8)`
-                    : canAttack
-                    ? `0 0 0 2px ${playerColor}, 0 0 10px rgba(255,80,50,0.6)`
-                    : `0 2px 8px rgba(0,0,0,0.4)`,
-                }}
-              >
-                <div className="text-lg leading-none">{BIOME_ICONS[territory.biome]}</div>
-                <div
-                  className="army-badge text-white text-sm leading-none mt-0.5"
-                  style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.9)' }}
-                >
-                  {territory.troops}
-                </div>
-
-                {/* Owner dot */}
-                <div
-                  className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full border border-white"
-                  style={{ background: playerColor }}
-                />
-              </div>
-
-              {/* Territory name */}
-              <div
-                className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-center whitespace-nowrap text-xs font-semibold"
-                style={{
-                  fontFamily: "'Cinzel', serif",
-                  color: '#3a2000',
-                  textShadow: '0 1px 2px rgba(255,220,160,0.9)',
-                  fontSize: '9px',
-                  letterSpacing: '0.03em',
-                }}
-              >
-                {territory.name}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Map compass */}
-        <div className="absolute bottom-4 right-6 text-3xl opacity-30 pointer-events-none select-none">
-          🧭
-        </div>
-
-        {/* Decorative corners */}
-        <div className="absolute top-2 left-2 text-xl opacity-20 pointer-events-none select-none">⚜️</div>
-        <div className="absolute top-2 right-2 text-xl opacity-20 pointer-events-none select-none">⚜️</div>
-        <div className="absolute bottom-2 left-2 text-xl opacity-20 pointer-events-none select-none">⚜️</div>
       </div>
+
+      {/* Adjacency lines */}
+      <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%', zIndex: 1 }}>
+        {Object.entries(ADJACENCY).flatMap(([fromId, neighbors]) =>
+          neighbors.filter(toId => fromId < toId).map(toId => {
+            const from = territories[fromId];
+            const to = territories[toId];
+            return (
+              <line key={`${fromId}-${toId}`}
+                x1={`${(from.x / 720) * 100}%`} y1={`${(from.y / 510) * 100}%`}
+                x2={`${(to.x / 720) * 100}%`}   y2={`${(to.y / 510) * 100}%`}
+                stroke="rgba(80,40,10,0.3)" strokeWidth="1.5" strokeDasharray="5,4"
+              />
+            );
+          })
+        )}
+      </svg>
+
+      {/* Territories */}
+      {Object.values(territories).map((territory) => {
+        const pColor = getPlayerColor(territory.owner);
+        const isSelected = selectedTerritory === territory.id;
+        const canAttack = isAttackable(territory.id);
+        const canFortify = isFortifiable(territory.id);
+        const canDeploy = isDeployable(territory.id);
+        const biomeColor = BIOME_COLORS[territory.biome] || '#888';
+
+        let ringColor = 'transparent';
+        let glow = '';
+        if (isSelected) { ringColor = 'rgba(255,200,50,0.9)'; glow = '0 0 15px rgba(255,200,50,0.7)'; }
+        else if (canAttack) { ringColor = 'rgba(255,60,60,0.8)'; glow = '0 0 10px rgba(255,60,60,0.5)'; }
+        else if (canFortify) { ringColor = 'rgba(60,180,255,0.8)'; glow = '0 0 10px rgba(60,180,255,0.5)'; }
+        else if (canDeploy) { ringColor = pColor; }
+
+        return (
+          <div
+            key={territory.id}
+            className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+            style={{
+              left: `${(territory.x / 720) * 100}%`,
+              top: `${(territory.y / 510) * 100}%`,
+              zIndex: 2,
+            }}
+            onClick={() => onTerritoryClick(territory.id)}
+          >
+            <div
+              className="relative flex flex-col items-center justify-center rounded-full transition-all duration-200 hover:scale-110"
+              style={{
+                width: '62px',
+                height: '62px',
+                background: `radial-gradient(circle at 35% 35%, ${lighten(biomeColor, 35)}, ${biomeColor})`,
+                border: `3px solid ${pColor}`,
+                outline: `2px solid ${ringColor}`,
+                outlineOffset: '2px',
+                boxShadow: glow || `0 2px 8px rgba(0,0,0,0.5)`,
+              }}
+            >
+              <div className="text-xl leading-none">{BIOME_ICONS[territory.biome]}</div>
+              <div className="text-sm font-black leading-none mt-0.5 text-white" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.9)', fontFamily: "'Cinzel',serif" }}>
+                {territory.troops}
+              </div>
+              {territory.isCapital && (
+                <div className="absolute -top-1.5 -right-1.5 text-sm">👑</div>
+              )}
+              {territory.fortified && (
+                <div className="absolute -top-1.5 -left-1.5 text-sm">🏰</div>
+              )}
+              <div className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full border border-white"
+                style={{ background: pColor }} />
+            </div>
+            <div className="text-center mt-1 whitespace-nowrap"
+              style={{
+                fontSize: '9px', fontFamily: "'Cinzel',serif",
+                color: '#2a1000', textShadow: '0 1px 2px rgba(255,220,150,0.8)',
+                fontWeight: 700, letterSpacing: '0.02em',
+              }}>
+              {territory.name}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Decorative corners */}
+      <div className="absolute bottom-3 right-4 text-2xl opacity-20 pointer-events-none select-none">🧭</div>
+      <div className="absolute top-2 left-2 text-lg opacity-15 pointer-events-none select-none">⚜️</div>
+      <div className="absolute top-2 right-2 text-lg opacity-15 pointer-events-none select-none">⚜️</div>
+      <div className="absolute bottom-2 left-2 text-lg opacity-15 pointer-events-none select-none">⚜️</div>
     </div>
   );
 }
 
-function lightenColor(hex, amount) {
+function lighten(hex, amount) {
   const num = parseInt(hex.replace('#', ''), 16);
   const r = Math.min(255, (num >> 16) + amount);
   const g = Math.min(255, ((num >> 8) & 0xff) + amount);
