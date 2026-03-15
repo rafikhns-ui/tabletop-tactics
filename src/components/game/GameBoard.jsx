@@ -28,9 +28,11 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
       className="relative rounded-xl overflow-hidden"
       style={{
         minHeight: '500px',
-        background: 'radial-gradient(ellipse at 35% 45%, #c9a86c 0%, #b8925a 40%, #a07840 100%)',
+        backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b732e420481df67e8a6804/62c454dca_NemRma69YXUdPY6orqTHe3.jpg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         border: '2px solid hsl(43,70%,50%)',
-        boxShadow: '0 0 0 1px rgba(0,0,0,0.4), inset 0 0 60px rgba(80,40,0,0.3)',
+        boxShadow: '0 0 0 1px rgba(0,0,0,0.4)',
       }}
     >
       {/* Map title */}
