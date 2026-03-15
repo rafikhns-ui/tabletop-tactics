@@ -89,13 +89,14 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
             <div
               className="relative flex flex-col items-center justify-center rounded-full transition-all duration-200 hover:scale-110"
               style={{
-                width: '62px',
-                height: '62px',
-                background: `radial-gradient(circle at 35% 35%, ${lighten(biomeColor, 35)}, ${biomeColor})`,
+                width: '52px',
+                height: '52px',
+                background: `rgba(0,0,0,0.55)`,
                 border: `3px solid ${pColor}`,
                 outline: `2px solid ${ringColor}`,
                 outlineOffset: '2px',
-                boxShadow: glow || `0 2px 8px rgba(0,0,0,0.5)`,
+                boxShadow: glow || `0 2px 8px rgba(0,0,0,0.6)`,
+                backdropFilter: 'blur(2px)',
               }}
             >
               <div className="text-xl leading-none">{BIOME_ICONS[territory.biome]}</div>
