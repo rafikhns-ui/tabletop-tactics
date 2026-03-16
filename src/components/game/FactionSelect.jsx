@@ -81,7 +81,7 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
             {playerLabel}: Choose Your Faction
           </h2>
           <div className="flex justify-center gap-1 mt-2">
-            {[1, 2].map(s => (
+            {[1, 2, 3].map(s => (
               <div key={s} className="w-2 h-2 rounded-full" style={{ background: step >= s ? 'hsl(43,80%,55%)' : 'hsl(35,20%,30%)' }} />
             ))}
           </div>
