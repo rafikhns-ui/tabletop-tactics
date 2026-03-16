@@ -16,10 +16,10 @@ const shuffle = (arr) => {
 };
 
 // ---- Create initial player ----
-const createPlayer = (id, name, factionId, isAI = false) => {
+const createPlayer = (id, name, factionId, isAI = false, leaderIndex = 0) => {
   const faction = FACTIONS[factionId];
   const leaderOptions = LEADERS[factionId];
-  const leader = leaderOptions[0];
+  const leader = leaderOptions[leaderIndex] || leaderOptions[0];
   const objectives = shuffle(OBJECTIVES).slice(0, 2);
 
   return {
@@ -57,15 +57,20 @@ const createPlayer = (id, name, factionId, isAI = false) => {
 };
 
 // ---- Initial game state ----
-export const createGameState = (mode) => {
+export const createGameState = (mode, choices = {}) => {
+  const p1f = choices.p1?.factionId || 'onishiman';
+  const p2f = choices.p2?.factionId || (mode === 'ai' ? 'sultanate' : 'kadjimaran');
+  const p1l = choices.p1?.leaderIndex || 0;
+  const p2l = choices.p2?.leaderIndex || 0;
+
   const players = mode === 'ai'
     ? [
-        createPlayer('p1', 'Player 1', 'onishiman', false),
-        createPlayer('ai', 'Shadow Lord', 'sultanate', true),
+        createPlayer('p1', 'Player 1', p1f, false, p1l),
+        createPlayer('ai', 'Shadow Lord', p2f, true, p2l),
       ]
     : [
-        createPlayer('p1', 'Player 1', 'onishiman', false),
-        createPlayer('p2', 'Player 2', 'kadjimaran', false),
+        createPlayer('p1', 'Player 1', p1f, false, p1l),
+        createPlayer('p2', 'Player 2', p2f, false, p2l),
       ];
 
   // Distribute territories
