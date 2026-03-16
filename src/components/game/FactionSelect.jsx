@@ -252,7 +252,7 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
           )}
 
           {/* Step summary */}
-          {step === 2 && (
+          {step === 2 && step < 3 && (
             <div className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,30%)' }}>
               <div className="w-3 h-3 rounded-full" style={{ background: FACTIONS[p1Faction].color }} />
               <span className="text-xs" style={{ color: 'hsl(40,20%,65%)' }}>
