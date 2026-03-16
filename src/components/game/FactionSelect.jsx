@@ -88,6 +88,103 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
         </div>
 
         <div className="p-6 space-y-4">
+          {/* Step 3: Objectives draw */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <p className="text-xs text-center opacity-60" style={{ color: 'hsl(40,20%,65%)' }}>
+                Each player has drawn 2 secret objectives. Review them privately before the battle begins.
+              </p>
+
+              {/* P1 objectives */}
+              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${FACTIONS[p1Faction].color}66` }}>
+                <div className="flex items-center justify-between px-4 py-2"
+                  style={{ background: `${FACTIONS[p1Faction].color}22` }}>
+                  <span className="text-sm font-bold" style={{ fontFamily: "'Cinzel',serif", color: FACTIONS[p1Faction].color }}>
+                    {FACTIONS[p1Faction].emoji} Player 1 — {FACTIONS[p1Faction].name}
+                  </span>
+                  {revealedFor !== 'p1' && revealedFor !== 'done' ? (
+                    <button onClick={() => setRevealedFor('p1')}
+                      className="text-xs px-2 py-1 rounded"
+                      style={{ background: FACTIONS[p1Faction].color, color: '#000', fontFamily: "'Cinzel',serif" }}>
+                      Reveal
+                    </button>
+                  ) : (
+                    <span className="text-xs opacity-50">👁 Revealed</span>
+                  )}
+                </div>
+                {(revealedFor === 'p1' || revealedFor === 'done') ? (
+                  <div className="px-4 py-3 space-y-2">
+                    {p1Objectives.map(obj => (
+                      <div key={obj.id} className="flex items-start gap-2 text-xs">
+                        <span className="mt-0.5 text-base">📜</span>
+                        <div>
+                          <div className="font-semibold" style={{ color: 'hsl(43,80%,65%)', fontFamily: "'Cinzel',serif" }}>{obj.category}</div>
+                          <div style={{ color: 'hsl(40,20%,72%)' }}>{obj.text}</div>
+                        </div>
+                      </div>
+                    ))}
+                    {revealedFor === 'p1' && !isAI && (
+                      <button onClick={() => setRevealedFor('p2')}
+                        className="w-full mt-2 py-1.5 rounded text-xs font-bold"
+                        style={{ background: 'hsl(35,20%,22%)', border: '1px solid hsl(35,20%,32%)', color: 'hsl(40,20%,65%)', fontFamily: "'Cinzel',serif" }}>
+                        ✓ Done — Pass to Player 2
+                      </button>
+                    )}
+                    {revealedFor === 'p1' && isAI && (
+                      <button onClick={() => setRevealedFor('done')}
+                        className="w-full mt-2 py-1.5 rounded text-xs font-bold"
+                        style={{ background: 'hsl(35,20%,22%)', border: '1px solid hsl(35,20%,32%)', color: 'hsl(40,20%,65%)', fontFamily: "'Cinzel',serif" }}>
+                        ✓ Done
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="px-4 py-3 text-center text-xs opacity-40 italic" style={{ color: 'hsl(40,20%,60%)' }}>
+                    🔒 Hidden — tap Reveal to view
+                  </div>
+                )}
+              </div>
+
+              {/* P2 objectives (only show after P1 is done) */}
+              {!isAI && (revealedFor === 'p2' || revealedFor === 'done') && (
+                <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${FACTIONS[p2Faction].color}66` }}>
+                  <div className="flex items-center justify-between px-4 py-2"
+                    style={{ background: `${FACTIONS[p2Faction].color}22` }}>
+                    <span className="text-sm font-bold" style={{ fontFamily: "'Cinzel',serif", color: FACTIONS[p2Faction].color }}>
+                      {FACTIONS[p2Faction].emoji} Player 2 — {FACTIONS[p2Faction].name}
+                    </span>
+                    {revealedFor === 'p2' ? (
+                      <button onClick={() => setRevealedFor('done')}
+                        className="text-xs px-2 py-1 rounded"
+                        style={{ background: FACTIONS[p2Faction].color, color: '#000', fontFamily: "'Cinzel',serif" }}>
+                        Reveal
+                      </button>
+                    ) : (
+                      <span className="text-xs opacity-50">👁 Revealed</span>
+                    )}
+                  </div>
+                  {revealedFor === 'done' ? (
+                    <div className="px-4 py-3 space-y-2">
+                      {p2Objectives.map(obj => (
+                        <div key={obj.id} className="flex items-start gap-2 text-xs">
+                          <span className="mt-0.5 text-base">📜</span>
+                          <div>
+                            <div className="font-semibold" style={{ color: 'hsl(43,80%,65%)', fontFamily: "'Cinzel',serif" }}>{obj.category}</div>
+                            <div style={{ color: 'hsl(40,20%,72%)' }}>{obj.text}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="px-4 py-3 text-center text-xs opacity-40 italic" style={{ color: 'hsl(40,20%,60%)' }}>
+                      🔒 Hidden — tap Reveal to view
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Faction grid */}
           <div className="grid grid-cols-2 gap-3">
             {factionList.map(f => {
