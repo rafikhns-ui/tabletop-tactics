@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { FACTIONS, LEADERS, OBJECTIVES } from './ardoniaData';
 
-// Map image dimensions reference: 720 x 510
-// Each faction's home region shown on the map
 const FACTION_REGIONS = {
   onishiman:  'West — controls Onishiman Empire, Kintei & Coast',
   sultanate:  'South-East — controls Nimrudan Empire & Moor Sultanate',
@@ -18,7 +16,7 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
   const [p2Faction, setP2Faction] = useState(factionList[1].id);
   const [p1Leader, setP1Leader] = useState(0);
   const [p2Leader, setP2Leader] = useState(0);
-  const [step, setStep] = useState(1); // 1 = P1 pick, 2 = P2 pick (or AI), 3 = objectives
+  const [step, setStep] = useState(1); // 1 = P1 pick, 2 = P2 pick, 3 = objectives
   const [p1Objectives, setP1Objectives] = useState([]);
   const [p2Objectives, setP2Objectives] = useState([]);
   const [revealedFor, setRevealedFor] = useState(null); // null | 'p1' | 'p2' | 'done'
@@ -27,28 +25,27 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
     const shuffled = [...OBJECTIVES].sort(() => Math.random() - 0.5);
     setP1Objectives(shuffled.slice(0, 2));
     setP2Objectives(shuffled.slice(2, 4));
-    setRevealedFor('p1');
+    setRevealedFor(null);
   };
 
-  const currentStep = step;
-  const pickingP1 = currentStep === 1;
+  const pickingP1 = step === 1;
+  const selectedFaction = pickingP1 ? p1Faction : p2Faction;
+  const selectedLeader = pickingP1 ? p1Leader : p2Leader;
+  const faction = FACTIONS[selectedFaction];
+  const leaders = LEADERS[selectedFaction];
+  const playerLabel = pickingP1 ? 'Player 1' : (isAI ? 'Shadow Lord (AI)' : 'Player 2');
 
   const handleFactionPick = (factionId) => {
-    if (pickingP1) {
-      setP1Faction(factionId);
-      setP1Leader(0);
-    } else {
-      setP2Faction(factionId);
-      setP2Leader(0);
-    }
+    if (pickingP1) { setP1Faction(factionId); setP1Leader(0); }
+    else { setP2Faction(factionId); setP2Leader(0); }
   };
 
   const handleConfirm = () => {
     if (step === 1) {
       setStep(2);
     } else if (step === 2) {
-      setStep(3);
       drawObjectives();
+      setStep(3);
     } else {
       onConfirm({
         p1: { factionId: p1Faction, leaderIndex: p1Leader, objectives: p1Objectives.map(o => o.id) },
@@ -56,14 +53,6 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
       });
     }
   };
-
-  const selectedFaction = pickingP1 ? p1Faction : p2Faction;
-  const selectedLeader = pickingP1 ? p1Leader : p2Leader;
-  const faction = FACTIONS[selectedFaction];
-  const leaders = LEADERS[selectedFaction];
-
-  const playerLabel = pickingP1 ? 'Player 1' : (isAI ? 'Shadow Lord (AI)' : 'Player 2');
-  const playerColor = pickingP1 ? '#e8b84b' : '#6ab0e8';
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4"
@@ -77,8 +66,8 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
           <div className="text-xs tracking-widest opacity-50 mb-1" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,80%,60%)' }}>
             RULERS OF ARDONIA — SETUP
           </div>
-          <h2 className="text-2xl font-bold" style={{ fontFamily: "'Cinzel',serif", color: faction.color }}>
-            {playerLabel}: Choose Your Faction
+          <h2 className="text-2xl font-bold" style={{ fontFamily: "'Cinzel',serif", color: step < 3 ? faction.color : 'hsl(43,90%,65%)' }}>
+            {step < 3 ? `${playerLabel}: Choose Your Faction` : '📜 Draw Secret Objectives'}
           </h2>
           <div className="flex justify-center gap-1 mt-2">
             {[1, 2, 3].map(s => (
@@ -88,7 +77,8 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
         </div>
 
         <div className="p-6 space-y-4">
-          {/* Step 3: Objectives draw */}
+
+          {/* Step 3: Objectives */}
           {step === 3 && (
             <div className="space-y-4">
               <p className="text-xs text-center opacity-60" style={{ color: 'hsl(40,20%,65%)' }}>
@@ -97,8 +87,7 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
 
               {/* P1 objectives */}
               <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${FACTIONS[p1Faction].color}66` }}>
-                <div className="flex items-center justify-between px-4 py-2"
-                  style={{ background: `${FACTIONS[p1Faction].color}22` }}>
+                <div className="flex items-center justify-between px-4 py-2" style={{ background: `${FACTIONS[p1Faction].color}22` }}>
                   <span className="text-sm font-bold" style={{ fontFamily: "'Cinzel',serif", color: FACTIONS[p1Faction].color }}>
                     {FACTIONS[p1Faction].emoji} Player 1 — {FACTIONS[p1Faction].name}
                   </span>
@@ -123,18 +112,11 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
                         </div>
                       </div>
                     ))}
-                    {revealedFor === 'p1' && !isAI && (
-                      <button onClick={() => setRevealedFor('p2')}
+                    {revealedFor === 'p1' && (
+                      <button onClick={() => setRevealedFor(isAI ? 'done' : 'p2')}
                         className="w-full mt-2 py-1.5 rounded text-xs font-bold"
                         style={{ background: 'hsl(35,20%,22%)', border: '1px solid hsl(35,20%,32%)', color: 'hsl(40,20%,65%)', fontFamily: "'Cinzel',serif" }}>
-                        ✓ Done — Pass to Player 2
-                      </button>
-                    )}
-                    {revealedFor === 'p1' && isAI && (
-                      <button onClick={() => setRevealedFor('done')}
-                        className="w-full mt-2 py-1.5 rounded text-xs font-bold"
-                        style={{ background: 'hsl(35,20%,22%)', border: '1px solid hsl(35,20%,32%)', color: 'hsl(40,20%,65%)', fontFamily: "'Cinzel',serif" }}>
-                        ✓ Done
+                        {isAI ? '✓ Done' : '✓ Done — Pass to Player 2'}
                       </button>
                     )}
                   </div>
@@ -145,11 +127,10 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
                 )}
               </div>
 
-              {/* P2 objectives (only show after P1 is done) */}
+              {/* P2 objectives */}
               {!isAI && (revealedFor === 'p2' || revealedFor === 'done') && (
                 <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${FACTIONS[p2Faction].color}66` }}>
-                  <div className="flex items-center justify-between px-4 py-2"
-                    style={{ background: `${FACTIONS[p2Faction].color}22` }}>
+                  <div className="flex items-center justify-between px-4 py-2" style={{ background: `${FACTIONS[p2Faction].color}22` }}>
                     <span className="text-sm font-bold" style={{ fontFamily: "'Cinzel',serif", color: FACTIONS[p2Faction].color }}>
                       {FACTIONS[p2Faction].emoji} Player 2 — {FACTIONS[p2Faction].name}
                     </span>
@@ -185,7 +166,7 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
             </div>
           )}
 
-          {/* Faction grid */}
+          {/* Faction grid — steps 1 & 2 */}
           {step < 3 && (
             <div className="grid grid-cols-2 gap-3">
               {factionList.map(f => {
@@ -253,7 +234,7 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
             </div>
           )}
 
-          {/* Step summary */}
+          {/* P1 summary shown on step 2 */}
           {step === 2 && (
             <div className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,30%)' }}>
               <div className="w-3 h-3 rounded-full" style={{ background: FACTIONS[p1Faction].color }} />
@@ -276,12 +257,11 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
               <button onClick={handleConfirm}
                 className="flex-1 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 active:scale-95 transition-all"
                 style={{ fontFamily: "'Cinzel',serif", background: `linear-gradient(135deg, ${faction.color}cc, ${faction.color}88)`, border: `1px solid ${faction.color}`, color: 'hsl(40,30%,95%)' }}>
-                {step === 1 ? (isAI ? `→ Draw Objectives` : `→ Player 2's Turn`) : `→ Draw Objectives`}
+                {step === 1 ? (isAI ? '→ Draw Objectives' : "→ Player 2's Turn") : '→ Draw Objectives'}
               </button>
             )}
             {step === 3 && (
-              <button
-                onClick={handleConfirm}
+              <button onClick={handleConfirm}
                 disabled={revealedFor !== 'done'}
                 className="flex-1 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ fontFamily: "'Cinzel',serif", background: 'linear-gradient(135deg, hsl(38,80%,38%), hsl(38,80%,28%))', border: '1px solid hsl(38,80%,55%)', color: 'hsl(43,90%,90%)' }}>
@@ -289,6 +269,7 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
               </button>
             )}
           </div>
+
         </div>
       </div>
     </div>
