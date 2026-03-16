@@ -263,16 +263,29 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
 
           {/* Buttons */}
           <div className="flex gap-3">
-            <button onClick={step === 1 ? onBack : () => setStep(1)}
-              className="px-4 py-2.5 rounded-lg text-sm font-bold hover:opacity-80"
-              style={{ fontFamily: "'Cinzel',serif", background: 'hsl(35,20%,20%)', border: '1px solid hsl(35,20%,32%)', color: 'hsl(40,20%,65%)' }}>
-              ← Back
-            </button>
-            <button onClick={handleConfirm}
-              className="flex-1 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 active:scale-95 transition-all"
-              style={{ fontFamily: "'Cinzel',serif", background: `linear-gradient(135deg, ${faction.color}cc, ${faction.color}88)`, border: `1px solid ${faction.color}`, color: 'hsl(40,30%,95%)' }}>
-              {step === 1 ? (isAI ? `⚔️ Start vs AI` : `→ Player 2's Turn`) : `⚔️ Begin!`}
-            </button>
+            {step < 3 && (
+              <button onClick={step === 1 ? onBack : () => setStep(1)}
+                className="px-4 py-2.5 rounded-lg text-sm font-bold hover:opacity-80"
+                style={{ fontFamily: "'Cinzel',serif", background: 'hsl(35,20%,20%)', border: '1px solid hsl(35,20%,32%)', color: 'hsl(40,20%,65%)' }}>
+                ← Back
+              </button>
+            )}
+            {step < 3 && (
+              <button onClick={handleConfirm}
+                className="flex-1 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 active:scale-95 transition-all"
+                style={{ fontFamily: "'Cinzel',serif", background: `linear-gradient(135deg, ${faction.color}cc, ${faction.color}88)`, border: `1px solid ${faction.color}`, color: 'hsl(40,30%,95%)' }}>
+                {step === 1 ? (isAI ? `→ Draw Objectives` : `→ Player 2's Turn`) : `→ Draw Objectives`}
+              </button>
+            )}
+            {step === 3 && (
+              <button
+                onClick={handleConfirm}
+                disabled={revealedFor !== 'done'}
+                className="flex-1 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ fontFamily: "'Cinzel',serif", background: 'linear-gradient(135deg, hsl(38,80%,38%), hsl(38,80%,28%))', border: '1px solid hsl(38,80%,55%)', color: 'hsl(43,90%,90%)' }}>
+                ⚔️ Begin the Conquest!
+              </button>
+            )}
           </div>
         </div>
       </div>
