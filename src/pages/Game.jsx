@@ -12,6 +12,7 @@ import { EVENT_CARDS } from '../components/game/ardoniaData';
 export default function Game() {
   const [gameState, setGameState] = useState(null);
   const [gameMode, setGameMode] = useState(null);
+  const [pendingMode, setPendingMode] = useState(null); // mode chosen in menu, waiting for faction select
   const [selectedTerritory, setSelectedTerritory] = useState(null);
   const [phase, setPhase] = useState('deploy'); // deploy → attack → fortify
   const [battle, setBattle] = useState(null);
