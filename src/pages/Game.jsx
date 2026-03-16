@@ -22,11 +22,18 @@ export default function Game() {
 
   const addMessage = (msg) => setMessages(prev => [...prev.slice(-4), msg]);
 
-  const startGame = (mode) => {
-    const state = createGameState(mode);
+  // Called from GameMenu — go to faction select
+  const handleMenuStart = (mode) => {
+    setPendingMode(mode);
+  };
+
+  // Called from FactionSelect — actually start the game
+  const startGame = (mode, choices) => {
+    const state = createGameState(mode, choices);
     const collected = collectIncome(state);
     setGameState(collected);
     setGameMode(mode);
+    setPendingMode(null);
     setPhase('deploy');
     setSelectedTerritory(null);
     setWinner(null);
