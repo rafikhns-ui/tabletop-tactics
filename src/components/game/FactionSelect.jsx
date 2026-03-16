@@ -186,7 +186,7 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
           )}
 
           {/* Faction grid */}
-          <div className="grid grid-cols-2 gap-3">
+          {step < 3 && <div className="grid grid-cols-2 gap-3">
             {factionList.map(f => {
               const isSelected = selectedFaction === f.id;
               const takenByOther = !pickingP1 && p1Faction === f.id;
