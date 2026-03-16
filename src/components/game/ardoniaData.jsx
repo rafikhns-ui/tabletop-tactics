@@ -2,53 +2,54 @@
 // RULERS OF ARDONIA - Core Game Data
 // ============================================================
 
-// Territory coordinates are mapped to the actual Ardonia map image (720x510 canvas)
+// Territory coordinates are pixel positions on the 720x510 Ardonia map image.
+// Each coordinate is placed at the CENTER of the region's label/land mass visible on the map.
 export const TERRITORIES = {
-  // Onishiman Empire (west, large)
-  onishiman_north: { id: 'onishiman_north', name: 'Onishiman North', x: 148, y: 210, biome: 'plains',   coastal: false, faction: 'onishiman' },
-  onishiman_south: { id: 'onishiman_south', name: 'Onishiman South', x: 148, y: 340, biome: 'plains',   coastal: false, faction: 'onishiman' },
-  onishiman_coast: { id: 'onishiman_coast', name: 'Onishiman Coast', x: 100, y: 430, biome: 'ocean',    coastal: true,  faction: 'onishiman' },
+  // ── Gojeon Kingdom (far north-west, small mountainous region) ──
+  gojeon:          { id: 'gojeon',          name: 'Gojeon',          x: 95,  y: 118, biome: 'forest',   coastal: false, faction: 'kadjimaran' },
 
-  // Gojeon Kingdom (northwest)
-  gojeon:          { id: 'gojeon',          name: 'Gojeon Kingdom', x: 120, y: 100, biome: 'forest',   coastal: false, faction: 'kadjimaran' },
+  // ── Onishiman Empire (west, large bloc) ──
+  onishiman_north: { id: 'onishiman_north', name: 'Onishiman N.',    x: 155, y: 200, biome: 'plains',   coastal: false, faction: 'onishiman' },
+  onishiman_south: { id: 'onishiman_south', name: 'Onishiman S.',    x: 145, y: 318, biome: 'plains',   coastal: false, faction: 'onishiman' },
+  onishiman_coast: { id: 'onishiman_coast', name: 'Oni. Coast',      x: 95,  y: 418, biome: 'ocean',    coastal: true,  faction: 'onishiman' },
 
-  // Inuvak Confederacy (north-central)
-  inuvak:          { id: 'inuvak',          name: 'Inuvak Confederacy', x: 268, y: 80, biome: 'tundra',  coastal: false, faction: 'kadjimaran' },
+  // ── Inuvak Confederacy (north-central) ──
+  inuvak:          { id: 'inuvak',          name: 'Inuvak',          x: 272, y: 88,  biome: 'tundra',   coastal: false, faction: 'kadjimaran' },
 
-  // Ruskel Federation (north-east)
-  ruskel:          { id: 'ruskel',          name: 'Ruskel Federation', x: 450, y: 130, biome: 'tundra',  coastal: false, faction: 'kadjimaran' },
+  // ── Silver Union (central neutral zone) ──
+  silver_union:    { id: 'silver_union',    name: 'Silver Union',    x: 330, y: 245, biome: 'plains',   coastal: false, faction: null },
 
-  // Icebound Horde (far north-east)
-  icebound:        { id: 'icebound',        name: 'Icebound Horde',  x: 600, y: 80,  biome: 'tundra',  coastal: false, faction: 'kadjimaran' },
+  // ── Ruskel Federation (north-east) ──
+  ruskel:          { id: 'ruskel',          name: 'Ruskel Fed.',     x: 445, y: 138, biome: 'tundra',   coastal: false, faction: 'kadjimaran' },
 
-  // Kadjimaran Kingdom (central)
-  kadjimaran_n:    { id: 'kadjimaran_n',    name: 'Kadjimaran North', x: 490, y: 230, biome: 'desert',  coastal: false, faction: 'kadjimaran' },
-  kadjimaran_s:    { id: 'kadjimaran_s',    name: 'Kadjimaran South', x: 490, y: 330, biome: 'desert',  coastal: false, faction: 'kadjimaran' },
+  // ── Icebound Horde (far north-east) ──
+  icebound:        { id: 'icebound',        name: 'Icebound',        x: 590, y: 72,  biome: 'tundra',   coastal: false, faction: 'kadjimaran' },
 
-  // Silver Union (central island/neutral)
-  silver_union:    { id: 'silver_union',    name: 'Silver Union',    x: 340, y: 265, biome: 'plains',  coastal: false, faction: null },
+  // ── Kadjimaran Kingdom (central) ──
+  kadjimaran_n:    { id: 'kadjimaran_n',    name: 'Kadjimaran N.',   x: 475, y: 225, biome: 'desert',   coastal: false, faction: 'kadjimaran' },
+  kadjimaran_s:    { id: 'kadjimaran_s',    name: 'Kadjimaran S.',   x: 460, y: 335, biome: 'desert',   coastal: false, faction: 'kadjimaran' },
 
-  // Republic of Oakhaven (east)
-  oakhaven:        { id: 'oakhaven',        name: 'Rep. of Oakhaven', x: 620, y: 220, biome: 'forest',  coastal: false, faction: 'republic' },
+  // ── Republic of Oakhaven (east, forest) ──
+  oakhaven:        { id: 'oakhaven',        name: 'Oakhaven',        x: 618, y: 215, biome: 'forest',   coastal: false, faction: 'republic' },
 
-  // Nimrudan Empire (south-east)
-  nimrudan_n:      { id: 'nimrudan_n',      name: 'Nimrudan North',  x: 590, y: 340, biome: 'mountain', coastal: false, faction: 'sultanate' },
-  nimrudan_s:      { id: 'nimrudan_s',      name: 'Nimrudan South',  x: 640, y: 420, biome: 'desert',  coastal: true,  faction: 'sultanate' },
+  // ── Scorched Lands (far east, desolate) ──
+  scorched:        { id: 'scorched',        name: 'Scorched Lands',  x: 686, y: 310, biome: 'desert',   coastal: false, faction: null },
 
-  // Scorched Lands (far east)
-  scorched:        { id: 'scorched',        name: 'Scorched Lands',  x: 690, y: 310, biome: 'desert',  coastal: false, faction: null },
+  // ── Nimrudan Empire (south-east) ──
+  nimrudan_n:      { id: 'nimrudan_n',      name: 'Nimrudan N.',     x: 588, y: 335, biome: 'mountain', coastal: false, faction: 'sultanate' },
+  nimrudan_s:      { id: 'nimrudan_s',      name: 'Nimrudan S.',     x: 638, y: 422, biome: 'desert',   coastal: true,  faction: 'sultanate' },
 
-  // Greater Kintei (central-south)
-  kintei:          { id: 'kintei',          name: 'Greater Kintei',  x: 300, y: 390, biome: 'plains',  coastal: true,  faction: 'onishiman' },
+  // ── Greater Kintei (centre-south) ──
+  kintei:          { id: 'kintei',          name: 'Kintei',          x: 308, y: 385, biome: 'plains',   coastal: true,  faction: 'onishiman' },
 
-  // Hestia (south-central)
-  hestia:          { id: 'hestia',          name: 'Hestia',          x: 490, y: 440, biome: 'ocean',   coastal: true,  faction: 'republic' },
+  // ── Hestia (south-central, republic heartland) ──
+  hestia:          { id: 'hestia',          name: 'Hestia',          x: 478, y: 438, biome: 'ocean',    coastal: true,  faction: 'republic' },
 
-  // Moor Sultanate (south-east)
-  moor_sultanate:  { id: 'moor_sultanate',  name: 'Moor Sultanate',  x: 600, y: 480, biome: 'desert',  coastal: true,  faction: 'sultanate' },
+  // ── Moor Sultanate (far south-east) ──
+  moor_sultanate:  { id: 'moor_sultanate',  name: 'Moor Sultanate',  x: 596, y: 476, biome: 'desert',   coastal: true,  faction: 'sultanate' },
 
-  // Tlalocayotlan League (south-west)
-  tlalocayotlan:   { id: 'tlalocayotlan',   name: 'Tlalocayotlan',   x: 175, y: 490, biome: 'forest',  coastal: true,  faction: 'republic' },
+  // ── Tlalocayotlan League (south-west, coastal) ──
+  tlalocayotlan:   { id: 'tlalocayotlan',   name: 'Tlalocayotlan',   x: 180, y: 482, biome: 'forest',   coastal: true,  faction: 'republic' },
 };
 
 export const ADJACENCY = {
