@@ -46,10 +46,13 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
   const handleConfirm = () => {
     if (step === 1) {
       setStep(2);
+    } else if (step === 2) {
+      setStep(3);
+      drawObjectives();
     } else {
       onConfirm({
-        p1: { factionId: p1Faction, leaderIndex: p1Leader },
-        p2: { factionId: isAI ? p2Faction : p2Faction, leaderIndex: p2Leader },
+        p1: { factionId: p1Faction, leaderIndex: p1Leader, objectives: p1Objectives.map(o => o.id) },
+        p2: { factionId: p2Faction, leaderIndex: p2Leader, objectives: p2Objectives.map(o => o.id) },
       });
     }
   };
