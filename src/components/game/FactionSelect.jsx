@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FACTIONS, LEADERS } from './ardoniaData';
+import { FACTIONS, LEADERS, OBJECTIVES } from './ardoniaData';
 
 // Map image dimensions reference: 720 x 510
 // Each faction's home region shown on the map
