@@ -186,38 +186,40 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
           )}
 
           {/* Faction grid */}
-          {step < 3 && <div className="grid grid-cols-2 gap-3">
-            {factionList.map(f => {
-              const isSelected = selectedFaction === f.id;
-              const takenByOther = !pickingP1 && p1Faction === f.id;
-              return (
-                <button key={f.id}
-                  onClick={() => !takenByOther && handleFactionPick(f.id)}
-                  disabled={takenByOther}
-                  className="text-left rounded-xl p-4 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{
-                    background: isSelected ? `${f.color}22` : 'hsl(35,20%,18%)',
-                    border: `2px solid ${isSelected ? f.color : 'hsl(35,20%,28%)'}`,
-                    boxShadow: isSelected ? `0 0 20px ${f.color}44` : 'none',
-                  }}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl">{f.emoji}</span>
-                    <div>
-                      <div className="font-bold text-sm" style={{ color: f.color, fontFamily: "'Cinzel',serif" }}>{f.name}</div>
-                      <div className="text-xs" style={{ color: 'hsl(40,15%,55%)' }}>{FACTION_REGIONS[f.id]}</div>
+          {step < 3 && (
+            <div className="grid grid-cols-2 gap-3">
+              {factionList.map(f => {
+                const isSelected = selectedFaction === f.id;
+                const takenByOther = !pickingP1 && p1Faction === f.id;
+                return (
+                  <button key={f.id}
+                    onClick={() => !takenByOther && handleFactionPick(f.id)}
+                    disabled={takenByOther}
+                    className="text-left rounded-xl p-4 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{
+                      background: isSelected ? `${f.color}22` : 'hsl(35,20%,18%)',
+                      border: `2px solid ${isSelected ? f.color : 'hsl(35,20%,28%)'}`,
+                      boxShadow: isSelected ? `0 0 20px ${f.color}44` : 'none',
+                    }}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-3xl">{f.emoji}</span>
+                      <div>
+                        <div className="font-bold text-sm" style={{ color: f.color, fontFamily: "'Cinzel',serif" }}>{f.name}</div>
+                        <div className="text-xs" style={{ color: 'hsl(40,15%,55%)' }}>{FACTION_REGIONS[f.id]}</div>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-xs leading-relaxed" style={{ color: 'hsl(40,20%,65%)' }}>{f.description}</p>
-                  <div className="mt-2 text-xs px-2 py-1 rounded" style={{ background: 'hsl(35,20%,23%)', color: 'hsl(43,70%,55%)', fontStyle: 'italic' }}>
-                    ✦ {f.specialRule}
-                  </div>
-                  {takenByOther && (
-                    <div className="mt-1 text-xs text-center" style={{ color: 'hsl(0,50%,60%)' }}>Already chosen by P1</div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                    <p className="text-xs leading-relaxed" style={{ color: 'hsl(40,20%,65%)' }}>{f.description}</p>
+                    <div className="mt-2 text-xs px-2 py-1 rounded" style={{ background: 'hsl(35,20%,23%)', color: 'hsl(43,70%,55%)', fontStyle: 'italic' }}>
+                      ✦ {f.specialRule}
+                    </div>
+                    {takenByOther && (
+                      <div className="mt-1 text-xs text-center" style={{ color: 'hsl(0,50%,60%)' }}>Already chosen by P1</div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Leader selection */}
           {step < 3 && leaders && (
