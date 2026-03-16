@@ -18,7 +18,17 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
   const [p2Faction, setP2Faction] = useState(factionList[1].id);
   const [p1Leader, setP1Leader] = useState(0);
   const [p2Leader, setP2Leader] = useState(0);
-  const [step, setStep] = useState(1); // 1 = P1 pick, 2 = P2 pick (or AI), 3 = confirm
+  const [step, setStep] = useState(1); // 1 = P1 pick, 2 = P2 pick (or AI), 3 = objectives
+  const [p1Objectives, setP1Objectives] = useState([]);
+  const [p2Objectives, setP2Objectives] = useState([]);
+  const [revealedFor, setRevealedFor] = useState(null); // null | 'p1' | 'p2' | 'done'
+
+  const drawObjectives = () => {
+    const shuffled = [...OBJECTIVES].sort(() => Math.random() - 0.5);
+    setP1Objectives(shuffled.slice(0, 2));
+    setP2Objectives(shuffled.slice(2, 4));
+    setRevealedFor('p1');
+  };
 
   const currentStep = step;
   const pickingP1 = currentStep === 1;
