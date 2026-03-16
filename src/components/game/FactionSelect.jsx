@@ -220,7 +220,7 @@ export default function FactionSelect({ mode, onConfirm, onBack }) {
           </div>
 
           {/* Leader selection */}
-          {leaders && (
+          {step < 3 && leaders && (
             <div>
               <div className="text-xs font-bold tracking-widest mb-2 opacity-50" style={{ fontFamily: "'Cinzel',serif" }}>
                 CHOOSE YOUR LEADER
