@@ -223,7 +223,14 @@ export default function Game() {
     return () => clearTimeout(timeout);
   }, [gameState?.currentPlayerIndex, gameState?.turn, gameMode, winner]);
 
-  if (!gameMode) return <GameMenu onStart={startGame} />;
+  if (!gameMode && !pendingMode) return <GameMenu onStart={handleMenuStart} />;
+  if (pendingMode && !gameMode) return (
+    <FactionSelect
+      mode={pendingMode}
+      onConfirm={(choices) => startGame(pendingMode, choices)}
+      onBack={() => setPendingMode(null)}
+    />
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-background" style={{ fontFamily: "'Crimson Text', serif" }}>
