@@ -253,7 +253,7 @@ export default function Game() {
               {messages[messages.length - 1]}
             </div>
           )}
-          <button onClick={() => { setGameState(null); setGameMode(null); }}
+          <button onClick={() => { setGameState(null); setGameMode(null); setPendingMode(null); }}
             className="text-xs px-3 py-1.5 rounded hover:opacity-80"
             style={{ background: 'hsl(35,20%,22%)', border: '1px solid hsl(35,20%,35%)', color: 'hsl(40,20%,65%)' }}>
             ⬅ Menu
