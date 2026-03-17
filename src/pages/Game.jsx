@@ -442,19 +442,14 @@ export default function Game() {
   };
 
   const advancePhase = () => {
+    setSelectedTerritory(null);
     if (phase === 'deploy') {
-      if (currentPlayer.troopsToDeploy > 0) {
-        addMessage('⚠️ Deploy all troops first!');
-        return;
-      }
       setPhase('move');
       addMessage('🚶 Move phase — move units across the map');
     } else if (phase === 'move') {
-      setSelectedTerritory(null);
       setPhase('attack');
       addMessage('⚔️ Attack phase — select your territory to attack from');
     } else if (phase === 'attack') {
-      setSelectedTerritory(null);
       setPhase('fortify');
       addMessage('🛡️ Fortify — move troops between adjacent friendly territories');
     } else {
