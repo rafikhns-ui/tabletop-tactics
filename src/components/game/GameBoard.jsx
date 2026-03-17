@@ -1,5 +1,6 @@
-import React from 'react';
-import { ADJACENCY, BIOME_COLORS, BIOME_ICONS } from './ardoniaData';
+import React, { useState, useMemo } from 'react';
+import { ADJACENCY, BIOME_COLORS, BIOME_ICONS, UNIT_DEFS } from './ardoniaData';
+import { getReachableTerritories } from './ardoniaLogic';
 
 
 export default function GameBoard({ gameState, selectedTerritory, phase, currentPlayer, onTerritoryClick }) {
