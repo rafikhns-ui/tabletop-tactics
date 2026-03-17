@@ -72,24 +72,70 @@ export const TERRITORIES = {
 };
 
 export const ADJACENCY = {
-  gojeon:          ['inuvak', 'onishiman_north'],
-  inuvak:          ['gojeon', 'ruskel', 'onishiman_north', 'silver_union'],
-  ruskel:          ['inuvak', 'icebound', 'kadjimaran_n', 'oakhaven'],
-  icebound:        ['ruskel', 'oakhaven'],
-  onishiman_north: ['gojeon', 'inuvak', 'onishiman_south', 'silver_union'],
-  onishiman_south: ['onishiman_north', 'onishiman_coast', 'kintei', 'silver_union'],
-  onishiman_coast: ['onishiman_south', 'tlalocayotlan', 'kintei'],
-  silver_union:    ['inuvak', 'onishiman_north', 'onishiman_south', 'kadjimaran_n', 'kintei'],
-  kadjimaran_n:    ['ruskel', 'silver_union', 'kadjimaran_s', 'oakhaven'],
-  kadjimaran_s:    ['kadjimaran_n', 'hestia', 'nimrudan_n', 'kintei'],
-  oakhaven:        ['ruskel', 'icebound', 'kadjimaran_n', 'nimrudan_n', 'scorched'],
-  nimrudan_n:      ['oakhaven', 'kadjimaran_s', 'nimrudan_s', 'scorched'],
-  nimrudan_s:      ['nimrudan_n', 'moor_sultanate', 'hestia'],
-  scorched:        ['oakhaven', 'nimrudan_n'],
-  kintei:          ['onishiman_south', 'onishiman_coast', 'silver_union', 'kadjimaran_s', 'hestia', 'tlalocayotlan'],
-  hestia:          ['kadjimaran_s', 'kintei', 'nimrudan_s', 'moor_sultanate'],
-  moor_sultanate:  ['hestia', 'nimrudan_s'],
-  tlalocayotlan:   ['onishiman_coast', 'kintei'],
+  // Gojeon
+  gojeon:           ['inuvak', 'onishiman_north', 'gojeon_highlands'],
+  gojeon_highlands: ['gojeon', 'onishiman_north', 'iron_wastes'],
+
+  // Onishiman
+  onishiman_north:  ['gojeon', 'gojeon_highlands', 'inuvak', 'onishiman_south', 'onishiman_east', 'silver_union'],
+  onishiman_south:  ['onishiman_north', 'onishiman_east', 'onishiman_coast', 'kintei', 'silver_union'],
+  onishiman_coast:  ['onishiman_south', 'tlalocayotlan', 'kintei', 'iron_wastes'],
+  onishiman_east:   ['onishiman_north', 'onishiman_south', 'silver_union', 'kadjimaran_west'],
+
+  // Iron Wastes
+  iron_wastes:      ['gojeon_highlands', 'onishiman_coast'],
+
+  // Inuvak
+  inuvak:           ['gojeon', 'onishiman_north', 'inuvak_east', 'silver_union'],
+  inuvak_east:      ['inuvak', 'ruskel', 'silver_pass'],
+
+  // Silver Union
+  silver_union:     ['inuvak', 'onishiman_north', 'onishiman_south', 'onishiman_east', 'silver_pass', 'kadjimaran_west', 'kintei_north'],
+  silver_pass:      ['inuvak_east', 'silver_union', 'ruskel_mines', 'kadjimaran_n'],
+
+  // Ruskel
+  ruskel:           ['inuvak_east', 'icebound', 'ruskel_mines', 'kadjimaran_n'],
+  ruskel_mines:     ['ruskel', 'silver_pass', 'kadjimaran_n', 'oakhaven'],
+
+  // Icebound
+  icebound:         ['ruskel', 'icebound_wastes', 'oakhaven'],
+  icebound_wastes:  ['icebound', 'oakhaven', 'scorched_north'],
+
+  // Kadjimaran
+  kadjimaran_n:     ['ruskel', 'ruskel_mines', 'silver_pass', 'kadjimaran_west', 'kadjimaran_s', 'oakhaven'],
+  kadjimaran_s:     ['kadjimaran_n', 'kadjimaran_west', 'hestia_inner', 'nimrudan_n', 'kintei_north'],
+  kadjimaran_west:  ['onishiman_east', 'silver_union', 'kadjimaran_n', 'kadjimaran_s', 'kintei_north'],
+
+  // Oakhaven
+  oakhaven:         ['ruskel_mines', 'icebound', 'kadjimaran_n', 'oakhaven_deep', 'nimrudan_n'],
+  oakhaven_deep:    ['oakhaven', 'scorched_north', 'scorched', 'nimrudan_n'],
+
+  // Scorched Lands
+  scorched:         ['oakhaven_deep', 'scorched_north', 'nimrudan_n'],
+  scorched_north:   ['icebound_wastes', 'oakhaven_deep', 'scorched'],
+
+  // Nimrudan
+  nimrudan_n:       ['oakhaven', 'oakhaven_deep', 'scorched', 'kadjimaran_s', 'hestia_inner', 'nimrudan_s'],
+  nimrudan_s:       ['nimrudan_n', 'nimrudan_coast', 'moor_sultanate', 'hestia'],
+  nimrudan_coast:   ['nimrudan_s', 'moor_sultanate'],
+
+  // Kintei
+  kintei:           ['onishiman_south', 'onishiman_coast', 'kintei_north', 'hestia', 'tlalocayotlan', 'verdant_vale'],
+  kintei_north:     ['silver_union', 'kadjimaran_west', 'kadjimaran_s', 'kintei', 'hestia_inner'],
+
+  // Hestia
+  hestia:           ['kintei', 'kintei_north', 'hestia_inner', 'nimrudan_s', 'moor_sultanate'],
+  hestia_inner:     ['kadjimaran_s', 'kintei_north', 'nimrudan_n', 'nimrudan_s', 'hestia'],
+
+  // Moor Sultanate
+  moor_sultanate:   ['hestia', 'nimrudan_s', 'nimrudan_coast'],
+
+  // Tlalocayotlan
+  tlalocayotlan:    ['onishiman_coast', 'kintei', 'tlaloc_north', 'verdant_vale'],
+  tlaloc_north:     ['tlalocayotlan', 'onishiman_south', 'verdant_vale'],
+
+  // Verdant Vale
+  verdant_vale:     ['tlaloc_north', 'tlalocayotlan', 'kintei'],
 };
 
 export const BIOME_COLORS = {
