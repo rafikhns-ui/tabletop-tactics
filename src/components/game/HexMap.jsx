@@ -186,6 +186,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           else if (canFortify) { ringColor = 'rgba(60,180,255,0.8)'; glow = '0 0 12px rgba(60,180,255,0.4)'; }
           else if (canMove) { ringColor = 'rgba(100,255,100,0.7)'; glow = '0 0 10px rgba(100,255,100,0.3)'; }
           else if (canDeploy) { ringColor = playerColor; }
+          else if (isOwned) { ringColor = playerColor; glow = `0 0 8px ${playerColor}33`; }
 
           return (
            <g key={`hex-${hexId}`} onClick={() => onHexClick(hexId)} style={{ cursor: 'pointer' }}>
