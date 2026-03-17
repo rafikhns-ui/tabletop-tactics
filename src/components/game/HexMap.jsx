@@ -160,12 +160,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                 </text>
               )}
               
-              {/* Hex label */}
-              {(!hex.units || hex.units.length === 0) && (
-                <text x={px} y={py + 8} textAnchor="middle" fontSize="10" fill="#eee" fontFamily="'Cinzel',serif">
-                  {hexId.split('_')[0].substring(0, 3).toUpperCase()}
-                </text>
-              )}
+
             </g>
           );
         })}
