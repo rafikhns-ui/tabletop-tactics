@@ -768,7 +768,7 @@ export default function Game() {
                 onUpgrade={handleUpgrade}
                 onBuildFortress={handleBuildFortress}
               />
-                <UnitBreakdown />
+                <UnitBreakdown currentPlayer={currentPlayer} gameState={gameState} />
               </>
             )}
             {bottomTab === 'heroes' && gameState && currentPlayer && !currentPlayer.isAI && (
