@@ -800,9 +800,6 @@ export default function Game() {
             {bottomTab === 'log' && (
               <BattleLog entries={battleLog} />
             )}
-              </>
-            )}
-            )}
           </div>
         </div>
       </div>
