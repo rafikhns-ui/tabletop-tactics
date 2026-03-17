@@ -444,12 +444,19 @@ export const UNIT_DEFS = {
 export const ACTION_CARDS = [
   { id: 'sabotage',    name: 'Sabotage',        category: 'Clandestine', cost: { gold: 2, ip: 2 }, heroStat: 'stealth', effect: 'Disable one enemy building for 2 turns', emoji: '💣' },
   { id: 'assassinate', name: 'Assassination',   category: 'Clandestine', cost: { gold: 3, ip: 3 }, heroStat: 'stealth', effect: 'Imprison enemy hero for 2 turns', emoji: '🗡️' },
-  { id: 'negotiate',   name: 'Negotiation',     category: 'Diplomacy',   cost: { gold: 1, ip: 2 }, heroStat: 'charisma', effect: 'Force a trade treaty or truce', emoji: '🤝' },
   { id: 'spy',         name: 'Espionage',       category: 'Clandestine', cost: { gold: 2, ip: 1 }, heroStat: 'stealth', effect: 'Reveal one enemy objective type', emoji: '🕵️' },
+  { id: 'blackmail',   name: 'Blackmail',       category: 'Clandestine', cost: { gold: 2, ip: 2 }, heroStat: 'stealth', effect: 'Force enemy to pay 3 Gold or lose 1 territory control', emoji: '📋' },
+  { id: 'poison',      name: 'Poison Supplies', category: 'Clandestine', cost: { gold: 3, ip: 2 }, heroStat: 'stealth', effect: 'Target loses 2 troops from one territory', emoji: '☠️' },
   { id: 'divine_shield', name: 'Divine Shield', category: 'Spiritual',   cost: { gold: 1, sp: 2 }, heroStat: 'arcana', effect: '+3 defense rolls until next turn', emoji: '🛡️' },
   { id: 'faith_surge', name: 'Faith Surge',     category: 'Spiritual',   cost: { gold: 2, sp: 1 }, heroStat: 'arcana', effect: 'Gain +3 SP immediately', emoji: '✨' },
-  { id: 'trade_deal',  name: 'Trade Agreement', category: 'Diplomacy',   cost: { gold: 2, ip: 1 }, heroStat: 'charisma', effect: 'Sign a trade agreement: +2 Gold/turn for 3 turns', emoji: '📜' },
   { id: 'rally',       name: 'War Rally',       category: 'Military',    cost: { gold: 3, wheat: 2 }, heroStat: 'force', effect: '+2 to all attack rolls this turn', emoji: '⚔️' },
+  { id: 'negotiate',   name: 'Negotiation',     category: 'Diplomacy',   cost: { gold: 1, ip: 2 }, heroStat: 'charisma', effect: 'Force a trade treaty or truce', emoji: '🤝' },
+  { id: 'embark',      name: 'Embark Mission',  category: 'Diplomacy',   cost: { gold: 2, ip: 1 }, heroStat: 'charisma', effect: 'Send diplomat: +1 IP per turn for 3 turns', emoji: '✉️' },
+  { id: 'declare_war', name: 'Declare War',     category: 'Diplomacy',   cost: { gold: 2, ip: 1 }, heroStat: 'charisma', effect: 'All players must pick a side; gain +1 attack vs declared enemy', emoji: '⚔️' },
+  { id: 'trade_deal',  name: 'Trade Agreement', category: 'Trade',       cost: { gold: 2, ip: 1 }, heroStat: 'charisma', effect: 'Sign a trade agreement: +2 Gold/turn for 3 turns', emoji: '📜' },
+  { id: 'luxury_goods', name: 'Luxury Goods',   category: 'Trade',       cost: { gold: 3 }, heroStat: 'charisma', effect: 'Gain +2 IP, sell goods for +3 Gold', emoji: '💎' },
+  { id: 'spice_routes', name: 'Spice Trade',    category: 'Trade',       cost: { gold: 2, wood: 1 }, heroStat: 'charisma', effect: 'Open route: gain +1 Gold/turn + +1 Wood/turn for 2 turns', emoji: '🌶️' },
+  { id: 'gem_monopoly', name: 'Gem Monopoly',   category: 'Trade',       cost: { gold: 3, ip: 2 }, heroStat: 'charisma', effect: 'Gain 2 Crystals; prevent others from trading gems', emoji: '💠' },
 ];
 
 // ---- Event Cards ----
