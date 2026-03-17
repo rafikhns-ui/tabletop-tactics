@@ -77,11 +77,13 @@ export const HexUtils = {
 // Using axial coordinates (q, r) where q increases right, r increases down-left
 
 // Continent definitions with centers and radius
+// Coordinates normalized to hex grid: q(-30 to 30), r(-22 to 22)
 const CONTINENTS = [
-  { name: 'Western Continent', centerQ: -15, centerR: 0, radius: 10 },
-  { name: 'Eastern Continent', centerQ: 15, centerR: 0, radius: 10 },
-  { name: 'Northern Continent', centerQ: 0, centerR: -14, radius: 9 },
-  { name: 'Southern Continent', centerQ: 5, centerR: 12, radius: 8 },
+  { name: 'Western Continent', centerQ: -18, centerR: 0, radius: 10 },
+  { name: 'Northern Ice', centerQ: 0, centerR: -13, radius: 9 },
+  { name: 'Eastern Continent', centerQ: 18, centerR: 0, radius: 10 },
+  { name: 'Southern Central', centerQ: 0, centerR: 11, radius: 8 },
+  { name: 'Southeast Peninsula', centerQ: 18, centerR: 15, radius: 7 },
 ];
 
 const isLandTile = (q, r) => {
