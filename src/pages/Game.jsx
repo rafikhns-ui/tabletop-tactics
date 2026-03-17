@@ -249,7 +249,7 @@ export default function Game() {
 
   // AI turn logic
   useEffect(() => {
-    if (!gameState || gameMode !== 'ai' || winner) return;
+    if (!gameState || winner) return;
     const cp = gameState.players[gameState.currentPlayerIndex];
     if (!cp.isAI) return;
     const timeout = setTimeout(() => {
