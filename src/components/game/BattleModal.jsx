@@ -111,12 +111,21 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
 }
 
 function CombatantCard({ player, territory, role }) {
+  const unitTypes = { cavalry: '🐴', elite: '⚡', ranged: '🏹', siege: '🏗️', naval: '⛵', infantry: '🗡️' };
+  const totalTroops = territory.units?.reduce((s, u) => s + u.count, 0) || territory.troops;
   return (
     <div className="text-center">
       <div className="text-2xl mb-1">{role === 'attacker' ? '🗡️' : '🛡️'}</div>
       <div className="text-sm font-bold" style={{ color: player?.color, fontFamily: "'Cinzel',serif" }}>{player?.name}</div>
       <div className="text-xs opacity-60 mt-0.5">{territory.name}</div>
-      <div className="text-2xl font-black mt-1" style={{ color: 'hsl(43,85%,65%)', fontFamily: "'Cinzel',serif" }}>{territory.troops}</div>
+      {territory.units && territory.units.length > 0 ? (
+        <div className="text-xs mt-1">
+          {territory.units.map(u => (
+            <div key={u.type}>{unitTypes[u.type] || '?'} {u.count}</div>
+          ))}
+        </div>
+      ) : null}
+      <div className="text-2xl font-black mt-1" style={{ color: 'hsl(43,85%,65%)', fontFamily: "'Cinzel',serif" }}>{totalTroops}</div>
       <div className="text-xs opacity-50">troops</div>
     </div>
   );
