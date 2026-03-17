@@ -302,6 +302,25 @@ export default function Game() {
     addMessage(`📍 ${hero?.name} assigned to ${territory?.name}`);
   };
 
+  const handlePlayCard = (card) => {
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === currentPlayer.id);
+      const newResources = { ...player.resources };
+      let newIp = player.ip ?? 0;
+      let newSp = player.sp ?? 0;
+      for (const [k, v] of Object.entries(card.cost || {})) {
+        if (k === 'ip') newIp -= v;
+        else if (k === 'sp') newSp -= v;
+        else newResources[k] = (newResources[k] || 0) - v;
+      }
+      // Apply immediate effects
+      if (card.id === 'faith_surge') newSp = Math.min(10, newSp + 3);
+      const newPlayer = { ...player, resources: newResources, ip: newIp, sp: newSp };
+      return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
+    });
+    addMessage(`🃏 Played ${card.name}: ${card.effect}`);
+  };
+
   const handleDiplomacyAction = ({ type, fromId, toId, offer, request }) => {
     if (type === 'trade_offer') {
       setTradeOffers(prev => [...prev, { fromId, toId, offer, request, id: Date.now() }]);
