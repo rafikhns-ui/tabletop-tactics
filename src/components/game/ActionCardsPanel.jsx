@@ -235,20 +235,30 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
                     </AnimatePresence>
 
                     {isHovered && (
-                       <div className="absolute bottom-full left-1/2 mb-2 z-50 w-44 rounded-lg p-2 text-xs pointer-events-none"
+                       <div className="absolute bottom-full left-1/2 mb-2 z-50 w-56 rounded-lg overflow-hidden pointer-events-none"
                         style={{
                           transform: 'translateX(-50%)',
-                          background: 'hsl(35,25%,12%)',
-                          border: '1px solid hsl(43,60%,40%)',
-                          color: 'hsl(40,20%,75%)',
                           boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
                         }}>
-                        <div className="font-bold mb-1" style={{ color: 'hsl(43,85%,65%)', fontFamily: "'Cinzel',serif" }}>
-                          {card.emoji} {card.name}
-                        </div>
-                        <div className="mb-1 opacity-70 italic">{card.category}</div>
-                        <div>{card.effect}</div>
-                        {!affordable && <div className="mt-1 text-red-400 font-semibold">Not enough resources</div>}
+                        {card.image ? (
+                          <div className="relative">
+                            <img src={card.image} alt={card.name} className="w-full h-auto rounded-lg" />
+                            {!affordable && (
+                              <div className="absolute inset-0 bg-red-900 bg-opacity-60 flex items-center justify-center rounded-lg">
+                                <span className="text-red-200 font-bold text-sm">Not enough resources</span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="p-3 rounded-lg text-xs" style={{ background: 'hsl(35,25%,12%)', border: '1px solid hsl(43,60%,40%)', color: 'hsl(40,20%,75%)' }}>
+                            <div className="font-bold mb-1" style={{ color: 'hsl(43,85%,65%)', fontFamily: "'Cinzel',serif" }}>
+                              {card.emoji} {card.name}
+                            </div>
+                            <div className="mb-1 opacity-70 italic">{card.category}</div>
+                            <div>{card.effect}</div>
+                            {!affordable && <div className="mt-1 text-red-400 font-semibold">Not enough resources</div>}
+                          </div>
+                        )}
                       </div>
                     )}
                   </motion.div>
