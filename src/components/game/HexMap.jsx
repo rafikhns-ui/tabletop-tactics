@@ -30,8 +30,11 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   const canvasHeight = 700;
 
   const getPlayerColor = (ownerId) => {
+    if (!ownerId) return 'transparent';
     return gameState?.players.find(p => p.id === ownerId)?.color || '#666';
   };
+
+  const hexes = gameState?.hexes || {};
 
   const isAttackable = (hexId) => {
     if (phase !== 'attack' || !selectedHex) return false;
