@@ -207,8 +207,35 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
                       </div>
                     </motion.div>
 
+                    <AnimatePresence>
+                      {cardEffectBurst === card.id && (
+                        <>
+                          {[...Array(6)].map((_, i) => (
+                            <motion.div
+                              key={`burst-${i}`}
+                              className="absolute rounded-full"
+                              initial={{ x: 0, y: 0, opacity: 1, scale: 0.5 }}
+                              animate={{
+                                x: Math.cos((i / 6) * Math.PI * 2) * 60,
+                                y: Math.sin((i / 6) * Math.PI * 2) * 60,
+                                opacity: 0,
+                                scale: 0,
+                              }}
+                              transition={{ duration: 0.6, ease: 'easeOut' }}
+                              style={{
+                                width: '8px',
+                                height: '8px',
+                                background: card.category === 'Clandestine' ? 'hsl(0,70%,50%)' : card.category === 'Spiritual' ? 'hsl(200,70%,50%)' : 'hsl(38,80%,55%)',
+                                boxShadow: `0 0 8px currentColor`,
+                              }}
+                            />
+                          ))}
+                        </>
+                      )}
+                    </AnimatePresence>
+
                     {isHovered && (
-                      <div className="absolute bottom-full left-1/2 mb-2 z-50 w-44 rounded-lg p-2 text-xs pointer-events-none"
+                       <div className="absolute bottom-full left-1/2 mb-2 z-50 w-44 rounded-lg p-2 text-xs pointer-events-none"
                         style={{
                           transform: 'translateX(-50%)',
                           background: 'hsl(35,25%,12%)',
