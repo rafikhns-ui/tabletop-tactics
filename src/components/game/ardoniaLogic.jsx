@@ -1,6 +1,6 @@
 import { TERRITORIES, ADJACENCY, FACTIONS, LEADERS, HEROES, OBJECTIVES, BUILDING_DEFS } from './ardoniaData';
 import { buildHexAdjacency } from './hexGridSystem';
-import { generateHexWorld } from './hexWorldGenerator';
+import { generateWorldMap } from './hexWorldGenerator';
 
 // ---- Hero passive bonus helpers ----
 export const getHeroPassivesForPlayer = (player, territories) => {
