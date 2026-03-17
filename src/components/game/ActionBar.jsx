@@ -1,5 +1,6 @@
 import React from 'react';
 import BuildRecruitPanel from './BuildRecruitPanel';
+import ActionCardsPanel from './ActionCardsPanel';
 
 const PHASES = [
   { id: 'deploy', icon: '🏰', label: 'Deploy', desc: 'Place reinforcements on your territories.' },
