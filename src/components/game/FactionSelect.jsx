@@ -87,7 +87,7 @@ function PlayerSlot({ index, choices, onChange, takenFactionIds, isAI }) {
       <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: `${playerColor}18`, borderBottom: `1px solid ${playerColor}33` }}>
         <div className="w-3 h-3 rounded-full" style={{ background: playerColor }} />
         <span className="text-sm font-bold" style={{ fontFamily: "'Cinzel',serif", color: playerColor }}>
-          {isAI ? '🤖 AI — Shadow Lord' : PLAYER_LABELS[index]}
+          {isAI ? `🤖 AI Player ${index + 1}` : PLAYER_LABELS[index]}
         </span>
       </div>
 
