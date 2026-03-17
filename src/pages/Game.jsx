@@ -199,17 +199,49 @@ export default function Game() {
         if ((newResources[k] ?? 0) < v) return prev;
         newResources[k] -= v;
       }
-      // Add troop to capital or first owned territory
+      // Add unit to capital or first owned territory
       const capital = Object.values(prev.territories).find(t => t.owner === player.id && t.isCapital)
         || Object.values(prev.territories).find(t => t.owner === player.id);
       if (!capital) return prev;
+      const newCapital = { ...capital };
+      newCapital.units = [...(capital.units || [])];
+      const existingUnit = newCapital.units.find(u => u.type === unitId);
+      if (existingUnit) {
+        existingUnit.count += 1;
+      } else {
+        newCapital.units.push({ type: unitId, count: 1 });
+      }
+      newCapital.troops = newCapital.units.reduce((s, u) => s + u.count, 0);
       return {
         ...prev,
         players: prev.players.map(p => p.id === player.id ? { ...p, resources: newResources } : p),
-        territories: { ...prev.territories, [capital.id]: { ...capital, troops: capital.troops + 1 } },
+        territories: { ...prev.territories, [capital.id]: newCapital },
       };
     });
     addMessage(`⚔️ Recruited ${unitId} to your capital!`);
+  };
+
+  const handleBuildFortress = (territoryId) => {
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === currentPlayer.id);
+      const territory = prev.territories[territoryId];
+      if (!territory || territory.owner !== player.id) return prev;
+      const cost = BUILDING_DEFS.fortress?.cost || {};
+      // Check resources
+      for (const [k, v] of Object.entries(cost)) {
+        if ((player.resources?.[k] ?? 0) < v) return prev;
+      }
+      const newResources = { ...player.resources };
+      for (const [k, v] of Object.entries(cost)) {
+        newResources[k] = (newResources[k] || 0) - v;
+      }
+      return {
+        ...prev,
+        players: prev.players.map(p => p.id === player.id ? { ...p, resources: newResources } : p),
+        territories: { ...prev.territories, [territoryId]: { ...territory, hasFortress: true } },
+      };
+    });
+    addMessage(`🏰 Fortress built in ${gameState.territories[territoryId].name}!`);
   };
 
   const handleBattleResult = (result) => {
