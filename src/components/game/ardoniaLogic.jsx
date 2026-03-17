@@ -73,25 +73,24 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
       : [createPlayer('p1', 'Player 1', p1f, false, 0), createPlayer('p2', 'Player 2', p2f, false, 0)];
   }
 
-  // Distribute territories
+  // Distribute territories evenly among all players
   const ids = shuffle(Object.keys(TERRITORIES));
-  const half = Math.floor(ids.length / 2);
   const territories = {};
   ids.forEach((id, i) => {
-    const owner = i < half ? players[0].id : players[1].id;
-    const t = TERRITORIES[id];
-    // Each player's first 2 territories get their starting buildings
+    const owner = players[i % players.length].id;
     territories[id] = {
-      ...t,
+      ...TERRITORIES[id],
       owner,
       troops: 2,
-      fortified: false, // fortified cities need siege to attack
+      fortified: false,
       isCapital: false,
     };
   });
   // Mark first territory of each player as capital
-  ids.slice(0, 1).forEach(id => { territories[id].isCapital = true; });
-  ids.slice(half, half + 1).forEach(id => { territories[id].isCapital = true; });
+  players.forEach((p, pi) => {
+    const firstId = ids[pi];
+    if (firstId) territories[firstId].isCapital = true;
+  });
 
   return {
     territories,
