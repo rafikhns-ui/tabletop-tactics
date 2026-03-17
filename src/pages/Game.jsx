@@ -182,14 +182,66 @@ export default function Game() {
   };
 
   const handleBattleResult = (result) => {
+    const attackerTerr = gameState.territories[battle.attackerId];
+    const defenderTerr = gameState.territories[battle.defenderId];
+    const attackerPlayer = gameState.players.find(p => p.id === attackerTerr.owner);
+    const defenderPlayer = gameState.players.find(p => p.id === defenderTerr.owner);
+    const conquered = result.defenderLosses >= defenderTerr.troops;
+
+    // Build unit composition from territory unit types (if tracked), else infer from troops
+    const buildUnits = (territory, player) => {
+      if (territory.units && territory.units.length > 0) {
+        const counts = {};
+        territory.units.forEach(u => { counts[u] = (counts[u] || 0) + 1; });
+        return Object.entries(counts).map(([type, count]) => ({ type, count }));
+      }
+      // Infer from buildings: if stables → some cavalry, barracks → infantry, else generic
+      const buildings = Object.keys(player?.buildings || {});
+      const units = [];
+      const t = territory.troops;
+      if (buildings.includes('stables') && t > 2) {
+        const cavCount = Math.min(Math.floor(t * 0.3), 3);
+        units.push({ type: 'cavalry', count: cavCount });
+        units.push({ type: 'infantry', count: t - cavCount });
+      } else if (buildings.includes('barracks')) {
+        units.push({ type: 'infantry', count: t });
+      } else {
+        units.push({ type: 'infantry', count: t });
+      }
+      return units;
+    };
+
+    const logEntry = {
+      id: Date.now(),
+      turn: gameState.turn,
+      attackerName: attackerPlayer?.name || '?',
+      attackerColor: attackerPlayer?.color || '#aaa',
+      defenderName: defenderPlayer?.name || '?',
+      defenderColor: defenderPlayer?.color || '#aaa',
+      attackTerritory: attackerTerr.name,
+      defendTerritory: defenderTerr.name,
+      attackerTroopsBefore: attackerTerr.troops,
+      defenderTroopsBefore: defenderTerr.troops,
+      attackerLosses: result.attackerLosses,
+      defenderLosses: result.defenderLosses,
+      attackerUnits: buildUnits(attackerTerr, attackerPlayer),
+      defenderUnits: buildUnits(defenderTerr, defenderPlayer),
+      fortified: defenderTerr.fortified,
+      conquered,
+      aRolls: result.aRolls,
+      dRolls: result.dRolls,
+      aBonus: result.aBonus,
+      dBonus: result.dBonus,
+    };
+    setBattleLog(prev => [...prev, logEntry]);
+
     const newState = checkObjectives(executeAttack(gameState, battle.attackerId, battle.defenderId, result));
     setGameState(newState);
     setBattle(null);
-    const defender = gameState.territories[battle.defenderId];
-    if (result.defenderLosses >= defender.troops) {
-      addMessage(`🏴 ${defender.name} has been conquered!`);
+    if (conquered) {
+      addMessage(`🏴 ${defenderTerr.name} has been conquered!`);
     } else {
-      addMessage(`⚔️ Battle at ${defender.name}: A:${result.attackerLosses} lost, D:${result.defenderLosses} lost`);
+      addMessage(`⚔️ Battle at ${defenderTerr.name}: A:${result.attackerLosses} lost, D:${result.defenderLosses} lost`);
     }
   };
 
