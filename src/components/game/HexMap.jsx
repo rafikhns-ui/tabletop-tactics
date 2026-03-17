@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { HEXES, REGIONS, HexUtils, hexToPixel, TERRAIN_PROPS } from './hexGridSystem';
+import { HEXES, REGIONS, HexUtils, hexToPixel, TERRAIN_PROPS, buildHexAdjacency } from './hexGridSystem';
 
 const TERRAIN_COLORS = {
   plains: '#7a9a3a',
@@ -34,18 +34,18 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
     return gameState?.players.find(p => p.id === ownerId)?.color || '#666';
   };
 
-  const hexes = gameState?.hexes || {};
+  const hexes = gameState?.hexes || HEXES;
 
   const isAttackable = (hexId) => {
     if (phase !== 'attack' || !selectedHex) return false;
-    const adj = Object.entries(HEXES).find(([id]) => id === selectedHex)?.[1];
+    const adj = hexes[selectedHex];
     if (!adj) return false;
     const hexNeighbors = HexUtils.getNeighbors(adj.q, adj.r).map(([q, r]) => 
-      Object.entries(HEXES).find(([, h]) => h.q === q && h.r === r)?.[0]
+      Object.entries(hexes).find(([, h]) => h.q === q && h.r === r)?.[0]
     ).filter(Boolean);
     
-    const targetHex = HEXES[hexId];
-    const hex = HEXES[selectedHex];
+    const targetHex = hexes[hexId];
+    const hex = hexes[selectedHex];
     return targetHex?.owner !== currentPlayer?.id && hexNeighbors.includes(hexId);
   };
 
@@ -57,8 +57,8 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
   const isFortifiable = (hexId) => {
     if (phase !== 'fortify' || !selectedHex) return false;
-    const hex = HEXES[hexId];
-    const selectedHexData = HEXES[selectedHex];
+    const hex = hexes[hexId];
+    const selectedHexData = hexes[selectedHex];
     if (!hex || !selectedHexData) return false;
     
     const distance = HexUtils.distance(hex.q, hex.r, selectedHexData.q, selectedHexData.r);
@@ -67,7 +67,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
   const isDeployable = (hexId) => {
     if (phase !== 'deploy') return false;
-    const hex = HEXES[hexId];
+    const hex = hexes[hexId];
     return hex.owner === currentPlayer?.id && currentPlayer?.troopsToDeploy > 0;
   };
 
