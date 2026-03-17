@@ -211,17 +211,36 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
     <div className="min-h-screen flex flex-col items-center justify-start p-6 overflow-auto"
       style={{ background: 'linear-gradient(160deg, hsl(35,25%,10%), hsl(35,20%,8%))' }}>
       <div className="w-full max-w-6xl">
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <h1 className="text-3xl font-bold mb-1" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,58%)' }}>
             ⚜️ Choose Your Factions
           </h1>
           <p className="text-sm opacity-50" style={{ color: 'hsl(40,20%,65%)' }}>
-            {mode === 'ai' ? 'You vs the AI Shadow Lord' : `${playerCount} Players — take turns at the same screen`}
+            {mode === 'ai' ? 'You vs the AI' : `${humanCount} Human${humanCount > 1 ? 's' : ''} + ${aiCount} AI — same screen`}
           </p>
         </div>
 
+        {mode === 'multiplayer' && (
+          <div className="flex items-center justify-center gap-3 mb-4 p-3 rounded-xl"
+            style={{ background: 'hsl(35,20%,15%)', border: '1px solid hsl(35,20%,25%)' }}>
+            <span className="text-xs opacity-60" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,70%,55%)' }}>🤖 AI OPPONENTS:</span>
+            {[0, 1, 2, 3, 4].filter(n => humanCount + n >= 2 && humanCount + n <= 5).map(n => (
+              <button key={n} onClick={() => handleAiCountChange(n)}
+                className="w-8 h-8 rounded-lg text-sm font-bold transition-all"
+                style={{
+                  background: aiCount === n ? 'hsl(355,60%,35%)' : 'hsl(35,20%,22%)',
+                  border: `1px solid ${aiCount === n ? 'hsl(355,60%,55%)' : 'hsl(35,20%,32%)'}`,
+                  color: aiCount === n ? 'hsl(40,30%,95%)' : 'hsl(40,20%,50%)',
+                  fontFamily: "'Cinzel',serif",
+                }}>
+                {n}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className={`grid gap-4 mb-6`}
-          style={{ gridTemplateColumns: `repeat(${Math.min(humanCount, 3)}, 1fr)` }}>
+          style={{ gridTemplateColumns: `repeat(${Math.min(humanCount + aiCount, 3)}, 1fr)` }}>
           {players.map((p, i) => (
             <PlayerSlot
               key={p.id}
