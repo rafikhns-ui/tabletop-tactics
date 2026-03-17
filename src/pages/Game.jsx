@@ -634,6 +634,7 @@ export default function Game() {
                 onPlayCard={handlePlayCard}
                 onDrawCard={handleDrawCard}
                 onUpgrade={handleUpgrade}
+                onBuildFortress={handleBuildFortress}
               />
             )}
             {bottomTab === 'heroes' && gameState && currentPlayer && !currentPlayer.isAI && (
