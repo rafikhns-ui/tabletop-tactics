@@ -1,6 +1,48 @@
 import React, { useState } from 'react';
 import { HEROES } from './ardoniaData';
 
+function ObjectivesModal({ player, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.75)' }}
+      onClick={onClose}>
+      <div className="w-full max-w-sm rounded-2xl overflow-hidden scroll-in"
+        onClick={e => e.stopPropagation()}
+        style={{ background: 'linear-gradient(160deg, hsl(35,25%,14%), hsl(35,20%,10%))', border: `2px solid ${player.color}88`, boxShadow: `0 0 40px ${player.color}33` }}>
+        <div className="px-5 pt-5 pb-3 border-b border-border flex items-center justify-between">
+          <div>
+            <div className="text-xs tracking-widest opacity-50 mb-0.5" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,80%,60%)' }}>SECRET OBJECTIVES</div>
+            <div className="text-base font-bold" style={{ fontFamily: "'Cinzel',serif", color: player.color }}>
+              {player.faction?.emoji} {player.name}
+            </div>
+          </div>
+          <button onClick={onClose} className="text-lg opacity-50 hover:opacity-100 px-2">✕</button>
+        </div>
+        <div className="p-5 space-y-3">
+          {player.objectives?.map(obj => {
+            const done = player.completedObjectives?.includes(obj.id);
+            return (
+              <div key={obj.id} className="rounded-lg p-3"
+                style={{ background: done ? 'hsl(120,30%,15%)' : 'hsl(35,20%,20%)', border: `1px solid ${done ? 'hsl(120,40%,30%)' : 'hsl(35,20%,30%)'}` }}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span>{done ? '✅' : '🎯'}</span>
+                  <span className="text-xs font-bold" style={{ fontFamily: "'Cinzel',serif", color: done ? 'hsl(120,50%,65%)' : 'hsl(43,80%,65%)' }}>
+                    {obj.category}
+                  </span>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: done ? 'hsl(120,40%,70%)' : 'hsl(40,20%,72%)' }}>{obj.text}</p>
+              </div>
+            );
+          })}
+          {(!player.objectives || player.objectives.length === 0) && (
+            <p className="text-xs text-center opacity-40" style={{ color: 'hsl(40,20%,60%)' }}>No objectives drawn yet.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PlayerPanel({ player, isActive, territories }) {
   const [expanded, setExpanded] = useState(false);
   const owned = Object.values(territories).filter(t => t.owner === player.id).length;
