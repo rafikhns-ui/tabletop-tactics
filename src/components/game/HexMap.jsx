@@ -22,7 +22,7 @@ const TERRAIN_ICONS = {
 };
 
 export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick }) {
-  const hexSize = 50;
+  const hexSize = 16;
   const viewPadding = 60;
 
   // Calculate canvas dimensions
