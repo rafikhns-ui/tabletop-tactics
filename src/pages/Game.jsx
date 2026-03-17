@@ -434,6 +434,10 @@ export default function Game() {
         addMessage('⚠️ Deploy all troops first!');
         return;
       }
+      setPhase('move');
+      addMessage('🚶 Move phase — move units across the map');
+    } else if (phase === 'move') {
+      setSelectedTerritory(null);
       setPhase('attack');
       addMessage('⚔️ Attack phase — select your territory to attack from');
     } else if (phase === 'attack') {
