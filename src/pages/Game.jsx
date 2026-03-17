@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import GameMenu from '../components/game/GameMenu';
-import FactionSelect from '../components/game/FactionSelect.jsx';
+import FactionSelect from '../components/game/FactionSelect';
 import GameBoard from '../components/game/GameBoard';
 import PlayerPanel from '../components/game/PlayerPanel';
 import ActionBar from '../components/game/ActionBar';
