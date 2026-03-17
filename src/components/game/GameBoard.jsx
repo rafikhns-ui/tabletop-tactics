@@ -1,6 +1,7 @@
 import React from 'react';
 import { ADJACENCY, BIOME_COLORS, BIOME_ICONS } from './ardoniaData';
 
+
 export default function GameBoard({ gameState, selectedTerritory, phase, currentPlayer, onTerritoryClick }) {
   const { territories, players } = gameState;
 
