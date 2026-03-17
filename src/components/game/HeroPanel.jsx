@@ -14,6 +14,7 @@ function HeroCard({ hero, status, owned, onRecruit, onAssign, territories, curre
     if (k === 'sp') return (currentPlayer.sp ?? 0) >= v;
     return (currentPlayer.resources?.[k] ?? 0) >= v;
   });
+  const hasRequiredBuilding = !hero.requiredBuilding || currentPlayer.buildings?.[hero.requiredBuilding];
 
   if (!owned) {
     return (
