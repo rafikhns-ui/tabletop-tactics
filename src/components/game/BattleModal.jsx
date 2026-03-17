@@ -45,6 +45,12 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
           {defender.fortified && (
             <div className="text-xs mt-1" style={{ color: 'hsl(43,70%,65%)' }}>🏰 Fortified — Defender +1 die</div>
           )}
+          {attackerHero && (
+            <div className="text-xs mt-0.5" style={{ color: 'hsl(50,80%,65%)' }}>⭐ {attackerHero.name} (+{attackerHeroBonus.attackBonus} ATK)</div>
+          )}
+          {defenderHero && (
+            <div className="text-xs mt-0.5" style={{ color: 'hsl(200,70%,65%)' }}>⭐ {defenderHero.name} (+{defenderHeroBonus.defenseBonus} DEF)</div>
+          )}
         </div>
 
         <div className="flex items-center justify-between px-6 py-4">
