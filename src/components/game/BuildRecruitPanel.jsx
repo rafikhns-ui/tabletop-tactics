@@ -52,7 +52,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
     <div className="rounded p-2" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,28%)' }}>
       {/* Tabs */}
       <div className="flex gap-1 mb-2">
-        {['build', 'recruit'].map(t => (
+        {['build', 'recruit', 'upgrade'].map(t => (
           <button key={t} onClick={() => setTab(t)}
             className="flex-1 py-1 rounded text-xs font-bold transition-all"
             style={{
