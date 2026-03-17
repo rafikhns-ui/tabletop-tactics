@@ -234,8 +234,9 @@ export const checkObjective = (obj, player, gameState) => {
 export const doAiTurn = (gameState) => {
   let state = { ...gameState };
   state.territories = { ...state.territories };
-  const ai = state.players.find(p => p.isAI);
-  if (!ai) return state;
+  // Use the CURRENT player (who must be AI)
+  const ai = state.players[state.currentPlayerIndex];
+  if (!ai || !ai.isAI) return state;
 
   const logs = [];
 
