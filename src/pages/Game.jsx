@@ -446,6 +446,19 @@ export default function Game() {
       } else if (card.id === 'mystic_barrier') {
         newSp += 1;
         cardEffects.mystic_barrier = { duration: 1, active: true };
+      } else if (card.id === 'prophets_vision') {
+        newSp += 1;
+        cardEffects.prophets_vision = { duration: 1, active: true };
+      } else if (card.id === 'wrath_of_divine') {
+        newSp += 2;
+        cardEffects.wrath_of_divine = { duration: 1, active: true };
+      } else if (card.id === 'avatars_echo') {
+        newSp -= 1;
+        cardEffects.avatars_echo = { duration: 1, active: true };
+      } else if (card.id === 'sanctified_ground') {
+        cardEffects.sanctified_ground = { duration: 1, active: true };
+      } else if (card.id === 'echoes_of_prophecy') {
+        cardEffects.echoes_of_prophecy = { duration: 1, active: true };
       }
       
       const newCards = (player.actionCards || []).filter(id => id !== card.id);
