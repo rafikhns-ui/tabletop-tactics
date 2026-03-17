@@ -182,7 +182,7 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
                     style={{ width: '70px' }}
                     onMouseEnter={() => setHoveredId(card.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    onClick={() => affordable && onPlayCard(card)}
+                    onClick={() => affordable && handlePlayCard(card)}
                   >
                     <motion.div
                       className="rounded-lg p-1.5 flex flex-col items-center gap-0.5 text-center"
