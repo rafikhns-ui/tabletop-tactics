@@ -22,7 +22,9 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
   const roll = () => {
     setRolling(true);
     setTimeout(() => {
-      const r = resolveBattle(attacker.troops, defender.troops, defender.fortified, {
+      const attackerUnits = attacker.units && attacker.units.length > 0 ? attacker.units : [{ type: 'infantry', count: attacker.troops }];
+      const defenderUnits = defender.units && defender.units.length > 0 ? defender.units : [{ type: 'infantry', count: defender.troops }];
+      const r = resolveBattle(attackerUnits, defenderUnits, defender.hasFortress, {
         attackBonus: attackerHeroBonus.attackBonus,
         defenseBonus: defenderHeroBonus.defenseBonus,
       });
@@ -31,7 +33,8 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
     }, 600);
   };
 
-  const conquered = result && result.defenderLosses >= defender.troops;
+  const defenderTroops = defender.units?.reduce((s, u) => s + u.count, 0) || defender.troops;
+  const conquered = result && result.defenderLosses >= defenderTroops;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.88)' }}>
