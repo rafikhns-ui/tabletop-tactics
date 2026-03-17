@@ -169,6 +169,25 @@ export default function Game() {
     addMessage(`🏗️ Built ${buildingId}!`);
   };
 
+  const handleUpgrade = (buildingId) => {
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === currentPlayer.id);
+      const building = player.buildings[buildingId];
+      const def = BUILDING_DEFS[buildingId];
+      const upgradeCost = Object.entries(def.upgradeBase).reduce((acc, [k, v]) => ({ ...acc, [k]: v * building.level }), {});
+      for (const [k, v] of Object.entries(upgradeCost || {})) {
+        if ((player.resources?.[k] || 0) < v) return prev;
+      }
+      const newResources = { ...player.resources };
+      Object.entries(upgradeCost).forEach(([k, v]) => { newResources[k] = (newResources[k] || 0) - v; });
+      const newBuilding = { ...building, level: building.level + 1 };
+      const newBuildings = { ...player.buildings, [buildingId]: newBuilding };
+      const newPlayer = { ...player, buildings: newBuildings, resources: newResources };
+      return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
+    });
+    addMessage(`⬆️ Upgraded ${BUILDING_DEFS[buildingId]?.name}!`);
+  };
+
   const handleRecruit = (unitId) => {
     const def = UNIT_DEFS[unitId];
     if (!def) return;
