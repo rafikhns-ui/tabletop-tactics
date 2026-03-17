@@ -86,6 +86,7 @@ export default function PlayerPanel({ player, isActive, territories, isSelf }) {
         </div>
       </div>
       {showObjectives && <ObjectivesModal player={player} onClose={() => setShowObjectives(false)} />}
+      {showDetail && <PlayerDetailModal player={player} territories={territories} onClose={() => setShowDetail(false)} />}
 
       <div className="px-3 pb-2 grid grid-cols-3 gap-1">
         <StatBadge label="🪙" value={player.resources?.gold ?? 0} />
