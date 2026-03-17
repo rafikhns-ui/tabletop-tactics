@@ -14,10 +14,18 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
   const [result, setResult] = useState(null);
   const [rolling, setRolling] = useState(false);
 
+  const attackerHeroBonus = getHeroCombatBonus(territories, battle.attackerId, attacker.owner);
+  const defenderHeroBonus = getHeroCombatBonus(territories, battle.defenderId, defender.owner);
+  const attackerHero = attacker.heroId ? HEROES[attacker.heroId] : null;
+  const defenderHero = defender.heroId ? HEROES[defender.heroId] : null;
+
   const roll = () => {
     setRolling(true);
     setTimeout(() => {
-      const r = resolveBattle(attacker.troops, defender.troops, defender.fortified);
+      const r = resolveBattle(attacker.troops, defender.troops, defender.fortified, {
+        attackBonus: attackerHeroBonus.attackBonus,
+        defenseBonus: defenderHeroBonus.defenseBonus,
+      });
       setResult(r);
       setRolling(false);
     }, 600);
