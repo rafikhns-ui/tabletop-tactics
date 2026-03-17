@@ -126,6 +126,7 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
       <div className="absolute top-2 right-2 text-lg opacity-15 pointer-events-none select-none">⚜️</div>
       <div className="absolute bottom-2 left-2 text-lg opacity-15 pointer-events-none select-none">⚜️</div>
     </div>
+    </div>
   );
 }
 
