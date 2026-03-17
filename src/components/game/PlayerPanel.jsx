@@ -59,7 +59,7 @@ export default function PlayerPanel({ player, isActive, territories, isSelf }) {
         background: isActive ? 'hsl(35,20%,16%)' : 'hsl(35,20%,13%)',
         borderLeft: isActive ? `3px solid ${player.color}` : '3px solid transparent',
       }}>
-      <div className="flex items-center justify-between px-3 py-2 cursor-pointer" onClick={() => setExpanded(e => !e)}>
+      <div className="flex items-center justify-between px-3 py-2 cursor-pointer" onClick={() => setShowDetail(true)}>
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: player.color }} />
           <div className="min-w-0">
