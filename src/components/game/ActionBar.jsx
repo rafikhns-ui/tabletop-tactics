@@ -4,6 +4,7 @@ import ActionCardsPanel from './ActionCardsPanel';
 
 const PHASES = [
   { id: 'deploy', icon: '🏰', label: 'Deploy', desc: 'Place reinforcements on your territories.' },
+  { id: 'move', icon: '🚶', label: 'Move', desc: 'Move units across the map.' },
   { id: 'attack', icon: '⚔️', label: 'Attack', desc: 'Select your territory, then click enemy.' },
   { id: 'fortify', icon: '🛡️', label: 'Fortify', desc: 'Move troops to adjacent friendly territories.' },
 ];
