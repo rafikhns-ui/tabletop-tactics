@@ -161,6 +161,7 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
   const [aiCount, setAiCount] = useState(mode === 'ai' ? 3 : 0);
   const humanCount = mode === 'ai' ? 1 : playerCount;
   const totalPlayers = humanCount + aiCount;
+  const maxAI = mode === 'ai' ? 3 : Math.max(0, 5 - humanCount);
 
   const buildPlayers = (aiC) => Array.from({ length: humanCount + aiC }, (_, i) => ({
     id: i >= humanCount ? `ai${i - humanCount + 1}` : `p${i + 1}`,
