@@ -16,6 +16,7 @@ const shuffle = (arr) => {
 };
 
 const PLAYER_NAMES = ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5'];
+const AI_NAMES = ['Shadow Lord', 'Dark Warlord', 'Iron Khan', 'Void Emperor'];
 
 // ---- Create initial player ----
 const createPlayer = (id, name, factionId, isAI = false, leaderIndex = 0, presetObjectives = null) => {
