@@ -32,6 +32,8 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
   const [hoveredId, setHoveredId] = useState(null);
   const [drawing, setDrawing] = useState(null); // null | 'trade' | 'spiritual' | 'clandestine'
   const [newCardId, setNewCardId] = useState(null);
+  const [playingCard, setPlayingCard] = useState(null); // {card, ref} for animation
+  const [cardEffectBurst, setCardEffectBurst] = useState(null); // card id for burst effect
 
   const hand = currentPlayer.actionCards?.length > 0
     ? ACTION_CARDS.filter(c => currentPlayer.actionCards.includes(c.id))
