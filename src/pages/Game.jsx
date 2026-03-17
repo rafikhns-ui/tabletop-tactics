@@ -327,6 +327,7 @@ export default function Game() {
               player={p}
               isActive={i === gameState.currentPlayerIndex}
               territories={gameState.territories}
+              isSelf={!p.isAI}
             />
           ))}
         </div>
