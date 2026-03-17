@@ -253,6 +253,55 @@ export default function Game() {
     }
   };
 
+  const handleRecruitHero = (heroId) => {
+    const hero = HEROES[heroId];
+    if (!hero) return;
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === currentPlayer.id);
+      if (player.heroes?.includes(heroId)) return prev;
+      // Check cost
+      for (const [k, v] of Object.entries(hero.cost || {})) {
+        if (k === 'ip' && (player.ip ?? 0) < v) return prev;
+        if (k === 'sp' && (player.sp ?? 0) < v) return prev;
+        if (k !== 'ip' && k !== 'sp' && (player.resources?.[k] ?? 0) < v) return prev;
+      }
+      const newResources = { ...player.resources };
+      let newIp = player.ip ?? 0;
+      let newSp = player.sp ?? 0;
+      for (const [k, v] of Object.entries(hero.cost || {})) {
+        if (k === 'ip') newIp -= v;
+        else if (k === 'sp') newSp -= v;
+        else newResources[k] = (newResources[k] || 0) - v;
+      }
+      const newPlayer = {
+        ...player,
+        resources: newResources,
+        ip: newIp,
+        sp: newSp,
+        heroes: [...(player.heroes || []), heroId],
+        heroStatus: { ...(player.heroStatus || {}), [heroId]: { exhausted: false, imprisoned: false } },
+      };
+      return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
+    });
+    addMessage(`⭐ ${hero.name} has joined your ranks!`);
+  };
+
+  const handleAssignHero = (heroId, territoryId) => {
+    setGameState(prev => {
+      // Remove hero from any previous territory
+      const newTerritories = {};
+      Object.entries(prev.territories).forEach(([id, t]) => {
+        newTerritories[id] = t.heroId === heroId ? { ...t, heroId: null } : { ...t };
+      });
+      // Assign to new territory
+      newTerritories[territoryId] = { ...newTerritories[territoryId], heroId };
+      return { ...prev, territories: newTerritories };
+    });
+    const hero = HEROES[heroId];
+    const territory = gameState.territories[territoryId];
+    addMessage(`📍 ${hero?.name} assigned to ${territory?.name}`);
+  };
+
   const handleDiplomacyAction = ({ type, fromId, toId, offer, request }) => {
     if (type === 'trade_offer') {
       setTradeOffers(prev => [...prev, { fromId, toId, offer, request, id: Date.now() }]);
