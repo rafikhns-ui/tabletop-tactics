@@ -306,6 +306,17 @@ export default function Game() {
     addMessage(`📍 ${hero?.name} assigned to ${territory?.name}`);
   };
 
+  const handleDrawCard = (card) => {
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === currentPlayer.id);
+      if ((player.resources?.gold ?? 0) < 2) return prev;
+      const newResources = { ...player.resources, gold: (player.resources.gold ?? 0) - 2 };
+      const newCards = [...(player.actionCards || []), card.id];
+      return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? { ...p, resources: newResources, actionCards: newCards } : p) };
+    });
+    addMessage(`🃏 Drew ${card.name}!`);
+  };
+
   const handlePlayCard = (card) => {
     setGameState(prev => {
       const player = prev.players.find(p => p.id === currentPlayer.id);
