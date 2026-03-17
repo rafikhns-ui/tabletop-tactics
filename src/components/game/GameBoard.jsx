@@ -104,6 +104,9 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
               {territory.fortified && (
                 <div className="absolute -top-1.5 -left-1.5 text-sm">🏰</div>
               )}
+              {territory.heroId && (
+                <div className="absolute -bottom-1 -right-1 text-xs leading-none" title="Hero assigned">⭐</div>
+              )}
               <div className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full border border-white"
                 style={{ background: pColor }} />
             </div>
