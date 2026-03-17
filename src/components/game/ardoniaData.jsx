@@ -88,30 +88,108 @@ export const BIOME_ICONS = {
 };
 
 // ---- Factions ----
+// playable: true = selectable by human/AI players; false = neutral territory holder only
 export const FACTIONS = {
+  // ── Western Continent (Mangian) ──
+  gojeon: {
+    id: 'gojeon', name: 'Gojeon Kingdom', color: '#7b5ea7', emoji: '🌸', playable: true,
+    continent: 'Mangian',
+    description: 'A jewel of cultural refinement ruled by the Jeon Dynasty, custodians of the Purple Lotus. Protected by the Hwrogan — elite mounted soldiers who are also guardians of art and intellect.',
+    specialRule: 'Hwrogan cavalry cost 1 less Gold. +1 IP per turn from cultural prestige.',
+    bonusResource: 'ip',
+  },
   onishiman: {
-    id: 'onishiman', name: 'Onishiman Empire', color: '#8b1a1a', emoji: '🐉',
-    description: 'Ruthless dark-feudalists, masters of siege and shadow.',
-    specialRule: 'Must complete at least 1 Military objective to win.',
+    id: 'onishiman', name: 'Onishiman Empire', color: '#8b1a1a', emoji: '🐉', playable: true,
+    continent: 'Mangian',
+    description: 'A formidable southern domain ruled by the Dark Sun emperor. The secretive Order of Shadowfell guides its pursuit of a utopian society through territorial conquest and dark arts.',
+    specialRule: 'Must complete at least 1 Military objective to win. Reality-bending grants +1 attack die.',
     bonusResource: 'gold',
   },
-  sultanate: {
-    id: 'sultanate', name: 'Blue Moon Sultanate', color: '#1a5a8b', emoji: '🌙',
-    description: 'Peaceful theologians and engineers, strong in spiritual and defensive play.',
-    specialRule: 'Cannot attack neutral territories. +1 SP per turn.',
+  tlalocayotlan: {
+    id: 'tlalocayotlan', name: 'Tlalocayotlan League', color: '#c0392b', emoji: '🦎', playable: true,
+    continent: 'Mangian',
+    description: 'A confederation of city-states inspired by Mesoamerican civilizations, ruled by a divinely-chosen council. They revere the Great Lizard and use ritual reality-bending concoctions in battle.',
+    specialRule: 'Ritual cards cost 1 less SP. +1 SP per turn from ceremonial rites.',
+    bonusResource: 'sp',
+  },
+  kintei: {
+    id: 'kintei', name: 'Greater Kintei', color: '#d35400', emoji: '🐲', playable: true,
+    continent: 'Mangian',
+    description: 'A coalition of tribes who fled Onishiman persecution and settled behind a Great Wall. Masters of engineering, black powder, and dragon-granted reality bending from their Eternal Dragon ancestors.',
+    specialRule: 'Siege Engines cost 1 less Wood. Great Wall grants +2 defense in home territories.',
+    bonusResource: 'wood',
+  },
+  inuvak: {
+    id: 'inuvak', name: 'Inuvak Confederacy', color: '#5dade2', emoji: '❄️', playable: true,
+    continent: 'Mangian',
+    description: 'A peaceful northern alliance living in harmony with nature\'s rhythms, inspired by Sami and Inuit peoples. They use reality bending to survive the harsh cold and excel in combat on ice and water.',
+    specialRule: 'Must hold at least 1 Spiritual objective. Tundra territories give +1 defense.',
     bonusResource: 'wheat',
   },
+  // ── Eastern Continent (Sharqian) ──
+  nimrudan: {
+    id: 'nimrudan', name: 'Nimrudan Empire', color: '#e67e22', emoji: '🔥', playable: true,
+    continent: 'Sharqian',
+    description: 'A realm of light, fire, and shadow ruled by Archduke Nim-Ramash from the Obsidian Throne. Spiritually divided between the Cult of Ethiriel (light) and the Cult of the Obsidian Flame (fire supremacy).',
+    specialRule: 'Choose a Cult at game start: Ethiriel grants +2 defense; Obsidian Flame grants +2 attack.',
+    bonusResource: 'sp',
+  },
   republic: {
-    id: 'republic', name: 'Hestian Republic', color: '#1a7a5a', emoji: '⚓',
-    description: 'Naval power with powerful trade options and diplomatic reach.',
-    specialRule: '+1 IP per turn. Naval units cost 1 less gold.',
+    id: 'republic', name: 'Republic of Hestia', color: '#1a7a5a', emoji: '⚓', playable: true,
+    continent: 'Sharqian',
+    description: 'A powerful maritime thalassocracy governed by an elected Senate. Home to the Academy of the Enlightened — a center for global learning. Renowned for its legendary navy and democratic wealth.',
+    specialRule: '+1 IP per turn. Naval units cost 1 less Gold.',
     bonusResource: 'wood',
   },
   kadjimaran: {
-    id: 'kadjimaran', name: 'Kadjimaran Kingdom', color: '#8b6a1a', emoji: '☀️',
-    description: 'Mounted warriors, sun-worshippers, proud defenders of tradition.',
-    specialRule: 'Cavalry units move 2 territories per turn.',
+    id: 'kadjimaran', name: 'Kadjimaran Kingdom', color: '#8b6a1a', emoji: '☀️', playable: true,
+    continent: 'Sharqian',
+    description: 'An ancient realm of warriors founded by the legendary Koufou. A confederation of tribes renowned for precious metals, reality-bending powers, and fierce resistance against slavers and invaders.',
+    specialRule: 'Cavalry units move 2 territories per turn. Must hold at least 1 Spiritual objective.',
     bonusResource: 'wheat',
+  },
+  oakhaven: {
+    id: 'oakhaven', name: 'Republic of Oakhaven', color: '#27ae60', emoji: '🌳', playable: true,
+    continent: 'Sharqian',
+    description: 'A sanctuary of freedom forged in ancient forests after the Great Cataclysm. The Oakmen use Oakbinding to shape nature and protect their borders against Ruskel Federation industrial expansion.',
+    specialRule: 'Forest territories give +2 defense. Oakbinding: forest units cost 1 less Wheat.',
+    bonusResource: 'wood',
+  },
+  ruskel: {
+    id: 'ruskel', name: 'Ruskel Federation', color: '#7f8c8d', emoji: '⚙️', playable: true,
+    continent: 'Sharqian',
+    description: 'A bastion of iron and industry born from unified northern duchies. Allied with the Dwarves of the Ironclad Holds for advanced weaponry and fortifications. Highly disciplined and industrious.',
+    specialRule: 'Siege Engines get +2 attack. Buildings cost 1 less Gold due to Dwarven alliances.',
+    bonusResource: 'gold',
+  },
+  sultanate: {
+    id: 'sultanate', name: 'Blue Moon Sultanate', color: '#1a5a8b', emoji: '🌙', playable: true,
+    continent: 'Sharqian',
+    description: 'A holy theocratic state founded by the prophet-commander Ashur as a sanctuary for believers of the One God. A center for enlightenment, justice, and pre-cataclysmic knowledge.',
+    specialRule: 'Cannot hold Military objectives. +1 SP per turn from divine devotion.',
+    bonusResource: 'sp',
+  },
+  icebound: {
+    id: 'icebound', name: 'Icebound Horde', color: '#aed6f1', emoji: '🌨️', playable: true,
+    continent: 'Sharqian',
+    description: 'A nomadic confederation that views struggle as sacred trial, driven by the Cult of the Eternal Blizzard. Recently fallen under dark influence of the Order of Shadowfell from the far east.',
+    specialRule: 'Units never retreat — fight to the last. Tundra movement costs 0 extra.',
+    bonusResource: 'wheat',
+  },
+  // ── Neutral / Special Entities ──
+  silver_union: {
+    id: 'silver_union', name: 'Silver Union', color: '#bdc3c7', emoji: '🏦', playable: false,
+    continent: 'Neutral',
+    description: 'A massive plutocratic conglomerate on the isle of Neutriland. Controls Ardonia\'s financial destiny through the Silver Chartered bank and maintains neutrality via formidable mercenary forces.',
+    specialRule: 'Neutral faction — territories defended by mercenaries. Cannot be a player faction.',
+    bonusResource: 'gold',
+  },
+  shadowfell: {
+    id: 'shadowfell', name: 'Order of Shadowfell', color: '#2c2c54', emoji: '🕯️', playable: false,
+    continent: 'Neutral',
+    description: 'A secretive brotherhood pursuing absolute power through mastery of suffering. Founded by the immortal Man in the Black Hood, they manipulate empires from the shadows to fulfill dark prophecies.',
+    specialRule: 'Neutral faction — controls hidden territories. Cannot be a player faction.',
+    bonusResource: 'sp',
   },
 };
 
