@@ -408,7 +408,7 @@ export default function Game() {
         </div>
 
         {/* Action bar */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto border-r border-border">
           {gameState && currentPlayer && (
             <ActionBar
               gameState={gameState}
@@ -420,6 +420,11 @@ export default function Game() {
               onRecruit={handleRecruit}
             />
           )}
+        </div>
+
+        {/* Battle Log */}
+        <div className="overflow-y-auto flex-shrink-0" style={{ width: '220px', minWidth: '180px' }}>
+          <BattleLog entries={battleLog} />
         </div>
       </div>
 
