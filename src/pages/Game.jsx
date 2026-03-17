@@ -249,7 +249,8 @@ export default function Game() {
     const defenderTerr = gameState.territories[battle.defenderId];
     const attackerPlayer = gameState.players.find(p => p.id === attackerTerr.owner);
     const defenderPlayer = gameState.players.find(p => p.id === defenderTerr.owner);
-    const conquered = result.defenderLosses >= defenderTerr.troops;
+    const defenderTroops = defenderTerr.units?.reduce((s, u) => s + u.count, 0) || defenderTerr.troops;
+    const conquered = result.defenderLosses >= defenderTroops;
 
     // Build unit composition from territory unit types (if tracked), else infer from troops
     const buildUnits = (territory, player) => {
