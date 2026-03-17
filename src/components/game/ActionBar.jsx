@@ -24,7 +24,7 @@ function calcIncome(player, territories) {
   };
 }
 
-export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePhase, isAI, onBuild, onRecruit, onPlayCard }) {
+export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePhase, isAI, onBuild, onRecruit, onPlayCard, onDrawCard }) {
   if (!currentPlayer) return null;
   const income = calcIncome(currentPlayer, gameState.territories);
 
@@ -87,6 +87,7 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
         <ActionCardsPanel
           currentPlayer={currentPlayer}
           onPlayCard={onPlayCard}
+          onDrawCard={onDrawCard}
         />
       )}
 
