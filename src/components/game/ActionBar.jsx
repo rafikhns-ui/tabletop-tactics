@@ -97,6 +97,8 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
           gameState={gameState}
           onBuild={onBuild}
           onRecruit={onRecruit}
+          onUpgrade={onUpgrade}
+          onBuildFortress={onBuildFortress}
         />
       )}
 
