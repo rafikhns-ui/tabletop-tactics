@@ -131,7 +131,6 @@ export default function Game() {
   };
 
   const handleBuild = (buildingId) => {
-    const { BUILDING_DEFS } = require('../components/game/ardoniaData');
     const def = BUILDING_DEFS[buildingId];
     if (!def) return;
     setGameState(prev => {
@@ -156,7 +155,6 @@ export default function Game() {
   };
 
   const handleRecruit = (unitId) => {
-    const { UNIT_DEFS } = require('../components/game/ardoniaData');
     const def = UNIT_DEFS[unitId];
     if (!def) return;
     setGameState(prev => {
