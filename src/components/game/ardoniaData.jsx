@@ -432,12 +432,12 @@ export const BUILDING_DEFS = {
 
 // ---- Unit Definitions ----
 export const UNIT_DEFS = {
-  infantry:   { id: 'infantry',   name: 'Infantry',     emoji: '🗡️',  dice: 6,  cost: { gold: 2, wheat: 1 }, canCapture: true,  requires: 'barracks',  description: 'Basic melee unit' },
-  ranged:     { id: 'ranged',     name: 'Ranged',       emoji: '🏹',  dice: 6,  cost: { gold: 2, wood: 1 },  canCapture: false, requires: 'archerytower', description: 'Attacks from adjacent tile' },
-  cavalry:    { id: 'cavalry',    name: 'Cavalry',      emoji: '🐴',  dice: 12, cost: { gold: 3, wheat: 2 }, canCapture: true,  requires: 'stables',   moves: 2, description: 'Moves 2 spaces, fast attack' },
-  elite:      { id: 'elite',      name: 'Elite Guard',  emoji: '⚡',  dice: 20, cost: { gold: 5, wheat: 2 }, canCapture: true,  requires: 'barracks',  description: 'Powerful frontline troops' },
-  siege:      { id: 'siege',      name: 'Siege Engine', emoji: '🏗️',  dice: 12, cost: { gold: 4, wood: 4 },  canCapture: false, requires: 'siegeworks', description: 'Required to attack fortified cities' },
-  naval:      { id: 'naval',      name: 'Warship',      emoji: '⛵',  dice: 12, cost: { gold: 5, wood: 5 },  canCapture: false, requires: 'shipyard',  description: 'Sea movement and blockades' },
+  infantry:   { id: 'infantry',   name: 'Infantry',     emoji: '🗡️',  dice: 6,  cost: { gold: 2, wheat: 1 }, canCapture: true,  requires: 'barracks',  movementRange: 1, description: 'Basic melee unit, moves 1 tile/turn' },
+  ranged:     { id: 'ranged',     name: 'Ranged',       emoji: '🏹',  dice: 6,  cost: { gold: 2, wood: 1 },  canCapture: false, requires: 'archerytower', movementRange: 1, description: 'Attacks from adjacent tile, moves 1 tile/turn' },
+  cavalry:    { id: 'cavalry',    name: 'Cavalry',      emoji: '🐴',  dice: 12, cost: { gold: 3, wheat: 2 }, canCapture: true,  requires: 'stables',   movementRange: 3, description: 'Fast cavalry, moves 3 tiles/turn' },
+  elite:      { id: 'elite',      name: 'Elite Guard',  emoji: '⚡',  dice: 20, cost: { gold: 5, wheat: 2 }, canCapture: true,  requires: 'barracks',  movementRange: 2, description: 'Powerful troops, moves 2 tiles/turn' },
+  siege:      { id: 'siege',      name: 'Siege Engine', emoji: '🏗️',  dice: 12, cost: { gold: 4, wood: 4 },  canCapture: false, requires: 'siegeworks', movementRange: 1, description: 'Required to attack fortified cities, moves 1 tile/turn' },
+  naval:      { id: 'naval',      name: 'Warship',      emoji: '⛵',  dice: 12, cost: { gold: 5, wood: 5 },  canCapture: false, requires: 'shipyard',  movementRange: 3, description: 'Sea movement and blockades, moves 3 tiles/turn' },
 };
 
 // ---- Action Cards ----
