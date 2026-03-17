@@ -221,7 +221,7 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
           </p>
         </div>
 
-        {mode === 'multiplayer' && (
+        {(mode === 'multiplayer' || mode === 'ai') && (
           <div className="flex items-center justify-center gap-3 mb-4 p-3 rounded-xl"
             style={{ background: 'hsl(35,20%,15%)', border: '1px solid hsl(35,20%,25%)' }}>
             <span className="text-xs opacity-60" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,70%,55%)' }}>🤖 AI OPPONENTS:</span>
