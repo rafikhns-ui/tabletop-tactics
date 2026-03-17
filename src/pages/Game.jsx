@@ -44,6 +44,8 @@ export default function Game() {
     setSelectedTerritory(null);
     setWinner(null);
     setMessages(['⚜️ Rulers of Ardonia begins! Deploy your first reinforcements.']);
+    setTradeOffers([]);
+    setBottomTab('action');
   };
 
   const currentPlayer = gameState?.players[gameState?.currentPlayerIndex];
