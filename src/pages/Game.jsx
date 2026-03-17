@@ -444,10 +444,10 @@ export default function Game() {
         )}
       </div>
 
-      {/* Bottom panels — resizable via CSS resize */}
+      {/* Bottom panels */}
       <div className="flex border-t border-border overflow-hidden" style={{ minHeight: '140px', maxHeight: '45vh', resize: 'vertical', background: 'hsl(35,22%,12%)' }}>
         {/* Players panel */}
-        <div className="overflow-y-auto border-r border-border flex-shrink-0" style={{ minWidth: '120px', maxWidth: '40%', resize: 'horizontal', overflow: 'auto', width: '220px' }}>
+        <div className="overflow-y-auto border-r border-border flex-shrink-0" style={{ minWidth: '120px', maxWidth: '30%', resize: 'horizontal', overflow: 'auto', width: '200px' }}>
           <div className="text-xs font-bold px-2 py-1 sticky top-0 z-10" style={{ background: 'hsl(35,22%,14%)', color: 'hsl(43,80%,55%)', fontFamily: "'Cinzel',serif", borderBottom: '1px solid hsl(35,20%,25%)' }}>
             Players
           </div>
@@ -465,24 +465,65 @@ export default function Game() {
           </div>
         </div>
 
-        {/* Action bar */}
-        <div className="flex-1 overflow-y-auto border-r border-border">
-          {gameState && currentPlayer && (
-            <ActionBar
-              gameState={gameState}
-              currentPlayer={currentPlayer}
-              phase={phase}
-              onAdvancePhase={advancePhase}
-              isAI={currentPlayer.isAI}
-              onBuild={handleBuild}
-              onRecruit={handleRecruit}
-            />
-          )}
-        </div>
+        {/* Center tabbed panel */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Tab bar */}
+          <div className="flex border-b border-border flex-shrink-0" style={{ background: 'hsl(35,22%,13%)' }}>
+            {[
+              { id: 'action', icon: '⚔️', label: 'Action' },
+              { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
+              { id: 'log', icon: '📜', label: 'Battle Log' },
+            ].map(t => (
+              <button key={t.id} onClick={() => setBottomTab(t.id)}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold transition-all"
+                style={{
+                  fontFamily: "'Cinzel',serif",
+                  background: bottomTab === t.id ? 'hsl(38,60%,22%)' : 'transparent',
+                  color: bottomTab === t.id ? 'hsl(43,90%,65%)' : 'hsl(40,20%,48%)',
+                  borderBottom: bottomTab === t.id ? '2px solid hsl(43,80%,55%)' : '2px solid transparent',
+                }}>
+                {t.icon} {t.label}
+                {t.id === 'diplomacy' && tradeOffers.filter(o => o.toId === currentPlayer?.id).length > 0 && (
+                  <span className="ml-1 px-1 rounded-full text-xs font-bold"
+                    style={{ background: 'hsl(0,65%,45%)', color: 'white', fontSize: '10px' }}>
+                    {tradeOffers.filter(o => o.toId === currentPlayer?.id).length}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
 
-        {/* Battle Log */}
-        <div className="overflow-y-auto flex-shrink-0" style={{ width: '220px', minWidth: '180px' }}>
-          <BattleLog entries={battleLog} />
+          <div className="flex-1 overflow-y-auto">
+            {bottomTab === 'action' && gameState && currentPlayer && (
+              <ActionBar
+                gameState={gameState}
+                currentPlayer={currentPlayer}
+                phase={phase}
+                onAdvancePhase={advancePhase}
+                isAI={currentPlayer.isAI}
+                onBuild={handleBuild}
+                onRecruit={handleRecruit}
+              />
+            )}
+            {bottomTab === 'diplomacy' && gameState && currentPlayer && !currentPlayer.isAI && (
+              <DiplomacyPanel
+                gameState={gameState}
+                currentPlayer={currentPlayer}
+                onDiplomacyAction={handleDiplomacyAction}
+                tradeOffers={tradeOffers}
+                onAcceptTrade={handleAcceptTrade}
+                onDeclineTrade={handleDeclineTrade}
+              />
+            )}
+            {bottomTab === 'diplomacy' && currentPlayer?.isAI && (
+              <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
+                Diplomacy available during your turn
+              </div>
+            )}
+            {bottomTab === 'log' && (
+              <BattleLog entries={battleLog} />
+            )}
+          </div>
         </div>
       </div>
 
