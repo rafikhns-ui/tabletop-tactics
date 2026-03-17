@@ -152,13 +152,25 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                 <circle cx={px} cy={py} r={hexSize + 3} fill="none" stroke={ringColor} strokeWidth="2" opacity="0.7" />
               )}
 
-              {/* Hex label and icon */}
+              {/* Terrain icon */}
               <text x={px} y={py - 8} textAnchor="middle" fontSize="14" fill="white" fontFamily="'Cinzel',serif" fontWeight="bold">
                 {TERRAIN_ICONS[hex.terrain]}
               </text>
-              <text x={px} y={py + 8} textAnchor="middle" fontSize="10" fill="#eee" fontFamily="'Cinzel',serif">
-                {hexId.split('_')[0].substring(0, 3).toUpperCase()}
-              </text>
+              
+              {/* Unit count */}
+              {hex.units && hex.units.length > 0 && (
+                <text x={px} y={py + 8} textAnchor="middle" fontSize="12" fill="#fff" fontFamily="'Cinzel',serif" fontWeight="bold"
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+                  ⚔️ {hex.units.reduce((sum, u) => sum + u.count, 0)}
+                </text>
+              )}
+              
+              {/* Hex label */}
+              {(!hex.units || hex.units.length === 0) && (
+                <text x={px} y={py + 8} textAnchor="middle" fontSize="10" fill="#eee" fontFamily="'Cinzel',serif">
+                  {hexId.split('_')[0].substring(0, 3).toUpperCase()}
+                </text>
+              )}
             </g>
           );
         })}
