@@ -250,6 +250,59 @@ export default function Game() {
     }
   };
 
+  const handleDiplomacyAction = ({ type, fromId, toId, offer, request }) => {
+    if (type === 'trade_offer') {
+      setTradeOffers(prev => [...prev, { fromId, toId, offer, request, id: Date.now() }]);
+      const target = gameState.players.find(p => p.id === toId);
+      addMessage(`📜 Trade offer sent to ${target?.name}`);
+      return;
+    }
+    // alliance, war, neutral — update diplomacy map on gameState
+    const key = [fromId, toId].sort().join('|');
+    setGameState(prev => ({ ...prev, diplomacy: { ...(prev.diplomacy || {}), [key]: type } }));
+    const target = gameState.players.find(p => p.id === toId);
+    const labels = { alliance: '🕊️ Alliance formed', war: '⚔️ War declared', neutral: '🤝 Peace proposed' };
+    addMessage(`${labels[type] || type} with ${target?.name}!`);
+  };
+
+  const handleAcceptTrade = (offer) => {
+    setGameState(prev => {
+      const fromPlayer = prev.players.find(p => p.id === offer.fromId);
+      const toPlayer = prev.players.find(p => p.id === offer.toId);
+      if (!fromPlayer || !toPlayer) return prev;
+      // Check fromPlayer can afford offer, toPlayer can afford request
+      for (const [k, v] of Object.entries(offer.offer || {})) {
+        if ((fromPlayer.resources?.[k] || 0) < v) return prev;
+      }
+      for (const [k, v] of Object.entries(offer.request || {})) {
+        if ((toPlayer.resources?.[k] || 0) < v) return prev;
+      }
+      const newPlayers = prev.players.map(p => {
+        if (p.id === offer.fromId) {
+          const res = { ...p.resources };
+          Object.entries(offer.offer || {}).forEach(([k, v]) => { res[k] = (res[k] || 0) - v; });
+          Object.entries(offer.request || {}).forEach(([k, v]) => { res[k] = (res[k] || 0) + v; });
+          return { ...p, resources: res };
+        }
+        if (p.id === offer.toId) {
+          const res = { ...p.resources };
+          Object.entries(offer.request || {}).forEach(([k, v]) => { res[k] = (res[k] || 0) - v; });
+          Object.entries(offer.offer || {}).forEach(([k, v]) => { res[k] = (res[k] || 0) + v; });
+          return { ...p, resources: res };
+        }
+        return p;
+      });
+      return { ...prev, players: newPlayers };
+    });
+    setTradeOffers(prev => prev.filter(o => o.id !== offer.id));
+    addMessage(`✅ Trade accepted!`);
+  };
+
+  const handleDeclineTrade = (offer) => {
+    setTradeOffers(prev => prev.filter(o => o.id !== offer.id));
+    addMessage(`❌ Trade declined.`);
+  };
+
   const advancePhase = () => {
     if (phase === 'deploy') {
       if (currentPlayer.troopsToDeploy > 0) {
