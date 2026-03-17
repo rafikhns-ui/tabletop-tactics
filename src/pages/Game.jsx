@@ -126,11 +126,38 @@ export default function Game() {
           setSelectedTerritory(hexId);
           addMessage(`🚶 Moving from hex — pick destination`);
         }
-      } else if (hexId !== selectedTerritory) {
+      } else if (hexId === selectedTerritory) {
         setSelectedTerritory(null);
-        addMessage(`🚶 Unit movement initiated`);
       } else {
-        setSelectedTerritory(null);
+        const fromHex = gameState.hexes[selectedTerritory];
+        const toHex = gameState.hexes[hexId];
+        if (toHex.owner === currentPlayer.id) {
+          // Move all units from source to destination
+          setGameState(prev => {
+            const neighbors = HexUtils.getNeighbors(fromHex.q, fromHex.r);
+            const isAdjacent = neighbors.some(([q, r]) => 
+              toHex.q === q && toHex.r === r
+            );
+            
+            if (!isAdjacent) {
+              addMessage('⛔ Target not adjacent');
+              return prev;
+            }
+            
+            return {
+              ...prev,
+              hexes: {
+                ...prev.hexes,
+                [selectedTerritory]: { ...fromHex, units: [] },
+                [hexId]: { ...toHex, units: [...(toHex.units || []), ...(fromHex.units || [])] },
+              },
+            };
+          });
+          setSelectedTerritory(null);
+          addMessage(`🚶 Moved units to hex`);
+        } else {
+          addMessage('⛔ Target must be owned by you');
+        }
       }
     } else if (phase === 'fortify') {
       if (!selectedTerritory) {
