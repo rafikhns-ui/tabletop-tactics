@@ -22,7 +22,7 @@ const TERRAIN_ICONS = {
 };
 
 export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick }) {
-  const hexSize = 32;
+  const hexSize = 16;
   const viewPadding = 60;
 
   // Calculate canvas dimensions
@@ -140,10 +140,10 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                     py + hexSize * Math.sin(angle),
                   ];
                 }).flat().join(',')}
-                fill={TERRAIN_COLORS[hex.terrain] || '#555'}
+                fill="rgba(0,0,0,0.1)"
                 stroke={playerColor}
-                strokeWidth="2"
-                opacity="0.85"
+                strokeWidth="1.5"
+                opacity="0.6"
                 style={{ filter: glow ? `drop-shadow(${glow})` : 'none' }}
               />
               
