@@ -131,7 +131,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
                 </div>
                 <div className="text-xs mt-0.5 opacity-55" style={{ color: 'hsl(40,20%,65%)' }}>{u.description}</div>
                 <div className="text-xs mt-0.5" style={{ color: 'hsl(43,70%,55%)' }}>
-                  🎲 d{u.dice} {u.moves ? `· moves ${u.moves}` : ''} {u.canCapture ? '· can capture' : ''}
+                   🎲 d{u.dice} · 🚶 {u.movementRange} tile/turn {u.canCapture ? '· can capture' : ''}
                 </div>
                 <CostTag cost={u.cost} resources={resources} />
               </div>
