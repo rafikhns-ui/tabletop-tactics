@@ -339,3 +339,91 @@ export const doAiTurn = (gameState) => {
 
 export const getTerritoryCount = (territories, playerId) =>
   Object.values(territories).filter(t => t.owner === playerId).length;
+
+// ---- Movement System ----
+// Calculate movement cost for a unit to enter a tile
+export const getMovementCost = (fromTerr, toTerr, unitType, playerFactionId) => {
+  const { TERRAIN_MOVEMENT_COSTS, UNIT_DEFS } = require('./ardoniaData');
+  
+  // Base cost is 1
+  let cost = 1;
+  
+  // Add terrain cost
+  const terrainCost = TERRAIN_MOVEMENT_COSTS[toTerr.biome] || 0;
+  cost += terrainCost;
+  
+  // Apply faction bonuses (Oakbinder/Desert Nomad movement)
+  if ((toTerr.biome === 'forest' && playerFactionId === 'oakhaven') ||
+      (toTerr.biome === 'desert' && playerFactionId === 'kadjimaran')) {
+    cost -= 1; // No extra cost
+  }
+  
+  return Math.max(1, cost); // Minimum 1 cost
+};
+
+// Get all reachable territories from a starting point given movement range
+export const getReachableTerritories = (startTerritoryId, movementRange, gameState, playerId, unitType) => {
+  const { ADJACENCY } = require('./ardoniaData');
+  const reachable = new Set();
+  const toExplore = [{ id: startTerritoryId, costRemaining: movementRange }];
+  const visited = new Set();
+
+  while (toExplore.length > 0) {
+    const { id, costRemaining } = toExplore.shift();
+    
+    if (visited.has(id)) continue;
+    visited.add(id);
+
+    if (costRemaining >= 0) {
+      reachable.add(id);
+      
+      // Explore adjacent tiles
+      const adjacent = ADJACENCY[id] || [];
+      adjacent.forEach(adjId => {
+        if (!visited.has(adjId)) {
+          const adjTerritory = gameState.territories[adjId];
+          const fromTerritory = gameState.territories[id];
+          const moveCost = getMovementCost(fromTerritory, adjTerritory, unitType, gameState.players.find(p => p.id === playerId)?.factionId);
+          
+          if (costRemaining - moveCost >= 0) {
+            toExplore.push({ id: adjId, costRemaining: costRemaining - moveCost });
+          }
+        }
+      });
+    }
+  }
+
+  return reachable;
+};
+
+// Move unit and resolve conquest if applicable
+export const moveUnit = (gameState, fromTerritoryId, toTerritoryId, unitId) => {
+  const newState = { ...gameState };
+  newState.territories = { ...newState.territories };
+  
+  const fromTerritory = { ...newState.territories[fromTerritoryId] };
+  const toTerritory = { ...newState.territories[toTerritoryId] };
+  
+  // Remove unit from source
+  fromTerritory.units = (fromTerritory.units || []).filter(u => u.id !== unitId);
+  fromTerritory.troops = fromTerritory.units.reduce((s, u) => s + u.count, 0);
+  
+  // Add unit to destination
+  toTerritory.units = [...(toTerritory.units || []), { id: unitId, count: 1 }];
+  toTerritory.troops = toTerritory.units.reduce((s, u) => s + u.count, 0);
+  
+  // If destination is neutral or enemy, unit attempts conquest
+  const currentPlayerId = gameState.players[gameState.currentPlayerIndex].id;
+  if (toTerritory.owner !== currentPlayerId && toTerritory.owner !== null) {
+    // Enemy territory - battle required (set battle flag)
+    newState.pendingBattle = { attacker: unitId, defender: toTerritoryId };
+  } else if (toTerritory.owner === null) {
+    // Neutral territory - conquered
+    toTerritory.owner = currentPlayerId;
+  }
+  
+  newState.territories[fromTerritoryId] = fromTerritory;
+  newState.territories[toTerritoryId] = toTerritory;
+  
+  return newState;
+};
