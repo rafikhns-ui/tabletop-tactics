@@ -2,16 +2,13 @@ import { TERRITORIES, ADJACENCY, FACTIONS, LEADERS, HEROES, OBJECTIVES, BUILDING
 
 // ---- Hero passive bonus helpers ----
 export const getHeroPassivesForPlayer = (player, territories) => {
-  // Collect all passive effects from heroes assigned to any territory owned by this player
+  // Collect all passive effects from all owned heroes (not imprisoned/exhausted)
   const bonuses = { attackBonus: 0, defenseBonus: 0, ipPerTurn: 0, spPerTurn: 0, goldPerTurn: 0, woodPerTurn: 0 };
   (player.heroes || []).forEach(heroId => {
     const hero = HEROES[heroId];
     if (!hero || !hero.passiveEffect) return;
     const status = player.heroStatus?.[heroId];
     if (status?.imprisoned || status?.exhausted) return;
-    // Hero must be assigned to a territory for passive to apply
-    const assigned = Object.values(territories).find(t => t.heroId === heroId && t.owner === player.id);
-    if (!assigned) return;
     Object.entries(hero.passiveEffect).forEach(([k, v]) => {
       if (bonuses[k] !== undefined) bonuses[k] += v;
     });
