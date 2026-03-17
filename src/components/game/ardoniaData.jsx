@@ -420,13 +420,13 @@ export const BUILDING_DEFS = {
   field:    { id: 'field',    name: 'Field',     emoji: '🌾',  starting: true, maxLevel: 3, upgradeBase: { gold: 2, wheat: 1 }, effect: 'wheat', effectPerLevel: 1, description: '+1 Wheat/turn per level' },
   treasury: { id: 'treasury', name: 'Treasury',  emoji: '🏦',  starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'storage', effectPerLevel: 5, description: '+5 max resource storage per level' },
   // Constructible
-  barracks:  { id: 'barracks',  name: 'Barracks',       emoji: '⚔️',  starting: false, cost: { gold: 5, wood: 3 }, description: 'Recruit Infantry & Elite units' },
-  stables:   { id: 'stables',   name: 'Stables',         emoji: '🐴',  starting: false, cost: { gold: 4, wood: 3, wheat: 2 }, description: 'Recruit Cavalry units' },
-  archerytower: { id: 'archerytower', name: 'Archery Tower', emoji: '🏹', starting: false, cost: { gold: 4, wood: 4 }, description: 'Recruit Ranged units' },
-  temple:    { id: 'temple',    name: 'Temple',          emoji: '⛩️',  starting: false, cost: { gold: 6, wood: 3, wheat: 2 }, maxLevel: 3, effect: 'sp', effectPerLevel: 1, description: '+1 SP/turn, Avatar summoning' },
-  market:    { id: 'market',    name: 'Market',          emoji: '🏪',  starting: false, cost: { gold: 5, wood: 4 }, effect: 'gold', description: '+1 Gold/turn, enables Trade' },
-  shipyard:  { id: 'shipyard',  name: 'Naval Shipyard',  emoji: '⚓',  starting: false, cost: { gold: 6, wood: 6 }, description: 'Recruit Naval units (coastal only)' },
-  siegeworks:{ id: 'siegeworks',name: 'Siege Works',     emoji: '🏗️',  starting: false, cost: { gold: 5, wood: 5 }, description: 'Recruit Siege Engines' },
+  barracks:  { id: 'barracks',  name: 'Barracks',       emoji: '⚔️',  starting: false, cost: { gold: 5, wood: 3 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 2 }, description: 'Recruit Infantry & Elite units' },
+  stables:   { id: 'stables',   name: 'Stables',         emoji: '🐴',  starting: false, cost: { gold: 4, wood: 3, wheat: 2 }, maxLevel: 3, upgradeBase: { gold: 2, wood: 2, wheat: 1 }, description: 'Recruit Cavalry units' },
+  archerytower: { id: 'archerytower', name: 'Archery Tower', emoji: '🏹', starting: false, cost: { gold: 4, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 2, wood: 3 }, description: 'Recruit Ranged units' },
+  temple:    { id: 'temple',    name: 'Temple',          emoji: '⛩️',  starting: false, cost: { gold: 6, wood: 3, wheat: 2 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 2, wheat: 1 }, effect: 'sp', effectPerLevel: 1, description: '+1 SP/turn, Avatar summoning' },
+  market:    { id: 'market',    name: 'Market',          emoji: '🏪',  starting: false, cost: { gold: 5, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 3 }, effect: 'gold', description: '+1 Gold/turn, enables Trade' },
+  shipyard:  { id: 'shipyard',  name: 'Naval Shipyard',  emoji: '⚓',  starting: false, cost: { gold: 6, wood: 6 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 4 }, description: 'Recruit Naval units (coastal only)' },
+  siegeworks:{ id: 'siegeworks',name: 'Siege Works',     emoji: '🏗️',  starting: false, cost: { gold: 5, wood: 5 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 3 }, description: 'Recruit Siege Engines' },
 };
 
 // ---- Unit Definitions ----
