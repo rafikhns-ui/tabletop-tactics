@@ -224,11 +224,7 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
         </div>
       )}
 
-      {hand.length > 0 && filteredHand.length === 0 && (
-        <div className="text-xs opacity-30 italic text-center py-2" style={{ color: 'hsl(40,20%,55%)' }}>
-          No cards in {categoryFilter} category
-        </div>
-      )}
+
     </div>
   );
 }
