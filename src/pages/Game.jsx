@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import GameMenu from '../components/game/GameMenu';
+import Lobby from '../components/game/Lobby';
+import OnlineGame from './OnlineGame';
 import BattleLog from '../components/game/BattleLog';
 import DiplomacyPanel from '../components/game/DiplomacyPanel';
 import HeroPanel from '../components/game/HeroPanel';

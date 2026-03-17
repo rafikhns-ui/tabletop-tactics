@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function GameMenu({ onStart }) {
+export default function GameMenu({ onStart, onOnline }) {
   const [playerCount, setPlayerCount] = useState(2);
 
   return (
