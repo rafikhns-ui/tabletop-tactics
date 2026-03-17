@@ -32,10 +32,11 @@ function CostTag({ cost, resources }) {
   );
 }
 
-export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onRecruit, onUpgrade }) {
-  const [tab, setTab] = useState('build'); // 'build' | 'recruit' | 'upgrade'
+export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onRecruit, onUpgrade, onBuildFortress }) {
+  const [tab, setTab] = useState('build'); // 'build' | 'recruit' | 'upgrade' | 'fortress'
   const { resources } = currentPlayer;
   const ownedBuildings = Object.keys(currentPlayer.buildings || {});
+  const ownedTerritories = Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id);
 
   // Which buildings can still be built
   const buildable = BUILDABLE.filter(id => !ownedBuildings.includes(id));
