@@ -225,7 +225,7 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
           <div className="flex items-center justify-center gap-3 mb-4 p-3 rounded-xl"
             style={{ background: 'hsl(35,20%,15%)', border: '1px solid hsl(35,20%,25%)' }}>
             <span className="text-xs opacity-60" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,70%,55%)' }}>🤖 AI OPPONENTS:</span>
-            {[0, 1, 2, 3, 4].filter(n => humanCount + n >= 2 && humanCount + n <= 5).map(n => (
+            {Array.from({ length: maxAI }, (_, i) => i + 1).map(n => (
               <button key={n} onClick={() => handleAiCountChange(n)}
                 className="w-8 h-8 rounded-lg text-sm font-bold transition-all"
                 style={{
