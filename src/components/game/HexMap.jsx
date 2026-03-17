@@ -51,8 +51,20 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
   const isMovable = (hexId) => {
     if (phase !== 'move' || !selectedHex || hexId === selectedHex) return false;
-    // Simple reachability - just check adjacency for now
-    return true;
+    
+    const selectedHexData = hexes[selectedHex];
+    const targetHex = hexes[hexId];
+    
+    if (!selectedHexData || !targetHex) return false;
+    
+    // Check if target is owned by current player
+    if (targetHex.owner !== currentPlayer?.id) return false;
+    
+    // Check adjacency
+    const neighbors = HexUtils.getNeighbors(selectedHexData.q, selectedHexData.r);
+    return neighbors.some(([q, r]) => 
+      Object.entries(hexes).find(([id, h]) => h.q === q && h.r === r)?.[0] === hexId
+    );
   };
 
   const isFortifiable = (hexId) => {
