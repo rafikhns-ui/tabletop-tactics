@@ -63,90 +63,88 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
 
   return (
     <div className="p-3">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-xs font-bold opacity-50 tracking-widest" style={{ fontFamily: "'Cinzel',serif" }}>
-          ACTION CARDS
-        </div>
-        <span className="text-xs opacity-40" style={{ color: 'hsl(40,20%,60%)' }}>
-          Hand: {hand.length}
-        </span>
+      <div className="text-xs font-bold opacity-50 tracking-widest mb-3" style={{ fontFamily: "'Cinzel',serif" }}>
+        ACTION CARDS — Hand: {hand.length}
       </div>
 
-      {/* Deck draw button */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="relative" style={{ width: '52px', height: '72px', flexShrink: 0 }}>
-          {/* Stacked deck visual */}
-          {[2, 1, 0].map(i => (
-            <div key={i} className="absolute rounded-lg"
-              style={{
-                width: '48px', height: '68px',
-                top: `${i * 2}px`, left: `${i * 1}px`,
-                background: 'hsl(35,30%,20%)',
-                border: '1px solid hsl(43,60%,35%)',
-                backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,200,50,0.03) 3px, rgba(255,200,50,0.03) 6px)',
-              }}
-            />
-          ))}
-          {/* Top of deck with ⚜️ */}
-          <div className="absolute rounded-lg flex items-center justify-center"
-            style={{
-              width: '48px', height: '68px', top: 0, left: 0,
-              background: 'linear-gradient(135deg, hsl(35,28%,18%), hsl(35,22%,13%))',
-              border: '1.5px solid hsl(43,65%,42%)',
-              boxShadow: drawing ? '0 0 16px rgba(255,200,50,0.5)' : '0 2px 8px rgba(0,0,0,0.4)',
-              transition: 'box-shadow 0.3s',
-            }}>
-            <span style={{ fontSize: '22px' }}>⚜️</span>
-          </div>
-
-          {/* Flying card animation */}
-          <AnimatePresence>
-            {drawing && (
-              <motion.div
-                key="flying"
-                className="absolute rounded-lg flex items-center justify-center z-50"
+      {/* Three deck stacks */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        {Object.entries(decks).map(([deckKey, deck]) => (
+          <div key={deckKey} className="flex flex-col items-center">
+            {/* Deck visual */}
+            <div className="relative mb-2" style={{ width: '52px', height: '72px' }}>
+              {[2, 1, 0].map(i => (
+                <div key={i} className="absolute rounded-lg"
+                  style={{
+                    width: '48px', height: '68px',
+                    top: `${i * 2}px`, left: `${i * 1}px`,
+                    background: 'hsl(35,30%,20%)',
+                    border: '1px solid hsl(43,60%,35%)',
+                    backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,200,50,0.03) 3px, rgba(255,200,50,0.03) 6px)',
+                  }}
+                />
+              ))}
+              <div className="absolute rounded-lg flex items-center justify-center"
                 style={{
-                  width: '48px', height: '68px',
-                  background: 'linear-gradient(135deg, hsl(38,60%,22%), hsl(35,22%,13%))',
-                  border: '1.5px solid hsl(43,80%,55%)',
-                  boxShadow: '0 0 20px rgba(255,200,50,0.6)',
-                  top: 0, left: 0,
-                }}
-                initial={{ y: 0, x: 0, rotate: 0, opacity: 1, scale: 1 }}
-                animate={{ y: -40, x: 70, rotate: 15, opacity: 1, scale: 1.1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-              >
-                <span style={{ fontSize: '22px' }}>🃏</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  width: '48px', height: '68px', top: 0, left: 0,
+                  background: `linear-gradient(135deg, ${deck.color}, hsl(35,22%,13%))`,
+                  border: `1.5px solid ${deck.color}`,
+                  boxShadow: drawing === deckKey ? `0 0 16px ${deck.color}` : '0 2px 8px rgba(0,0,0,0.4)',
+                  transition: 'box-shadow 0.3s',
+                }}>
+                <span style={{ fontSize: '20px' }}>{deck.emoji}</span>
+              </div>
 
-        <div className="flex flex-col gap-1.5">
-          <div className="text-xs" style={{ color: 'hsl(40,20%,55%)' }}>
-            {deckSize} cards in deck
+              <AnimatePresence>
+                {drawing === deckKey && (
+                  <motion.div
+                    key={`flying-${deckKey}`}
+                    className="absolute rounded-lg flex items-center justify-center z-50"
+                    style={{
+                      width: '48px', height: '68px',
+                      background: `linear-gradient(135deg, ${deck.color}, hsl(35,22%,13%))`,
+                      border: `1.5px solid ${deck.color}`,
+                      boxShadow: `0 0 20px ${deck.color}`,
+                      top: 0, left: 0,
+                    }}
+                    initial={{ y: 0, x: 0, rotate: 0, opacity: 1, scale: 1 }}
+                    animate={{ y: -40, x: 70, rotate: 15, opacity: 1, scale: 1.1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                  >
+                    <span style={{ fontSize: '20px' }}>🃏</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Draw button */}
+            <button
+              onClick={() => handleDraw(deckKey)}
+              disabled={!canDraw || drawing}
+              className="px-2 py-1 rounded text-xs font-bold transition-all active:scale-95"
+              style={{
+                fontFamily: "'Cinzel',serif",
+                background: canDraw && !drawing ? deck.color : 'hsl(35,15%,22%)',
+                border: `1px solid ${canDraw && !drawing ? deck.color : 'hsl(35,15%,30%)'}`,
+                color: canDraw && !drawing ? 'white' : 'hsl(40,15%,40%)',
+                cursor: canDraw && !drawing ? 'pointer' : 'not-allowed',
+              }}>
+              Draw
+            </button>
+
+            {/* Deck label */}
+            <div className="text-xs mt-1 text-center opacity-60 leading-tight" style={{ color: 'hsl(40,20%,55%)', fontSize: '10px' }}>
+              {deck.name}
+            </div>
           </div>
-          <button
-            onClick={handleDraw}
-            disabled={!canDraw || drawing}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
-            style={{
-              fontFamily: "'Cinzel',serif",
-              background: canDraw && !drawing
-                ? 'linear-gradient(135deg, hsl(38,70%,32%), hsl(38,70%,22%))'
-                : 'hsl(35,15%,22%)',
-              border: `1px solid ${canDraw && !drawing ? 'hsl(43,75%,50%)' : 'hsl(35,15%,30%)'}`,
-              color: canDraw && !drawing ? 'hsl(43,90%,80%)' : 'hsl(40,15%,40%)',
-              cursor: canDraw && !drawing ? 'pointer' : 'not-allowed',
-            }}>
-            {drawing ? '✨ Drawing...' : `🃏 Draw Card`}
-          </button>
-          <div className="text-xs flex items-center gap-1" style={{ color: (currentPlayer.resources?.gold ?? 0) >= DRAW_COST ? 'hsl(43,70%,55%)' : 'hsl(0,60%,50%)' }}>
-            <span>🪙 {DRAW_COST} gold</span>
-            {!canDraw && <span className="opacity-60">(need more gold)</span>}
-          </div>
-        </div>
+        ))}
+      </div>
+
+      {/* Cost */}
+      <div className="text-xs flex items-center justify-center gap-1 mb-3" style={{ color: (currentPlayer.resources?.gold ?? 0) >= DRAW_COST ? 'hsl(43,70%,55%)' : 'hsl(0,60%,50%)' }}>
+        <span>🪙 {DRAW_COST} gold per card</span>
+        {!canDraw && <span className="opacity-60">(need more gold)</span>}
       </div>
 
       {/* Hand */}
