@@ -15,39 +15,37 @@ const shuffle = (arr) => {
   return a;
 };
 
+const PLAYER_NAMES = ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5'];
+
 // ---- Create initial player ----
-const createPlayer = (id, name, factionId, isAI = false, leaderIndex = 0) => {
+const createPlayer = (id, name, factionId, isAI = false, leaderIndex = 0, presetObjectives = null) => {
   const faction = FACTIONS[factionId];
-  const leaderOptions = LEADERS[factionId];
+  const leaderOptions = LEADERS[factionId] || [];
   const leader = leaderOptions[leaderIndex] || leaderOptions[0];
-  const objectives = shuffle(OBJECTIVES).slice(0, 2);
+  const objectives = presetObjectives || shuffle(OBJECTIVES).slice(0, 2);
 
   return {
     id,
     name,
     factionId,
     faction,
-    color: faction.color,
+    color: faction?.color || '#888',
     isAI,
     leader,
-    objectives, // secret until revealed
+    objectives,
     completedObjectives: [],
-    // Resources
     resources: { gold: 5, wood: 3, wheat: 3 },
-    ip: 2, // Influence Points
-    sp: 0, // Spiritual Points
+    ip: 2,
+    sp: 0,
     crystals: 0,
-    // Buildings (starting set)
     buildings: {
       mine:     { ...BUILDING_DEFS.mine,     level: 1, disabled: false },
       sawmill:  { ...BUILDING_DEFS.sawmill,  level: 1, disabled: false },
       field:    { ...BUILDING_DEFS.field,    level: 1, disabled: false },
       treasury: { ...BUILDING_DEFS.treasury, level: 1, disabled: false },
     },
-    // Heroes (start with 1)
     heroes: ['warrior_bran'],
     heroStatus: { warrior_bran: { exhausted: false, imprisoned: false } },
-    // Hand cards
     actionCards: [],
     activeTradeDeals: [],
     activeAvatar: null,
@@ -57,21 +55,23 @@ const createPlayer = (id, name, factionId, isAI = false, leaderIndex = 0) => {
 };
 
 // ---- Initial game state ----
-export const createGameState = (mode, choices = {}) => {
-  const p1f = choices.p1?.factionId || 'onishiman';
-  const p2f = choices.p2?.factionId || (mode === 'ai' ? 'sultanate' : 'kadjimaran');
-  const p1l = choices.p1?.leaderIndex || 0;
-  const p2l = choices.p2?.leaderIndex || 0;
+export const createGameState = (mode, choices = {}, playersArr = null) => {
+  let players;
 
-  const players = mode === 'ai'
-    ? [
-        createPlayer('p1', 'Player 1', p1f, false, p1l),
-        createPlayer('ai', 'Shadow Lord', p2f, true, p2l),
-      ]
-    : [
-        createPlayer('p1', 'Player 1', p1f, false, p1l),
-        createPlayer('p2', 'Player 2', p2f, false, p2l),
-      ];
+  if (playersArr) {
+    // Build from FactionSelect output
+    players = playersArr.map((p, i) => {
+      const name = p.isAI ? 'Shadow Lord' : PLAYER_NAMES[i];
+      return createPlayer(p.id, name, p.factionId, p.isAI, p.leaderIndex, p.objectives);
+    });
+  } else {
+    // Legacy / fallback
+    const p1f = choices.p1?.factionId || 'onishiman';
+    const p2f = choices.p2?.factionId || (mode === 'ai' ? 'sultanate' : 'kadjimaran');
+    players = mode === 'ai'
+      ? [createPlayer('p1', 'Player 1', p1f, false, 0), createPlayer('ai', 'Shadow Lord', p2f, true, 0)]
+      : [createPlayer('p1', 'Player 1', p1f, false, 0), createPlayer('p2', 'Player 2', p2f, false, 0)];
+  }
 
   // Distribute territories
   const ids = shuffle(Object.keys(TERRITORIES));
