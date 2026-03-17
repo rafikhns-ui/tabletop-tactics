@@ -7,7 +7,7 @@ import ActionBar from '../components/game/ActionBar';
 import BattleModal from '../components/game/BattleModal';
 import EventModal from '../components/game/EventModal';
 import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn, checkObjective } from '../components/game/ardoniaLogic';
-import { EVENT_CARDS } from '../components/game/ardoniaData';
+import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS } from '../components/game/ardoniaData';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
