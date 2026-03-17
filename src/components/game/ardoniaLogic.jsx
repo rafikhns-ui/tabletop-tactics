@@ -62,7 +62,8 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
   if (playersArr) {
     // Build from FactionSelect output
     players = playersArr.map((p, i) => {
-      const name = p.isAI ? 'Shadow Lord' : PLAYER_NAMES[i];
+      const aiIndex = playersArr.slice(0, i).filter(x => x.isAI).length;
+      const name = p.isAI ? (AI_NAMES[aiIndex] || `AI ${aiIndex + 1}`) : PLAYER_NAMES[i];
       return createPlayer(p.id, name, p.factionId, p.isAI, p.leaderIndex, p.objectives);
     });
   } else {
