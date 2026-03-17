@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HEROES } from './ardoniaData';
+import PlayerDetailModal from './PlayerDetailModal';
 
 function ObjectivesModal({ player, onClose }) {
   return (
