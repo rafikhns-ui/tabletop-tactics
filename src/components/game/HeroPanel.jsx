@@ -60,7 +60,6 @@ function HeroCard({ hero, status, owned, onRecruit, territories, currentPlayer }
 
   const isExhausted = status?.exhausted;
   const isImprisoned = status?.imprisoned;
-  const assignedTerritory = assigned ? territories[assigned] : null;
 
   return (
     <div className="rounded-lg p-2.5" style={{
