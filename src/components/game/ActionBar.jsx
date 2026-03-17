@@ -107,7 +107,7 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
         <button onClick={onAdvancePhase}
           className="w-full py-2.5 rounded-lg text-sm font-bold hover:opacity-90 active:scale-95 transition-all"
           style={{ fontFamily: "'Cinzel',serif", background: 'linear-gradient(135deg, hsl(38,80%,38%), hsl(38,80%,28%))', border: '1px solid hsl(38,80%,55%)', color: 'hsl(43,90%,90%)' }}>
-          {phase === 'deploy' ? '⚔️ Begin Attack' : phase === 'attack' ? '🛡️ Fortify' : '✦ End Turn'}
+          {phase === 'deploy' ? '🚶 Begin Move' : phase === 'move' ? '⚔️ Begin Attack' : phase === 'attack' ? '🛡️ Fortify' : '✦ End Turn'}
         </button>
       ) : (
         <div className="text-center text-xs opacity-50 italic" style={{ color: 'hsl(40,20%,60%)' }}>
