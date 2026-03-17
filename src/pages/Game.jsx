@@ -321,7 +321,7 @@ export default function Game() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Player panels */}
-        <div className="w-36 flex-shrink-0 overflow-y-auto border-r border-border"
+        <div className="w-24 flex-shrink-0 overflow-y-auto border-r border-border"
           style={{ background: 'hsl(35,22%,12%)' }}>
           {gameState?.players.map((p, i) => (
             <PlayerPanel
