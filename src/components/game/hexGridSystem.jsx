@@ -76,16 +76,36 @@ export const HexUtils = {
 // Grid is approximately 12-hex radius
 // Using axial coordinates (q, r) where q increases right, r increases down-left
 
+// Continent definitions with centers and radius
+const CONTINENTS = [
+  { name: 'Western Continent', centerQ: -15, centerR: 0, radius: 10 },
+  { name: 'Eastern Continent', centerQ: 15, centerR: 0, radius: 10 },
+  { name: 'Northern Continent', centerQ: 0, centerR: -14, radius: 9 },
+  { name: 'Southern Continent', centerQ: 5, centerR: 12, radius: 8 },
+];
+
+const isLandTile = (q, r) => {
+  // Check if hex is within any continent
+  for (const continent of CONTINENTS) {
+    const distance = Math.sqrt(Math.pow(q - continent.centerQ, 2) + Math.pow(r - continent.centerR, 2));
+    if (distance <= continent.radius) return true;
+  }
+  return false;
+};
+
+const getTerrainForLand = (q, r) => {
+  const landTerrains = ['plains', 'forest', 'mountain', 'tundra', 'desert', 'wasteland'];
+  return landTerrains[Math.abs(q + r) % landTerrains.length];
+};
+
 export const HEXES = (() => {
   const hexes = {};
-  const terrains = ['plains', 'forest', 'mountain', 'tundra', 'desert', 'ocean', 'wasteland'];
   const regions = ['gojeon', 'onishiman', 'inuvak', 'silver', 'ruskel', 'icebound', 'kadjimaran', 'oakhaven', 'nimrudan', 'hestia', 'moor', 'tlaloc', 'verdant', 'iron', 'scorched'];
   
-  let hexIndex = 0;
   for (let q = -30; q <= 30; q++) {
     for (let r = -22; r <= 22; r++) {
       const hexId = `hex_${q}_${r}`;
-      const terrain = terrains[Math.abs(q + r) % terrains.length];
+      const terrain = isLandTile(q, r) ? getTerrainForLand(q, r) : 'ocean';
       const region = regions[Math.abs(q * r + q + r) % regions.length];
       
       hexes[hexId] = {
@@ -95,9 +115,8 @@ export const HEXES = (() => {
         terrain,
         region,
         faction: null,
-        resource: Math.random() > 0.7 ? ['gold', 'ore', 'wood', 'fish'][Math.floor(Math.random() * 4)] : null,
+        resource: terrain !== 'ocean' && Math.random() > 0.7 ? ['gold', 'ore', 'wood', 'fish'][Math.floor(Math.random() * 4)] : null,
       };
-      hexIndex++;
     }
   }
   return hexes;
