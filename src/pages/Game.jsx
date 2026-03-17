@@ -356,6 +356,8 @@ export default function Game() {
               phase={phase}
               onAdvancePhase={advancePhase}
               isAI={currentPlayer.isAI}
+              onBuild={handleBuild}
+              onRecruit={handleRecruit}
             />
           )}
         </div>
