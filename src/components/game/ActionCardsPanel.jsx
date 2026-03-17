@@ -63,6 +63,18 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
     setTimeout(() => { setNewCardId(null); setDrawing(null); }, 900);
   };
 
+  const handlePlayCard = (card) => {
+    setPlayingCard(card.id);
+    setTimeout(() => {
+      setCardEffectBurst(card.id);
+      onPlayCard(card);
+    }, 300);
+    setTimeout(() => {
+      setPlayingCard(null);
+      setCardEffectBurst(null);
+    }, 1200);
+  };
+
   return (
     <div className="p-3">
       <div className="text-xs font-bold opacity-50 tracking-widest mb-3" style={{ fontFamily: "'Cinzel',serif" }}>
