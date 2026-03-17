@@ -319,37 +319,42 @@ export default function Game() {
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left: Player panels */}
-        <div className="w-24 flex-shrink-0 overflow-y-auto border-r border-border"
-          style={{ background: 'hsl(35,22%,12%)' }}>
-          {gameState?.players.map((p, i) => (
-            <PlayerPanel
-              key={p.id}
-              player={p}
-              isActive={i === gameState.currentPlayerIndex}
-              territories={gameState.territories}
-              isSelf={!p.isAI}
-            />
-          ))}
+      {/* Map — full width */}
+      <div className="p-2" style={{ background: 'hsl(35,22%,12%)' }}>
+        {gameState && (
+          <GameBoard
+            gameState={gameState}
+            selectedTerritory={selectedTerritory}
+            phase={phase}
+            currentPlayer={currentPlayer}
+            onTerritoryClick={handleTerritoryClick}
+          />
+        )}
+      </div>
+
+      {/* Bottom panels — resizable via CSS resize */}
+      <div className="flex border-t border-border overflow-hidden" style={{ minHeight: '140px', maxHeight: '45vh', resize: 'vertical', background: 'hsl(35,22%,12%)' }}>
+        {/* Players panel */}
+        <div className="overflow-y-auto border-r border-border flex-shrink-0" style={{ minWidth: '120px', maxWidth: '40%', resize: 'horizontal', overflow: 'auto', width: '220px' }}>
+          <div className="text-xs font-bold px-2 py-1 sticky top-0 z-10" style={{ background: 'hsl(35,22%,14%)', color: 'hsl(43,80%,55%)', fontFamily: "'Cinzel',serif", borderBottom: '1px solid hsl(35,20%,25%)' }}>
+            Players
+          </div>
+          <div className="flex flex-wrap gap-1 p-1">
+            {gameState?.players.map((p, i) => (
+              <div key={p.id} className="flex-1 min-w-[100px]">
+                <PlayerPanel
+                  player={p}
+                  isActive={i === gameState.currentPlayerIndex}
+                  territories={gameState.territories}
+                  isSelf={!p.isAI}
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Center: Map */}
-        <div className="flex-1 overflow-auto p-3 flex flex-col gap-3">
-          {gameState && (
-            <GameBoard
-              gameState={gameState}
-              selectedTerritory={selectedTerritory}
-              phase={phase}
-              currentPlayer={currentPlayer}
-              onTerritoryClick={handleTerritoryClick}
-            />
-          )}
-        </div>
-
-        {/* Right: Action bar */}
-        <div className="w-24 flex-shrink-0 border-l border-border overflow-y-auto"
-          style={{ background: 'hsl(35,22%,12%)' }}>
+        {/* Action bar */}
+        <div className="flex-1 overflow-y-auto">
           {gameState && currentPlayer && (
             <ActionBar
               gameState={gameState}
