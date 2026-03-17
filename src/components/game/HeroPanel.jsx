@@ -100,16 +100,10 @@ function HeroCard({ hero, status, owned, onRecruit, onAssign, territories, curre
   );
 }
 
-export default function HeroPanel({ gameState, currentPlayer, onRecruit, onAssign }) {
+export default function HeroPanel({ gameState, currentPlayer, onRecruit }) {
   const [tab, setTab] = useState('owned'); // 'owned' | 'available'
   const ownedHeroIds = currentPlayer.heroes || [];
   const availableHeroes = Object.values(HEROES).filter(h => !ownedHeroIds.includes(h.id));
-
-  // Find which territory each hero is assigned to
-  const heroAssignments = {};
-  Object.values(gameState.territories).forEach(t => {
-    if (t.heroId) heroAssignments[t.heroId] = t.id;
-  });
 
   return (
     <div className="p-3 flex flex-col gap-3">
