@@ -130,6 +130,56 @@ export default function Game() {
     }
   };
 
+  const handleBuild = (buildingId) => {
+    const { BUILDING_DEFS } = require('../components/game/ardoniaData');
+    const def = BUILDING_DEFS[buildingId];
+    if (!def) return;
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === currentPlayer.id);
+      const cost = def.cost || {};
+      // Check afford
+      for (const [k, v] of Object.entries(cost)) {
+        if ((player.resources[k] ?? player[k] ?? 0) < v) return prev;
+      }
+      const newResources = { ...player.resources };
+      const newPlayer = { ...player };
+      for (const [k, v] of Object.entries(cost)) {
+        if (k === 'ip') newPlayer.ip = (newPlayer.ip || 0) - v;
+        else if (k === 'sp') newPlayer.sp = (newPlayer.sp || 0) - v;
+        else newResources[k] = (newResources[k] || 0) - v;
+      }
+      newPlayer.resources = newResources;
+      newPlayer.buildings = { ...player.buildings, [buildingId]: { ...def, level: 1, disabled: false } };
+      return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
+    });
+    addMessage(`🏗️ Built ${buildingId}!`);
+  };
+
+  const handleRecruit = (unitId) => {
+    const { UNIT_DEFS } = require('../components/game/ardoniaData');
+    const def = UNIT_DEFS[unitId];
+    if (!def) return;
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === currentPlayer.id);
+      const cost = def.cost || {};
+      const newResources = { ...player.resources };
+      for (const [k, v] of Object.entries(cost)) {
+        if ((newResources[k] ?? 0) < v) return prev;
+        newResources[k] -= v;
+      }
+      // Add troop to capital or first owned territory
+      const capital = Object.values(prev.territories).find(t => t.owner === player.id && t.isCapital)
+        || Object.values(prev.territories).find(t => t.owner === player.id);
+      if (!capital) return prev;
+      return {
+        ...prev,
+        players: prev.players.map(p => p.id === player.id ? { ...p, resources: newResources } : p),
+        territories: { ...prev.territories, [capital.id]: { ...capital, troops: capital.troops + 1 } },
+      };
+    });
+    addMessage(`⚔️ Recruited ${unitId} to your capital!`);
+  };
+
   const handleBattleResult = (result) => {
     const newState = checkObjectives(executeAttack(gameState, battle.attackerId, battle.defenderId, result));
     setGameState(newState);
