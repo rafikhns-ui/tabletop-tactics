@@ -348,7 +348,7 @@ export default function Game() {
         </div>
 
         {/* Right: Action bar */}
-        <div className="w-44 flex-shrink-0 border-l border-border overflow-y-auto"
+        <div className="w-36 flex-shrink-0 border-l border-border overflow-y-auto"
           style={{ background: 'hsl(35,22%,12%)' }}>
           {gameState && currentPlayer && (
             <ActionBar
