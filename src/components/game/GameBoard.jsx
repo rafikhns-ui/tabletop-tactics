@@ -84,8 +84,8 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
             <div
               className="relative flex flex-col items-center justify-center rounded-full transition-all duration-200 hover:scale-110"
               style={{
-                width: '52px',
-                height: '52px',
+                width: '36px',
+                height: '36px',
                 background: `rgba(0,0,0,0.55)`,
                 border: `3px solid ${pColor}`,
                 outline: `2px solid ${ringColor}`,
