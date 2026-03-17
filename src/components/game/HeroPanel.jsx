@@ -95,43 +95,7 @@ function HeroCard({ hero, status, owned, onRecruit, onAssign, territories, curre
         ))}
       </div>
 
-      {/* Assignment */}
-      {!isImprisoned && (
-        <div>
-          {assignedTerritory ? (
-            <div className="flex items-center justify-between">
-              <span className="text-xs" style={{ color: 'hsl(40,20%,55%)' }}>📍 {assignedTerritory.name}</span>
-              <button onClick={() => setShowAssign(v => !v)}
-                className="text-xs px-1.5 py-0.5 rounded"
-                style={{ background: 'hsl(35,20%,24%)', border: '1px solid hsl(35,20%,34%)', color: 'hsl(43,70%,60%)' }}>
-                Reassign
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => setShowAssign(v => !v)}
-              className="w-full text-xs py-1 rounded font-bold"
-              style={{ background: 'hsl(200,40%,22%)', border: '1px solid hsl(200,40%,35%)', color: 'hsl(200,60%,70%)', fontFamily: "'Cinzel',serif" }}>
-              📍 Assign to Territory
-            </button>
-          )}
-          {showAssign && (
-            <div className="mt-1.5 rounded overflow-hidden" style={{ border: '1px solid hsl(35,20%,30%)', maxHeight: '120px', overflowY: 'auto' }}>
-              {myTerritories.map(t => (
-                <button key={t.id} onClick={() => { onAssign(hero.id, t.id); setShowAssign(false); }}
-                  className="w-full text-left text-xs px-2 py-1 hover:opacity-80 transition-opacity"
-                  style={{
-                    background: assigned === t.id ? 'hsl(38,50%,22%)' : 'hsl(35,20%,16%)',
-                    color: 'hsl(40,20%,70%)',
-                    borderBottom: '1px solid hsl(35,20%,24%)',
-                  }}>
-                  {t.name} {assigned === t.id ? '✓' : ''}
-                  {t.heroId && t.heroId !== hero.id && <span className="opacity-50"> (occupied)</span>}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+
     </div>
   );
 }
