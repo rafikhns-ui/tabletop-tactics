@@ -175,7 +175,7 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
                   <motion.div
                     key={card.id}
                     initial={isNew ? { y: -30, opacity: 0, scale: 0.7, rotate: -10 } : false}
-                    animate={{ y: 0, opacity: 1, scale: 1, rotate: 0 }}
+                    animate={playingCard === card.id ? { y: -80, x: 0, opacity: 0, scale: 0.3, rotate: 45 } : { y: 0, opacity: 1, scale: 1, rotate: 0 }}
                     exit={{ opacity: 0, scale: 0.5, y: 20 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className="relative cursor-pointer select-none"
