@@ -77,13 +77,17 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
         const canAttack = isAttackable(territory.id);
         const canFortify = isFortifiable(territory.id);
         const canDeploy = isDeployable(territory.id);
+        const canMove = isMovable(territory.id);
+        const isMovingFrom = movingUnit?.territoryId === territory.id;
         const biomeColor = BIOME_COLORS[territory.biome] || '#888';
 
         let ringColor = 'transparent';
         let glow = '';
-        if (isSelected) { ringColor = 'rgba(255,200,50,0.9)'; glow = '0 0 15px rgba(255,200,50,0.7)'; }
+        if (isMovingFrom) { ringColor = 'rgba(100,200,255,0.9)'; glow = '0 0 15px rgba(100,200,255,0.7)'; }
+        else if (isSelected) { ringColor = 'rgba(255,200,50,0.9)'; glow = '0 0 15px rgba(255,200,50,0.7)'; }
         else if (canAttack) { ringColor = 'rgba(255,60,60,0.8)'; glow = '0 0 10px rgba(255,60,60,0.5)'; }
         else if (canFortify) { ringColor = 'rgba(60,180,255,0.8)'; glow = '0 0 10px rgba(60,180,255,0.5)'; }
+        else if (canMove) { ringColor = 'rgba(100,255,100,0.7)'; glow = '0 0 8px rgba(100,255,100,0.4)'; }
         else if (canDeploy) { ringColor = pColor; }
 
         return (
