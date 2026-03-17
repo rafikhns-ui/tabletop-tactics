@@ -269,8 +269,7 @@ export const doAiTurn = (gameState) => {
   }
 
   // 4. Gather SP passively
-  const aiPlayer = state.players.find(p => p.isAI);
-  if (aiPlayer && aiPlayer.sp < 10) {
+  if (ai.sp < 10) {
     state.players = state.players.map(p => p.id === ai.id ? { ...p, sp: Math.min(10, p.sp + 1) } : p);
   }
 
