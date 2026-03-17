@@ -129,6 +129,7 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
   );
 }
 
+
 function lighten(hex, amount) {
   const num = parseInt(hex.replace('#', ''), 16);
   const r = Math.min(255, (num >> 16) + amount);
