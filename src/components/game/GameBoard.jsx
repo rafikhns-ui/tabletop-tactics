@@ -5,8 +5,18 @@ import { getReachableTerritories } from './ardoniaLogic';
 
 export default function GameBoard({ gameState, selectedTerritory, phase, currentPlayer, onTerritoryClick }) {
   const { territories, players } = gameState;
+  const [movingUnit, setMovingUnit] = useState(null); // {territoryId, unitType} for movement mode
 
   const getPlayerColor = (ownerId) => players.find(p => p.id === ownerId)?.color || '#666';
+
+  // Get reachable territories when a unit is selected for movement
+  const reachableTerritories = useMemo(() => {
+    if (!movingUnit) return new Set();
+    const unit = territories[movingUnit.territoryId]?.units?.find(u => u.type === movingUnit.unitType);
+    if (!unit) return new Set();
+    const unitDef = UNIT_DEFS[unit.type];
+    return getReachableTerritories(movingUnit.territoryId, unitDef.movementRange, gameState, currentPlayer.id, unit.type);
+  }, [movingUnit, gameState]);
 
   const isAttackable = (id) => {
     if (phase !== 'attack' || !selectedTerritory) return false;
@@ -23,6 +33,11 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
   const isDeployable = (id) => {
     if (phase !== 'deploy') return false;
     return territories[id].owner === currentPlayer.id && currentPlayer.troopsToDeploy > 0;
+  };
+
+  const isMovable = (id) => {
+    if (!movingUnit) return false;
+    return reachableTerritories.has(id) && id !== movingUnit.territoryId;
   };
 
   return (
