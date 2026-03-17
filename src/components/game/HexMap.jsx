@@ -84,10 +84,10 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
     >
       <svg width="100%" height="100%" viewBox={`0 0 ${canvasWidth} ${canvasHeight}`} style={{ position: 'absolute', inset: 0 }}>
         {/* Background grid lines */}
-        {Object.entries(HEXES).map(([hexId, hex]) => {
+        {Object.entries(hexes).map(([hexId, hex]) => {
           const neighbors = HexUtils.getNeighbors(hex.q, hex.r);
           return neighbors.map(([nq, nr], i) => {
-            const neighbor = Object.entries(HEXES).find(([, h]) => h.q === nq && h.r === nr);
+            const neighbor = Object.entries(hexes).find(([, h]) => h.q === nq && h.r === nr);
             if (!neighbor || hexId > neighbor[0]) return null;
             
             const [x1, y1] = [hexToPixel(hex.q, hex.r, hexSize).x + canvasWidth / 2, hexToPixel(hex.q, hex.r, hexSize).y + canvasHeight / 2];
@@ -104,7 +104,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         })}
 
         {/* Hex tiles */}
-        {Object.entries(HEXES).map(([hexId, hex]) => {
+        {Object.entries(hexes).map(([hexId, hex]) => {
           const isSelected = selectedHex === hexId;
           const canAttack = isAttackable(hexId);
           const canMove = isMovable(hexId);
