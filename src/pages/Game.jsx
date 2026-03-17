@@ -768,7 +768,7 @@ export default function Game() {
                 onUpgrade={handleUpgrade}
                 onBuildFortress={handleBuildFortress}
               />
-                <DeployableTroopsPanel phase={phase} />
+                <UnitBreakdown />
               </>
             )}
             {bottomTab === 'heroes' && gameState && currentPlayer && !currentPlayer.isAI && (
