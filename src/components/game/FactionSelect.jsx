@@ -192,7 +192,7 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
     const available = PLAYABLE_FACTIONS.map(f => f.id).filter(id => !takenFactionIds.includes(id));
     setPlayers(prev => prev.map(p => {
       if (p.isAI) {
-        const aiFactionId = available[Math.floor(Math.random() * available.length)] || 'icebound';
+        const aiFactionId = available.splice(Math.floor(Math.random() * available.length), 1)[0] || 'icebound';
         return { ...p, factionId: aiFactionId, objectives: drawObjectives(aiFactionId) };
       }
       return { ...p, objectives: drawObjectives(p.factionId) };
