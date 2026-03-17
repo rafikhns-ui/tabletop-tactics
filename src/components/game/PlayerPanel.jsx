@@ -71,8 +71,19 @@ export default function PlayerPanel({ player, isActive, territories, isSelf }) {
             </div>
           </div>
         </div>
-        <span className="text-xs opacity-40">{expanded ? '▲' : '▼'}</span>
+        <div className="flex items-center gap-1.5">
+          {isSelf && (
+            <button onClick={e => { e.stopPropagation(); setShowObjectives(true); }}
+              className="text-xs px-1.5 py-0.5 rounded hover:opacity-90 transition-all"
+              title="View your secret objectives"
+              style={{ background: 'hsl(35,20%,24%)', border: '1px solid hsl(35,20%,34%)', color: 'hsl(43,80%,60%)' }}>
+              📜
+            </button>
+          )}
+          <span className="text-xs opacity-40">{expanded ? '▲' : '▼'}</span>
+        </div>
       </div>
+      {showObjectives && <ObjectivesModal player={player} onClose={() => setShowObjectives(false)} />}
 
       <div className="px-3 pb-2 grid grid-cols-3 gap-1">
         <StatBadge label="🪙" value={player.resources?.gold ?? 0} />
