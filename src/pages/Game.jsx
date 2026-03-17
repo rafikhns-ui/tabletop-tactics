@@ -398,6 +398,18 @@ export default function Game() {
         cardEffects.exclusive_contract = { duration: 3, active: true };
       } else if (card.id === 'tariff_deal') {
         cardEffects.tariff_deal = { duration: 3, active: true, tariffBonus: 1 };
+      } else if (card.id === 'wood_monopoly') {
+        cardEffects.wood_monopoly = { duration: 3, active: true, resource: 'wood' };
+      } else if (card.id === 'wheat_monopoly') {
+        cardEffects.wheat_monopoly = { duration: 3, active: true, resource: 'wheat' };
+      } else if (card.id === 'trade_corridor') {
+        cardEffects.trade_corridor = { duration: 2, active: true };
+      } else if (card.id === 'merchant_guild') {
+        cardEffects.merchant_guild = { duration: Infinity, active: true };
+      } else if (card.id === 'economic_boom') {
+        cardEffects.economic_boom = { duration: 3, active: true, goldBonus: 2 };
+      } else if (card.id === 'war_profiteering') {
+        cardEffects.war_profiteering = { duration: Infinity, active: true };
       }
       
       const newCards = (player.actionCards || []).filter(id => id !== card.id);
