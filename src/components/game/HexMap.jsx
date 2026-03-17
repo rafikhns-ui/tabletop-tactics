@@ -237,21 +237,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         })}
       </svg>
 
-      {/* Legend */}
-      <div className="absolute bottom-3 left-3 text-xs space-y-1" style={{ background: 'rgba(0,0,0,0.6)', padding: '8px', borderRadius: '6px' }}>
-        {[
-          ['🌾', 'Plains'],
-          ['🌲', 'Forest'],
-          ['⛰️', 'Mountain'],
-          ['❄️', 'Tundra'],
-          ['🏜️', 'Desert'],
-          ['🌊', 'Ocean'],
-        ].map(([icon, label]) => (
-          <div key={label} style={{ color: '#ccc' }}>
-            {icon} {label}
-          </div>
-        ))}
-      </div>
+
 
       {/* Phase indicator */}
       <div className="absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded"
