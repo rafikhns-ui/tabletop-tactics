@@ -107,7 +107,7 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
   }
 
   // Initialize hexes with ownership using procedural generation
-   const generatedHexWorld = generateHexWorld();
+   const generatedHexWorld = generateWorldMap();
    const hexIds = shuffle(Object.keys(generatedHexWorld));
    const hexes = {};
    hexIds.forEach((id, i) => {
