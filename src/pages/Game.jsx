@@ -23,8 +23,8 @@ export default function Game() {
   const addMessage = (msg) => setMessages(prev => [...prev.slice(-4), msg]);
 
   // Called from GameMenu — go to faction select
-  const handleMenuStart = (mode) => {
-    setPendingMode(mode);
+  const handleMenuStart = (mode, count) => {
+    setPendingMode({ mode, playerCount: count || 2 });
   };
 
   // Called from FactionSelect — actually start the game
