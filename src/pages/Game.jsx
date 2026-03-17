@@ -77,18 +77,19 @@ export default function Game() {
     return updated;
   }, [winner]);
 
-  const handleTerritoryClick = (territoryId) => {
+  const handleTerritoryClick = (hexId) => {
     if (!gameState || winner) return;
-    const territory = gameState.territories[territoryId];
+    const hex = gameState.hexes[hexId];
+    if (!hex) return;
 
     if (phase === 'deploy') {
-      if (territory.owner === currentPlayer.id && currentPlayer.troopsToDeploy > 0) {
+      if (hex.owner === currentPlayer.id && currentPlayer.troopsToDeploy > 0) {
         setGameState(prev => {
           const next = {
             ...prev,
-            territories: {
-              ...prev.territories,
-              [territoryId]: { ...territory, troops: territory.troops + 1 },
+            hexes: {
+              ...prev.hexes,
+              [hexId]: { ...hex, units: [...(hex.units || []), { type: 'infantry', count: 1 }] },
             },
             players: prev.players.map(p =>
               p.id === currentPlayer.id ? { ...p, troopsToDeploy: p.troopsToDeploy - 1 } : p
@@ -99,33 +100,33 @@ export default function Game() {
       }
     } else if (phase === 'attack') {
       if (!selectedTerritory) {
-        if (territory.owner === currentPlayer.id && territory.troops > 1) {
-          setSelectedTerritory(territoryId);
-          addMessage(`⚔️ Selected ${territory.name} — click an enemy territory to attack`);
+        const units = hex.units?.reduce((s, u) => s + u.count, 0) || 0;
+        if (hex.owner === currentPlayer.id && units > 0) {
+          setSelectedTerritory(hexId);
+          addMessage(`⚔️ Selected hex — click an enemy hex to attack`);
         }
-      } else if (territoryId === selectedTerritory) {
+      } else if (hexId === selectedTerritory) {
         setSelectedTerritory(null);
       } else {
-        const attacker = gameState.territories[selectedTerritory];
-        const adj = gameState.adjacency[selectedTerritory] || [];
-        if (territory.owner !== currentPlayer.id && adj.includes(territoryId)) {
-          setBattle({ attackerId: selectedTerritory, defenderId: territoryId });
+        const selectedHex = gameState.hexes[selectedTerritory];
+        if (selectedHex && hex.owner !== currentPlayer.id) {
+          setBattle({ attackerId: selectedTerritory, defenderId: hexId });
           setSelectedTerritory(null);
-        } else if (territory.owner === currentPlayer.id && territory.troops > 1) {
-          setSelectedTerritory(territoryId);
-          addMessage(`⚔️ Selected ${territory.name}`);
+        } else if (hex.owner === currentPlayer.id) {
+          setSelectedTerritory(hexId);
+          addMessage(`⚔️ Selected hex`);
         } else {
-          addMessage('⛔ Not an adjacent enemy territory');
+          addMessage('⛔ Not an adjacent enemy hex');
         }
       }
     } else if (phase === 'move') {
       if (!selectedTerritory) {
-        if (territory.owner === currentPlayer.id && territory.troops > 1) {
-          setSelectedTerritory(territoryId);
-          addMessage(`🚶 Moving from ${territory.name} — pick destination`);
+        const units = hex.units?.reduce((s, u) => s + u.count, 0) || 0;
+        if (hex.owner === currentPlayer.id && units > 0) {
+          setSelectedTerritory(hexId);
+          addMessage(`🚶 Moving from hex — pick destination`);
         }
-      } else if (territoryId !== selectedTerritory) {
-        // Allow moving to any reachable territory (implementation pending)
+      } else if (hexId !== selectedTerritory) {
         setSelectedTerritory(null);
         addMessage(`🚶 Unit movement initiated`);
       } else {
@@ -133,27 +134,25 @@ export default function Game() {
       }
     } else if (phase === 'fortify') {
       if (!selectedTerritory) {
-        if (territory.owner === currentPlayer.id && territory.troops > 1) {
-          setSelectedTerritory(territoryId);
-          addMessage(`🛡️ Moving from ${territory.name} — pick adjacent friendly territory`);
+        const units = hex.units?.reduce((s, u) => s + u.count, 0) || 0;
+        if (hex.owner === currentPlayer.id && units > 0) {
+          setSelectedTerritory(hexId);
+          addMessage(`🛡️ Moving from hex — pick adjacent friendly hex`);
         }
-      } else if (territoryId !== selectedTerritory) {
-        const adj = gameState.adjacency[selectedTerritory] || [];
-        if (territory.owner === currentPlayer.id && adj.includes(territoryId)) {
-          const from = gameState.territories[selectedTerritory];
-          const toMove = from.troops - 1;
+      } else if (hexId !== selectedTerritory) {
+        if (hex.owner === currentPlayer.id) {
           setGameState(prev => checkObjectives({
             ...prev,
-            territories: {
-              ...prev.territories,
-              [selectedTerritory]: { ...from, troops: 1 },
-              [territoryId]: { ...territory, troops: territory.troops + toMove },
+            hexes: {
+              ...prev.hexes,
+              [selectedTerritory]: { ...prev.hexes[selectedTerritory], units: [] },
+              [hexId]: { ...hex, units: [...(hex.units || []), { type: 'infantry', count: 1 }] },
             },
           }));
           setSelectedTerritory(null);
-          addMessage(`🛡️ Moved ${toMove} troops to ${territory.name}`);
-        } else if (territory.owner === currentPlayer.id && territory.troops > 1) {
-          setSelectedTerritory(territoryId);
+          addMessage(`🛡️ Moved troops to hex`);
+        } else if (hex.owner === currentPlayer.id) {
+          setSelectedTerritory(hexId);
         }
       }
     }
