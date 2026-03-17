@@ -433,6 +433,19 @@ export default function Game() {
       } else if (card.id === 'non_aggression_pact') {
         newIp += 1;
         cardEffects.non_aggression_pact = { duration: 2, active: true };
+      } else if (card.id === 'spiritual_pilgrimage') {
+        newSp += 3;
+      } else if (card.id === 'holy_shield') {
+        newSp += 1;
+        cardEffects.holy_shield = { duration: 1, active: true };
+      } else if (card.id === 'ritual_of_summoning') {
+        newSp += 1;
+        cardEffects.ritual_of_summoning = { duration: 1, active: true };
+      } else if (card.id === 'temple_blessing') {
+        cardEffects.temple_blessing = { duration: 1, active: true };
+      } else if (card.id === 'mystic_barrier') {
+        newSp += 1;
+        cardEffects.mystic_barrier = { duration: 1, active: true };
       }
       
       const newCards = (player.actionCards || []).filter(id => id !== card.id);
