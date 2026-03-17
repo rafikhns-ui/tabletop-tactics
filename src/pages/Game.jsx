@@ -614,6 +614,7 @@ export default function Game() {
                 onRecruit={handleRecruit}
                 onPlayCard={handlePlayCard}
                 onDrawCard={handleDrawCard}
+                onUpgrade={handleUpgrade}
               />
             )}
             {bottomTab === 'heroes' && gameState && currentPlayer && !currentPlayer.isAI && (
