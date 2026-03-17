@@ -23,7 +23,7 @@ export default function Game() {
   const [showLobby, setShowLobby] = useState(false);
   const [onlineSession, setOnlineSession] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
-  const [phase, setPhase] = useState('deploy'); // deploy → attack → fortify
+  const [phase, setPhase] = useState('deploy'); // deploy → move → attack → fortify
   const [battle, setBattle] = useState(null);
   const [activeEvent, setActiveEvent] = useState(null);
   const [messages, setMessages] = useState([]);
