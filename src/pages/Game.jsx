@@ -648,6 +648,25 @@ export default function Game() {
       )}
 
       {/* Map — full width */}
+      {/* Top player panel */}
+      <div className="border-b border-border flex-shrink-0 overflow-x-auto" style={{ background: 'hsl(35,22%,12%)' }}>
+        <div className="text-xs font-bold px-2 py-1 sticky top-0 z-10" style={{ background: 'hsl(35,22%,14%)', color: 'hsl(43,80%,55%)', fontFamily: "'Cinzel',serif", borderBottom: '1px solid hsl(35,20%,25%)' }}>
+          Players
+        </div>
+        <div className="flex gap-2 p-2">
+          {gameState?.players.map((p, i) => (
+            <div key={p.id} className="flex-shrink-0">
+              <PlayerPanel
+                player={p}
+                isActive={i === gameState.currentPlayerIndex}
+                territories={gameState.territories}
+                isSelf={!p.isAI}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="p-2" style={{ background: 'hsl(35,22%,12%)' }}>
         {gameState && (
           <GameBoard
@@ -661,26 +680,7 @@ export default function Game() {
       </div>
 
       {/* Bottom panels */}
-      <div className="flex border-t border-border overflow-hidden" style={{ minHeight: '140px', maxHeight: '45vh', resize: 'vertical', background: 'hsl(35,22%,12%)' }}>
-        {/* Players panel */}
-        <div className="overflow-y-auto border-r border-border flex-shrink-0" style={{ minWidth: '120px', maxWidth: '30%', resize: 'horizontal', overflow: 'auto', width: '200px' }}>
-          <div className="text-xs font-bold px-2 py-1 sticky top-0 z-10" style={{ background: 'hsl(35,22%,14%)', color: 'hsl(43,80%,55%)', fontFamily: "'Cinzel',serif", borderBottom: '1px solid hsl(35,20%,25%)' }}>
-            Players
-          </div>
-          <div className="flex flex-wrap gap-1 p-1">
-            {gameState?.players.map((p, i) => (
-              <div key={p.id} className="flex-1 min-w-[100px]">
-                <PlayerPanel
-                  player={p}
-                  isActive={i === gameState.currentPlayerIndex}
-                  territories={gameState.territories}
-                  isSelf={!p.isAI}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
+      <div className="flex border-t border-border overflow-hidden" style={{ minHeight: '140px', maxHeight: '50vh', resize: 'vertical', background: 'hsl(35,22%,12%)' }}>
         {/* Center tabbed panel */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Tab bar */}
