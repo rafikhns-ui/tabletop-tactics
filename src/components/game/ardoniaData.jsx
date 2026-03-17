@@ -327,7 +327,7 @@ export const HEROES = {
   spy_mira: {
     id: 'spy_mira', name: 'Mira the Shadow', type: 'Spy',
     stealth: 4, charisma: 2, force: 1, arcana: 1,
-    cost: { gold: 3 }, faction: null,
+    cost: { gold: 3 }, faction: null, requiredBuilding: 'barracks',
     ability: 'Reveal one enemy objective type',
     passive: '+1 defense in assigned territory (spy network)',
     passiveEffect: { defenseBonus: 1 },
@@ -335,7 +335,7 @@ export const HEROES = {
   warrior_bran: {
     id: 'warrior_bran', name: 'Bran Ironhand', type: 'Warrior',
     stealth: 1, charisma: 1, force: 5, arcana: 0,
-    cost: { gold: 4 }, faction: null,
+    cost: { gold: 4 }, faction: null, requiredBuilding: 'barracks',
     ability: '+3 to one attack roll this turn',
     passive: '+2 attack bonus when fighting from assigned territory',
     passiveEffect: { attackBonus: 2 },
@@ -343,7 +343,7 @@ export const HEROES = {
   diplomat_lyra: {
     id: 'diplomat_lyra', name: 'Lyra Silvertongue', type: 'Diplomat',
     stealth: 1, charisma: 5, force: 1, arcana: 1,
-    cost: { gold: 3, ip: 1 }, faction: null,
+    cost: { gold: 3, ip: 1 }, faction: null, requiredBuilding: 'market',
     ability: 'Force one trade treaty negotiation',
     passive: '+1 IP per turn while assigned to any territory',
     passiveEffect: { ipPerTurn: 1 },
@@ -351,7 +351,7 @@ export const HEROES = {
   mage_zel: {
     id: 'mage_zel', name: 'Zel the Arcane', type: 'Mage',
     stealth: 2, charisma: 2, force: 1, arcana: 5,
-    cost: { gold: 3, sp: 2 }, faction: null,
+    cost: { gold: 3, sp: 2 }, faction: null, requiredBuilding: 'temple',
     ability: '+2 SP immediately',
     passive: '+1 SP per turn while assigned anywhere',
     passiveEffect: { spPerTurn: 1 },
@@ -359,7 +359,7 @@ export const HEROES = {
   strategist_oryn: {
     id: 'strategist_oryn', name: 'Oryn Dawnblade', type: 'Strategist',
     stealth: 2, charisma: 3, force: 3, arcana: 2,
-    cost: { gold: 5 }, faction: null,
+    cost: { gold: 5 }, faction: null, requiredBuilding: 'barracks',
     ability: 'Move one friendly unit twice this turn',
     passive: '+1 attack and +1 defense in assigned territory',
     passiveEffect: { attackBonus: 1, defenseBonus: 1 },
@@ -367,7 +367,7 @@ export const HEROES = {
   healer_seri: {
     id: 'healer_seri', name: 'Seri the Healer', type: 'Healer',
     stealth: 1, charisma: 3, force: 1, arcana: 3,
-    cost: { gold: 3 }, faction: null,
+    cost: { gold: 3 }, faction: null, requiredBuilding: 'temple',
     ability: 'Restore 2 troops to any friendly territory',
     passive: '+1 Gold income per turn (field support)',
     passiveEffect: { goldPerTurn: 1 },
@@ -375,7 +375,7 @@ export const HEROES = {
   knight_aldric: {
     id: 'knight_aldric', name: 'Sir Aldric the Unyielding', type: 'Warrior',
     stealth: 1, charisma: 2, force: 4, arcana: 0,
-    cost: { gold: 5, wheat: 2 }, faction: null,
+    cost: { gold: 5, wheat: 2 }, faction: null, requiredBuilding: 'stables',
     ability: 'Negate one attack loss this turn',
     passive: 'Assigned territory troops never drop below 2 from battle',
     passiveEffect: { minTroops: 2 },
@@ -383,7 +383,7 @@ export const HEROES = {
   oracle_vex: {
     id: 'oracle_vex', name: 'Oracle Vex', type: 'Mage',
     stealth: 3, charisma: 1, force: 0, arcana: 6,
-    cost: { gold: 4, sp: 3 }, faction: null,
+    cost: { gold: 4, sp: 3 }, faction: null, requiredBuilding: 'temple',
     ability: 'Predict enemy attack direction this turn',
     passive: '+2 defense bonus in assigned territory (arcane wards)',
     passiveEffect: { defenseBonus: 2 },
@@ -391,7 +391,7 @@ export const HEROES = {
   ranger_kael: {
     id: 'ranger_kael', name: 'Kael Swiftarrow', type: 'Spy',
     stealth: 5, charisma: 2, force: 2, arcana: 1,
-    cost: { gold: 4 }, faction: null,
+    cost: { gold: 4 }, faction: null, requiredBuilding: 'archerytower',
     ability: 'Scout all adjacent enemy troop counts',
     passive: '+1 Wood income per turn (forest expertise)',
     passiveEffect: { woodPerTurn: 1 },
