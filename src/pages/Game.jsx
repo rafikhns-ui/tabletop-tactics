@@ -85,6 +85,11 @@ export default function Game() {
 
     if (phase === 'deploy') {
       if (hex.owner === currentPlayer.id && currentPlayer.troopsToDeploy > 0) {
+        // Check if terrain allows land unit deployment
+        if (!canUnitEnter(hexId, 'infantry')) {
+          addMessage('⛔ Cannot deploy land units in ocean');
+          return;
+        }
         setGameState(prev => {
           const next = {
             ...prev,
