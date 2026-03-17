@@ -753,7 +753,8 @@ export default function Game() {
 
           <div className="flex-1 overflow-y-auto">
             {bottomTab === 'action' && gameState && currentPlayer && (
-              <ActionBar
+              <>
+                <ActionBar
                 gameState={gameState}
                 currentPlayer={currentPlayer}
                 phase={phase}
