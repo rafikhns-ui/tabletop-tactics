@@ -1,14 +1,30 @@
 import React from 'react';
 import { UNIT_DEFS } from './ardoniaData';
-import { Card } from '@/components/ui/card';
 
-export default function UnitBreakdown() {
+export default function UnitBreakdown({ currentPlayer, gameState }) {
   const units = Object.values(UNIT_DEFS);
+  
+  const canAffordUnit = (unit) => {
+    if (!currentPlayer) return false;
+    return Object.entries(unit.cost).every(([resource, amount]) => 
+      (currentPlayer.resources[resource] ?? 0) >= amount
+    );
+  };
+
+  const hasRequiredBuilding = (unit) => {
+    if (!currentPlayer) return false;
+    return currentPlayer.buildings[unit.requires];
+  };
 
   return (
     <div className="space-y-2 p-2">
-      <div className="text-xs font-bold px-2 py-1" style={{ color: 'hsl(43,80%,70%)', fontFamily: "'Cinzel',serif" }}>
-        UNIT TYPES
+      <div className="flex items-center justify-between px-2 py-1">
+        <div className="text-xs font-bold" style={{ color: 'hsl(43,80%,70%)', fontFamily: "'Cinzel',serif" }}>
+          UNIT TYPES
+        </div>
+        <div className="text-xs" style={{ color: 'hsl(40,20%,60%)' }}>
+          {currentPlayer?.troopsToDeploy || 0} troops available
+        </div>
       </div>
       
       <div className="grid gap-2">
