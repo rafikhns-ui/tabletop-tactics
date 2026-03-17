@@ -6,9 +6,7 @@ const HERO_TYPE_ICONS = {
   Strategist: '🗺️', Healer: '💚',
 };
 
-function HeroCard({ hero, status, owned, onRecruit, onAssign, territories, currentPlayer, assigned }) {
-  const [showAssign, setShowAssign] = useState(false);
-  const myTerritories = Object.values(territories).filter(t => t.owner === currentPlayer.id);
+function HeroCard({ hero, status, owned, onRecruit, territories, currentPlayer }) {
   const canAfford = Object.entries(hero.cost || {}).every(([k, v]) => {
     if (k === 'ip') return (currentPlayer.ip ?? 0) >= v;
     if (k === 'sp') return (currentPlayer.sp ?? 0) >= v;
