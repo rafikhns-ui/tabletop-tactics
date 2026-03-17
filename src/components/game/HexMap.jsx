@@ -167,6 +167,8 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           const canFortify = isFortifiable(hexId);
           const canDeploy = isDeployable(hexId);
           const playerColor = getPlayerColor(hex.owner);
+          const isOcean = hex.terrain === 'ocean';
+          const tileColor = isOcean ? '#2e5e8a' : 'transparent';
           
           const { x, y } = hexToPixel(hex.q, hex.r, hexSize);
           const px = x + canvasWidth / 2;
@@ -195,10 +197,10 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                    py + hexSize * Math.sin(angle),
                  ];
                }).flat().join(',')}
-               fill={isSelected ? ringColor : playerColor}
-               stroke={isSelected ? ringColor : playerColor}
+               fill={isSelected ? ringColor : tileColor}
+               stroke={isSelected ? ringColor : tileColor}
                strokeWidth={outlineWidth}
-               opacity={hex.owner ? "0.2" : "0.08"}
+               opacity={isOcean ? "0.8" : "0.3"}
                style={{ filter: glow ? `drop-shadow(${glow})` : 'none' }}
              />
 
