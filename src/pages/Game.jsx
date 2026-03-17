@@ -379,10 +379,29 @@ export default function Game() {
         else if (k === 'sp') newSp -= v;
         else newResources[k] = (newResources[k] || 0) - v;
       }
-      // Apply immediate effects
-      if (card.id === 'faith_surge') newSp = Math.min(10, newSp + 3);
+      
+      // Apply immediate effects based on card ID
+      let cardEffects = { ...player.cardEffects || {} };
+      if (card.id === 'faith_surge') {
+        newSp = Math.min(10, newSp + 3);
+      } else if (card.id === 'peace_treaty') {
+        newIp += 1;
+        cardEffects.peace_treaty = { duration: 3, active: true };
+      } else if (card.id === 'embargo') {
+        cardEffects.embargo = { duration: 2, active: true };
+      } else if (card.id === 'trade_diplomacy') {
+        newIp += 1;
+        cardEffects.trade_diplomacy = { duration: 3, active: true };
+      } else if (card.id === 'merchant_fleet') {
+        cardEffects.merchant_fleet = { duration: 2, active: true };
+      } else if (card.id === 'exclusive_contract') {
+        cardEffects.exclusive_contract = { duration: 3, active: true };
+      } else if (card.id === 'tariff_deal') {
+        cardEffects.tariff_deal = { duration: 3, active: true, tariffBonus: 1 };
+      }
+      
       const newCards = (player.actionCards || []).filter(id => id !== card.id);
-      const newPlayer = { ...player, resources: newResources, ip: newIp, sp: newSp, actionCards: newCards };
+      const newPlayer = { ...player, resources: newResources, ip: newIp, sp: newSp, actionCards: newCards, cardEffects };
       return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
     });
     addMessage(`🃏 Played ${card.name}: ${card.effect}`);
