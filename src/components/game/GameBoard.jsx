@@ -48,7 +48,7 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
               <line key={`${fromId}-${toId}`}
                 x1={`${(from.x / 720) * 100}%`} y1={`${(from.y / 510) * 100}%`}
                 x2={`${(to.x / 720) * 100}%`}   y2={`${(to.y / 510) * 100}%`}
-                stroke="rgba(80,40,10,0.3)" strokeWidth="1.5" strokeDasharray="5,4"
+                stroke="rgba(80,40,10,0.35)" strokeWidth="2" strokeDasharray="5,4"
               />
             );
           })
