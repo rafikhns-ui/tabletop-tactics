@@ -1,4 +1,5 @@
 import React from 'react';
+import BuildRecruitPanel from './BuildRecruitPanel';
 
 const PHASES = [
   { id: 'deploy', icon: '🏰', label: 'Deploy', desc: 'Place reinforcements on your territories.' },
@@ -22,7 +23,7 @@ function calcIncome(player, territories) {
   };
 }
 
-export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePhase, isAI }) {
+export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePhase, isAI, onBuild, onRecruit }) {
   if (!currentPlayer) return null;
   const income = calcIncome(currentPlayer, gameState.territories);
 
@@ -80,6 +81,15 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
           <IncomeRow icon="💎" label="Crystals" value={currentPlayer.crystals ?? 0} />
         </div>
       </div>
+
+      {!isAI && (
+        <BuildRecruitPanel
+          currentPlayer={currentPlayer}
+          gameState={gameState}
+          onBuild={onBuild}
+          onRecruit={onRecruit}
+        />
+      )}
 
       {!isAI ? (
         <button onClick={onAdvancePhase}
