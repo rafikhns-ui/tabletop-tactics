@@ -39,18 +39,23 @@ function HeroCard({ hero, status, owned, onRecruit, onAssign, territories, curre
               </span>
             ))}
           </div>
-          <button onClick={() => onRecruit(hero.id)} disabled={!canAfford}
+          <button onClick={() => onRecruit(hero.id)} disabled={!canAfford || !hasRequiredBuilding}
             className="text-xs px-2 py-1 rounded font-bold transition-all"
             style={{
-              background: canAfford ? 'hsl(38,70%,30%)' : 'hsl(35,15%,22%)',
-              border: `1px solid ${canAfford ? 'hsl(38,70%,50%)' : 'hsl(35,15%,30%)'}`,
-              color: canAfford ? 'hsl(43,90%,75%)' : 'hsl(40,15%,40%)',
-              cursor: canAfford ? 'pointer' : 'not-allowed',
+              background: (canAfford && hasRequiredBuilding) ? 'hsl(38,70%,30%)' : 'hsl(35,15%,22%)',
+              border: `1px solid ${(canAfford && hasRequiredBuilding) ? 'hsl(38,70%,50%)' : 'hsl(35,15%,30%)'}`,
+              color: (canAfford && hasRequiredBuilding) ? 'hsl(43,90%,75%)' : 'hsl(40,15%,40%)',
+              cursor: (canAfford && hasRequiredBuilding) ? 'pointer' : 'not-allowed',
               fontFamily: "'Cinzel',serif",
             }}>
             Recruit
           </button>
         </div>
+        {!hasRequiredBuilding && (
+          <div className="text-xs mt-1.5 px-1.5 py-1 rounded" style={{ background: 'hsl(0,40%,18%)', color: 'hsl(0,60%,70%)' }}>
+            Requires {BUILDING_DEFS[hero.requiredBuilding]?.emoji} {BUILDING_DEFS[hero.requiredBuilding]?.name}
+          </div>
+        )}
       </div>
     );
   }
