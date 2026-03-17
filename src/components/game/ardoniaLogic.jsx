@@ -113,7 +113,8 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
       ...TERRITORIES[id],
       owner,
       troops: 2,
-      fortified: false,
+      units: [], // Array of {type: 'infantry'|'cavalry'|'ranged'|'elite'|'siege'|'naval', count: number}
+      hasForceress: false,
       isCapital: false,
     };
   });
