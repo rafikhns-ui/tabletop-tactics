@@ -275,8 +275,9 @@ export default function Game() {
   if (!gameMode && !pendingMode) return <GameMenu onStart={handleMenuStart} />;
   if (pendingMode && !gameMode) return (
     <FactionSelect
-      mode={pendingMode}
-      onConfirm={(choices) => startGame(pendingMode, choices)}
+      mode={pendingMode.mode}
+      playerCount={pendingMode.playerCount}
+      onConfirm={(choices, playersArr) => startGame(choices, playersArr)}
       onBack={() => setPendingMode(null)}
     />
   );
