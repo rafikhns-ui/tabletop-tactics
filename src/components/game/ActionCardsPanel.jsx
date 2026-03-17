@@ -30,37 +30,35 @@ function CostTag({ k, v, player }) {
 
 export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard }) {
   const [hoveredId, setHoveredId] = useState(null);
-  const [drawing, setDrawing] = useState(false);
+  const [drawing, setDrawing] = useState(null); // null | 'trade' | 'spiritual' | 'clandestine'
   const [newCardId, setNewCardId] = useState(null);
-  const [categoryFilter, setCategoryFilter] = useState('all');
 
   const hand = currentPlayer.actionCards?.length > 0
     ? ACTION_CARDS.filter(c => currentPlayer.actionCards.includes(c.id))
     : [];
 
-  const categories = ['all', ...new Set(ACTION_CARDS.map(c => c.category))];
-  const filteredHand = categoryFilter === 'all' 
-    ? hand 
-    : hand.filter(c => c.category === categoryFilter);
+  // Define three decks
+  const decks = {
+    trade: { name: 'Trade & Diplomacy', emoji: '💰', color: 'hsl(38,70%,28%)', cards: ACTION_CARDS.filter(c => ['Trade', 'Diplomacy'].includes(c.category)) },
+    spiritual: { name: 'Spiritual & Arcane', emoji: '✨', color: 'hsl(200,50%,28%)', cards: ACTION_CARDS.filter(c => ['Spiritual', 'Military'].includes(c.category)) },
+    clandestine: { name: 'Clandestine', emoji: '🕵️', color: 'hsl(0,50%,28%)', cards: ACTION_CARDS.filter(c => c.category === 'Clandestine') },
+  };
 
   const canDraw = (currentPlayer.resources?.gold ?? 0) >= DRAW_COST;
-  const deckSize = ACTION_CARDS.length;
 
-  const handleDraw = async () => {
+  const handleDraw = async (deckKey) => {
     if (!canDraw || drawing) return;
-    setDrawing(true);
+    setDrawing(deckKey);
 
-    // Pick a random card not already in hand
     const inHand = currentPlayer.actionCards || [];
-    const available = ACTION_CARDS.filter(c => !inHand.includes(c.id));
-    const pool = available.length > 0 ? available : ACTION_CARDS;
+    const available = decks[deckKey].cards.filter(c => !inHand.includes(c.id));
+    const pool = available.length > 0 ? available : decks[deckKey].cards;
     const drawn = pool[Math.floor(Math.random() * pool.length)];
 
-    // Animate for 800ms before confirming
     await new Promise(r => setTimeout(r, 800));
     setNewCardId(drawn.id);
     onDrawCard(drawn);
-    setTimeout(() => { setNewCardId(null); setDrawing(false); }, 900);
+    setTimeout(() => { setNewCardId(null); setDrawing(null); }, 900);
   };
 
   return (
