@@ -44,6 +44,13 @@ export default function GameMenu({ onStart, onOnline }) {
             <div className="text-xs font-normal opacity-70 mt-0.5">vs The Shadow Lord (AI)</div>
           </button>
 
+          <button onClick={onOnline}
+            className="w-full py-4 rounded-xl font-bold text-base transition-all hover:scale-105 active:scale-95"
+            style={{ fontFamily: "'Cinzel',serif", background: 'linear-gradient(135deg, hsl(130,40%,22%), hsl(130,40%,14%))', border: '1px solid hsl(130,45%,38%)', color: 'hsl(40,30%,95%)', boxShadow: '0 4px 20px rgba(30,160,60,0.2)' }}>
+            🌐 Online Multiplayer
+            <div className="text-xs font-normal opacity-70 mt-0.5">Play with friends on different computers</div>
+          </button>
+
           <div className="rounded-xl overflow-hidden" style={{ border: '1px solid hsl(220,55%,45%)' }}>
             <button onClick={() => onStart('multiplayer', playerCount)}
               className="w-full py-4 font-bold text-base transition-all hover:opacity-90 active:scale-95"
