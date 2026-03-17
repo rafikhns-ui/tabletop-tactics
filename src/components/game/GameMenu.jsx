@@ -37,7 +37,7 @@ export default function GameMenu({ onStart }) {
         </div>
 
         <div className="space-y-3 mb-5">
-          <button onClick={() => onStart('ai', 2)}
+          <button onClick={() => onStart('ai', 4)}
             className="w-full py-4 rounded-xl font-bold text-base transition-all hover:scale-105 active:scale-95"
             style={{ fontFamily: "'Cinzel',serif", background: 'linear-gradient(135deg, hsl(355,65%,32%), hsl(355,65%,22%))', border: '1px solid hsl(355,65%,48%)', color: 'hsl(40,30%,95%)', boxShadow: '0 4px 20px rgba(160,30,30,0.3)' }}>
             🐉 Solo Campaign
