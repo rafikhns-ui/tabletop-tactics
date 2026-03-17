@@ -469,6 +469,13 @@ export const ACTION_CARDS = [
   { id: 'luxury_goods', name: 'Luxury Goods',   category: 'Trade',       cost: { gold: 3 }, heroStat: 'charisma', effect: 'Gain +2 IP, sell goods for +3 Gold', emoji: '💎' },
   { id: 'spice_routes', name: 'Spice Trade',    category: 'Trade',       cost: { gold: 2, wood: 1 }, heroStat: 'charisma', effect: 'Open route: gain +1 Gold/turn + +1 Wood/turn for 2 turns', emoji: '🌶️' },
   { id: 'gem_monopoly', name: 'Gem Monopoly',   category: 'Trade',       cost: { gold: 3, ip: 2 }, heroStat: 'charisma', effect: 'Gain 2 Crystals; prevent others from trading gems', emoji: '💠' },
+  // New Trade & Diplomacy cards with artwork
+  { id: 'peace_treaty', name: 'Peace Treaty', category: 'Diplomacy', cost: { gold: 2, gold: 2 }, heroStat: 'charisma', effect: 'Two players cannot attack each other for 3 turns. Both gain +1 Gold per turn while the treaty lasts. You gain 1 IP', emoji: '🕊️', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/e0bea1895_1.png' },
+  { id: 'embargo', name: 'Embargo', category: 'Trade', cost: { gold: 1, ip: 1 }, heroStat: 'charisma', effect: 'Pay 1 IP. Prevent a player from trading for 2 turns', emoji: '⛵', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/93eb1fe12_2.png' },
+  { id: 'trade_diplomacy', name: 'Trade Diplomacy', category: 'Trade', cost: { gold: 2, gold: 2 }, heroStat: 'charisma', effect: 'Allows two players to exchange resources freely for 3 turns. Each trade generates +1 extra resource. You gain 1 IP', emoji: '🤝', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/60c5cb09a_3.png' },
+  { id: 'merchant_fleet', name: 'Merchant Fleet', category: 'Trade', cost: { gold: 2, gold: 2 }, heroStat: 'charisma', effect: 'Trade with any player, even without a Market or port for 2 turns', emoji: '🚢', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/caf5c9815_4.png' },
+  { id: 'exclusive_contract', name: 'Exclusive Contract', category: 'Diplomacy', cost: { gold: 2, gold: 2 }, heroStat: 'charisma', effect: 'Your trade partner cannot trade with other players for 3 turns', emoji: '📜', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/4bbd25f55_5.png' },
+  { id: 'tariff_deal', name: 'Tariff Deal', category: 'Trade', cost: { gold: 2, gold: 2 }, heroStat: 'charisma', effect: 'Every time you trade, you gain +1 extra Gold as a tariff bonus for the next 3 turns', emoji: '⚓', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/8f4f35690_6.png' },
 ];
 
 // ---- Event Cards ----
