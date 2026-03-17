@@ -427,6 +427,7 @@ export const BUILDING_DEFS = {
   market:    { id: 'market',    name: 'Market',          emoji: '🏪',  starting: false, cost: { gold: 5, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 3 }, effect: 'gold', description: '+1 Gold/turn, enables Trade' },
   shipyard:  { id: 'shipyard',  name: 'Naval Shipyard',  emoji: '⚓',  starting: false, cost: { gold: 6, wood: 6 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 4 }, description: 'Recruit Naval units (coastal only)' },
   siegeworks:{ id: 'siegeworks',name: 'Siege Works',     emoji: '🏗️',  starting: false, cost: { gold: 5, wood: 5 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 3 }, description: 'Recruit Siege Engines' },
+  fortress:  { id: 'fortress',  name: 'Fortress',        emoji: '🏰',  starting: false, cost: { gold: 8, wood: 6, stone: 4 }, maxLevel: 1, description: '+3 defense, placeable on territory' },
 };
 
 // ---- Unit Definitions ----
