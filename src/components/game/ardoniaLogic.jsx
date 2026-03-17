@@ -202,18 +202,35 @@ export const collectIncome = (gameState) => {
 };
 
 // ---- Combat resolution ----
-export const resolveBattle = (attackerTroops, defenderTroops, isDefenderFortified, bonuses = {}) => {
-  const attackDice = Math.min(3, attackerTroops - 1);
+export const calculateUnitBonuses = (units) => {
+  // Units boost attack/defense based on type
+  let attackBonus = 0, defenseBonus = 0;
+  (units || []).forEach(u => {
+    if (u.type === 'cavalry') attackBonus += 2;
+    if (u.type === 'elite') { attackBonus += 3; defenseBonus += 1; }
+    if (u.type === 'ranged') attackBonus += 1;
+    if (u.type === 'siege') attackBonus += 2;
+  });
+  return { attackBonus, defenseBonus };
+};
+
+export const resolveBattle = (attackerUnits, defenderUnits, hasDefenderFortress, bonuses = {}) => {
+  // Count total troops
+  const attackerTroops = attackerUnits.reduce((s, u) => s + u.count, 0);
+  const defenderTroops = defenderUnits.reduce((s, u) => s + u.count, 0);
+  
+  const attackDice = Math.min(3, Math.max(1, attackerTroops - 1));
   const defendDice = Math.min(2, defenderTroops);
   const aRolls = rollDice(attackDice);
   const dRolls = rollDice(defendDice);
 
-  // Apply bonuses
-  const aBonus = bonuses.attackBonus || 0;
-  const dBonus = (bonuses.defenseBonus || 0) + (isDefenderFortified ? 1 : 0);
+  // Calculate bonuses from unit composition
+  const unitAttackBonus = calculateUnitBonuses(attackerUnits);
+  const unitDefenseBonus = calculateUnitBonuses(defenderUnits);
 
-  const aBest = (aRolls[0] || 0) + aBonus;
-  const dBest = (dRolls[0] || 0) + dBonus;
+  // Apply all bonuses
+  const aBonus = (bonuses.attackBonus || 0) + unitAttackBonus.attackBonus;
+  const dBonus = (bonuses.defenseBonus || 0) + unitDefenseBonus.defenseBonus + (hasDefenderFortress ? 3 : 0);
 
   let attackerLosses = 0;
   let defenderLosses = 0;
