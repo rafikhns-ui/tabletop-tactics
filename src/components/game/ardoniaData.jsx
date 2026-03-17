@@ -152,6 +152,18 @@ export const BIOME_ICONS = {
   desert: '🏜️', ocean: '🌊', plains: '🌾',
 };
 
+// ---- Terrain Movement Costs ----
+// Base cost is 1 movement point per tile
+// Additional cost for terrain types (0 = normal, 1+ = extra cost)
+export const TERRAIN_MOVEMENT_COSTS = {
+  mountain: 1, // +1 cost (mountainous)
+  tundra: 0,
+  forest: 1, // +1 cost (dense)
+  desert: 1, // +1 cost (harsh)
+  ocean: 0,
+  plains: 0,
+};
+
 // ---- Factions ----
 // playable: true = selectable by human/AI players; false = neutral territory holder only
 export const FACTIONS = {
