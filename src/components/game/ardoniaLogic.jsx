@@ -106,20 +106,21 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
       : [createPlayer('p1', 'Player 1', p1f, false, 0), createPlayer('p2', 'Player 2', p2f, false, 0)];
   }
 
-  // Initialize hexes with ownership
-  const hexIds = shuffle(Object.keys(HEXES));
-  const hexes = {};
-  hexIds.forEach((id, i) => {
-    const owner = players[i % players.length].id;
-    hexes[id] = {
-      ...HEXES[id],
-      owner,
-      units: [],
-      hasFortress: false,
-      isCapital: i % players.length === 0 && Math.floor(i / players.length) === 0, // First hex per player is capital
-    };
-  });
-  const hexAdjacency = buildHexAdjacency();
+  // Initialize hexes with ownership using procedural generation
+   const generatedHexWorld = generateHexWorld();
+   const hexIds = shuffle(Object.keys(generatedHexWorld));
+   const hexes = {};
+   hexIds.forEach((id, i) => {
+     const owner = players[i % players.length].id;
+     hexes[id] = {
+       ...generatedHexWorld[id],
+       owner,
+       units: [],
+       hasFortress: false,
+       isCapital: i % players.length === 0 && Math.floor(i / players.length) === 0,
+     };
+   });
+   const hexAdjacency = buildHexAdjacency();
 
   // Fallback: also distribute old territories
   const ids = shuffle(Object.keys(TERRITORIES));
