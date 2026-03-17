@@ -117,6 +117,19 @@ export default function Game() {
           addMessage('⛔ Not an adjacent enemy territory');
         }
       }
+    } else if (phase === 'move') {
+      if (!selectedTerritory) {
+        if (territory.owner === currentPlayer.id && territory.troops > 1) {
+          setSelectedTerritory(territoryId);
+          addMessage(`🚶 Moving from ${territory.name} — pick destination`);
+        }
+      } else if (territoryId !== selectedTerritory) {
+        // Allow moving to any reachable territory
+        setSelectedTerritory(null);
+        addMessage(`🚶 Unit movement initiated`);
+      } else {
+        setSelectedTerritory(null);
+      }
     } else if (phase === 'fortify') {
       if (!selectedTerritory) {
         if (territory.owner === currentPlayer.id && territory.troops > 1) {
