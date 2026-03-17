@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { resolveBattle } from './ardoniaLogic';
+import { resolveBattle, getHeroCombatBonus } from './ardoniaLogic';
+import { HEROES } from './ardoniaData';
 
 const DIE_FACES = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
