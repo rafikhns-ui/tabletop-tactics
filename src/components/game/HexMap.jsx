@@ -142,38 +142,33 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           else if (canDeploy) { ringColor = playerColor; }
 
           return (
-            <g key={`hex-${hexId}`} onClick={() => onHexClick(hexId)} style={{ cursor: 'pointer' }}>
-              {/* Hex background */}
-              <polygon
-                points={[0, 1, 2, 3, 4, 5].map(i => {
-                  const angle = (Math.PI / 3) * i;
-                  return [
-                    px + hexSize * Math.cos(angle),
-                    py + hexSize * Math.sin(angle),
-                  ];
-                }).flat().join(',')}
-                fill="rgba(0,0,0,0.1)"
-                stroke={playerColor}
-                strokeWidth="1.5"
-                opacity="0.6"
-                style={{ filter: glow ? `drop-shadow(${glow})` : 'none' }}
-              />
-              
-              {/* Selection ring */}
-              {ringColor !== 'transparent' && (
-                <circle cx={px} cy={py} r={hexSize + 3} fill="none" stroke={ringColor} strokeWidth="2" opacity="0.7" />
-              )}
+           <g key={`hex-${hexId}`} onClick={() => onHexClick(hexId)} style={{ cursor: 'pointer' }}>
+             {/* Hex background */}
+             <polygon
+               points={[0, 1, 2, 3, 4, 5].map(i => {
+                 const angle = (Math.PI / 3) * i;
+                 return [
+                   px + hexSize * Math.cos(angle),
+                   py + hexSize * Math.sin(angle),
+                 ];
+               }).flat().join(',')}
+               fill={isSelected ? ringColor : playerColor}
+               stroke={isSelected ? ringColor : playerColor}
+               strokeWidth="1"
+               opacity={hex.owner ? "0.8" : "0.4"}
+               style={{ filter: glow ? `drop-shadow(${glow})` : 'none' }}
+             />
 
-              {/* Unit count */}
-              {hex.units && hex.units.length > 0 && (
-                <text x={px} y={py + 8} textAnchor="middle" fontSize="12" fill="#fff" fontFamily="'Cinzel',serif" fontWeight="bold"
-                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
-                  ⚔️ {hex.units.reduce((sum, u) => sum + u.count, 0)}
-                </text>
-              )}
-              
+             {/* Unit count */}
+             {hex.units && hex.units.length > 0 && (
+               <text x={px} y={py + 8} textAnchor="middle" fontSize="12" fill="#fff" fontFamily="'Cinzel',serif" fontWeight="bold"
+                 style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+                 ⚔️ {hex.units.reduce((sum, u) => sum + u.count, 0)}
+               </text>
+             )}
 
-            </g>
+
+           </g>
           );
         })}
       </svg>
