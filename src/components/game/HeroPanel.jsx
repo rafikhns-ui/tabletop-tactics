@@ -149,7 +149,6 @@ export default function HeroPanel({ gameState, currentPlayer, onRecruit }) {
           owned={false}
           status={null}
           onRecruit={onRecruit}
-          territories={gameState.territories}
           currentPlayer={currentPlayer}
         />
       ))}
