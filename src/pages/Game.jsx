@@ -558,6 +558,19 @@ export default function Game() {
                 onRecruit={handleRecruit}
               />
             )}
+            {bottomTab === 'heroes' && gameState && currentPlayer && !currentPlayer.isAI && (
+              <HeroPanel
+                gameState={gameState}
+                currentPlayer={currentPlayer}
+                onRecruit={handleRecruitHero}
+                onAssign={handleAssignHero}
+              />
+            )}
+            {bottomTab === 'heroes' && currentPlayer?.isAI && (
+              <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
+                Heroes available during your turn
+              </div>
+            )}
             {bottomTab === 'diplomacy' && gameState && currentPlayer && !currentPlayer.isAI && (
               <DiplomacyPanel
                 gameState={gameState}
