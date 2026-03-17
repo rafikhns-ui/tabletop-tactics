@@ -154,7 +154,21 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
       {/* Hand */}
       {hand.length > 0 && (
         <div>
-          <div className="text-xs opacity-40 mb-1.5 tracking-wider" style={{ fontFamily: "'Cinzel',serif" }}>YOUR HAND</div>
+          <div className="text-xs opacity-40 mb-2 tracking-wider" style={{ fontFamily: "'Cinzel',serif" }}>YOUR HAND</div>
+          <div className="flex gap-1 mb-2 flex-wrap">
+            {categories.map(cat => (
+              <button key={cat} onClick={() => setCategoryFilter(cat)}
+                className="px-2 py-1 rounded text-xs font-semibold transition-all"
+                style={{
+                  fontFamily: "'Cinzel',serif",
+                  background: categoryFilter === cat ? 'hsl(38,70%,28%)' : 'hsl(35,20%,22%)',
+                  border: categoryFilter === cat ? '1px solid hsl(43,75%,50%)' : '1px solid hsl(35,20%,32%)',
+                  color: categoryFilter === cat ? 'hsl(43,90%,75%)' : 'hsl(40,20%,55%)',
+                }}>
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </button>
+            ))}
+          </div>
           <div className="flex flex-wrap gap-2">
             <AnimatePresence>
               {hand.map(card => {
