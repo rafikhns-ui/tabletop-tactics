@@ -173,6 +173,13 @@ export const calculateIncome = (player, territories) => {
     income.gold += deal.goldPerTurn || 0;
   });
 
+  // Hero passive bonuses
+  const heroBonuses = getHeroPassivesForPlayer(player, territories);
+  income.gold += heroBonuses.goldPerTurn;
+  income.wood += heroBonuses.woodPerTurn;
+  income.ip += heroBonuses.ipPerTurn;
+  income.sp += heroBonuses.spPerTurn;
+
   return income;
 };
 
