@@ -330,7 +330,8 @@ export default function Game() {
       }
       // Apply immediate effects
       if (card.id === 'faith_surge') newSp = Math.min(10, newSp + 3);
-      const newPlayer = { ...player, resources: newResources, ip: newIp, sp: newSp };
+      const newCards = (player.actionCards || []).filter(id => id !== card.id);
+      const newPlayer = { ...player, resources: newResources, ip: newIp, sp: newSp, actionCards: newCards };
       return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
     });
     addMessage(`🃏 Played ${card.name}: ${card.effect}`);
