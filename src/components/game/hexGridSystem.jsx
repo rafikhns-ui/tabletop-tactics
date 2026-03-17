@@ -82,8 +82,8 @@ export const HEXES = (() => {
   const regions = ['gojeon', 'onishiman', 'inuvak', 'silver', 'ruskel', 'icebound', 'kadjimaran', 'oakhaven', 'nimrudan', 'hestia', 'moor', 'tlaloc', 'verdant', 'iron', 'scorched'];
   
   let hexIndex = 0;
-  for (let q = -10; q <= 9; q++) {
-    for (let r = -8; r <= 6; r++) {
+  for (let q = -20; q <= 20; q++) {
+    for (let r = -15; r <= 15; r++) {
       const hexId = `hex_${q}_${r}`;
       const terrain = terrains[Math.abs(q + r) % terrains.length];
       const region = regions[Math.abs(q * r + q + r) % regions.length];
