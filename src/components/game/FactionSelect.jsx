@@ -158,7 +158,7 @@ function PlayerSlot({ index, choices, onChange, takenFactionIds, isAI }) {
 
 export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack }) {
   // For 'ai' mode: 1 human + 1 AI. For 'multiplayer': configurable humans + configurable AIs
-  const [aiCount, setAiCount] = useState(mode === 'ai' ? 1 : 0);
+  const [aiCount, setAiCount] = useState(mode === 'ai' ? 3 : 0);
   const humanCount = mode === 'ai' ? 1 : playerCount;
   const totalPlayers = humanCount + aiCount;
 
