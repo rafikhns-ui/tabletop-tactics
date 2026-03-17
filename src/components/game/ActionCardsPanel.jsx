@@ -171,7 +171,7 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
           </div>
           <div className="flex flex-wrap gap-2">
             <AnimatePresence>
-              {hand.map(card => {
+              {filteredHand.map(card => {
                 const affordable = canAffordCard(card, currentPlayer);
                 const isHovered = hoveredId === card.id;
                 const isNew = newCardId === card.id;
