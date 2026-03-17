@@ -9,6 +9,7 @@ import { HEROES } from '../components/game/ardoniaData';
 import { getHeroCombatBonus } from '../components/game/ardoniaLogic';
 import FactionSelect from '../components/game/FactionSelect';
 import GameBoard from '../components/game/GameBoard';
+import HexMap from '../components/game/HexMap';
 import PlayerPanel from '../components/game/PlayerPanel';
 import ActionBar from '../components/game/ActionBar';
 import BattleModal from '../components/game/BattleModal';
