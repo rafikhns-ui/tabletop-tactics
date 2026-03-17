@@ -259,13 +259,78 @@ export const LEADERS = {
 
 // ---- Heroes ----
 export const HEROES = {
-  // Universal heroes (available to all)
-  spy_mira: { id: 'spy_mira', name: 'Mira the Shadow', type: 'Spy', stealth: 4, charisma: 2, force: 1, arcana: 1, cost: { gold: 3 }, ability: 'Reveal one enemy objective type', faction: null },
-  warrior_bran: { id: 'warrior_bran', name: 'Bran Ironhand', type: 'Warrior', stealth: 1, charisma: 1, force: 5, arcana: 0, cost: { gold: 4 }, ability: '+3 to one attack roll this turn', faction: null },
-  diplomat_lyra: { id: 'diplomat_lyra', name: 'Lyra Silvertongue', type: 'Diplomat', stealth: 1, charisma: 5, force: 1, arcana: 1, cost: { gold: 3, ip: 1 }, ability: 'Force one trade treaty negotiation', faction: null },
-  mage_zel: { id: 'mage_zel', name: 'Zel the Arcane', type: 'Mage', stealth: 2, charisma: 2, force: 1, arcana: 5, cost: { gold: 3, sp: 2 }, ability: '+2 SP immediately', faction: null },
-  strategist_oryn: { id: 'strategist_oryn', name: 'Oryn Dawnblade', type: 'Strategist', stealth: 2, charisma: 3, force: 3, arcana: 2, cost: { gold: 5 }, ability: 'Move one friendly unit twice this turn', faction: null },
-  healer_seri: { id: 'healer_seri', name: 'Seri the Healer', type: 'Healer', stealth: 1, charisma: 3, force: 1, arcana: 3, cost: { gold: 3 }, ability: 'Restore 2 troops to any friendly territory', faction: null },
+  spy_mira: {
+    id: 'spy_mira', name: 'Mira the Shadow', type: 'Spy',
+    stealth: 4, charisma: 2, force: 1, arcana: 1,
+    cost: { gold: 3 }, faction: null,
+    ability: 'Reveal one enemy objective type',
+    passive: '+1 defense in assigned territory (spy network)',
+    passiveEffect: { defenseBonus: 1 },
+  },
+  warrior_bran: {
+    id: 'warrior_bran', name: 'Bran Ironhand', type: 'Warrior',
+    stealth: 1, charisma: 1, force: 5, arcana: 0,
+    cost: { gold: 4 }, faction: null,
+    ability: '+3 to one attack roll this turn',
+    passive: '+2 attack bonus when fighting from assigned territory',
+    passiveEffect: { attackBonus: 2 },
+  },
+  diplomat_lyra: {
+    id: 'diplomat_lyra', name: 'Lyra Silvertongue', type: 'Diplomat',
+    stealth: 1, charisma: 5, force: 1, arcana: 1,
+    cost: { gold: 3, ip: 1 }, faction: null,
+    ability: 'Force one trade treaty negotiation',
+    passive: '+1 IP per turn while assigned to any territory',
+    passiveEffect: { ipPerTurn: 1 },
+  },
+  mage_zel: {
+    id: 'mage_zel', name: 'Zel the Arcane', type: 'Mage',
+    stealth: 2, charisma: 2, force: 1, arcana: 5,
+    cost: { gold: 3, sp: 2 }, faction: null,
+    ability: '+2 SP immediately',
+    passive: '+1 SP per turn while assigned anywhere',
+    passiveEffect: { spPerTurn: 1 },
+  },
+  strategist_oryn: {
+    id: 'strategist_oryn', name: 'Oryn Dawnblade', type: 'Strategist',
+    stealth: 2, charisma: 3, force: 3, arcana: 2,
+    cost: { gold: 5 }, faction: null,
+    ability: 'Move one friendly unit twice this turn',
+    passive: '+1 attack and +1 defense in assigned territory',
+    passiveEffect: { attackBonus: 1, defenseBonus: 1 },
+  },
+  healer_seri: {
+    id: 'healer_seri', name: 'Seri the Healer', type: 'Healer',
+    stealth: 1, charisma: 3, force: 1, arcana: 3,
+    cost: { gold: 3 }, faction: null,
+    ability: 'Restore 2 troops to any friendly territory',
+    passive: '+1 Gold income per turn (field support)',
+    passiveEffect: { goldPerTurn: 1 },
+  },
+  knight_aldric: {
+    id: 'knight_aldric', name: 'Sir Aldric the Unyielding', type: 'Warrior',
+    stealth: 1, charisma: 2, force: 4, arcana: 0,
+    cost: { gold: 5, wheat: 2 }, faction: null,
+    ability: 'Negate one attack loss this turn',
+    passive: 'Assigned territory troops never drop below 2 from battle',
+    passiveEffect: { minTroops: 2 },
+  },
+  oracle_vex: {
+    id: 'oracle_vex', name: 'Oracle Vex', type: 'Mage',
+    stealth: 3, charisma: 1, force: 0, arcana: 6,
+    cost: { gold: 4, sp: 3 }, faction: null,
+    ability: 'Predict enemy attack direction this turn',
+    passive: '+2 defense bonus in assigned territory (arcane wards)',
+    passiveEffect: { defenseBonus: 2 },
+  },
+  ranger_kael: {
+    id: 'ranger_kael', name: 'Kael Swiftarrow', type: 'Spy',
+    stealth: 5, charisma: 2, force: 2, arcana: 1,
+    cost: { gold: 4 }, faction: null,
+    ability: 'Scout all adjacent enemy troop counts',
+    passive: '+1 Wood income per turn (forest expertise)',
+    passiveEffect: { woodPerTurn: 1 },
+  },
 };
 
 // ---- Objectives ----
