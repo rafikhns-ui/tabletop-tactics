@@ -670,12 +670,12 @@ export default function Game() {
 
       <div className="p-2" style={{ background: 'hsl(35,22%,12%)' }}>
         {gameState && (
-          <GameBoard
+          <HexMap
             gameState={gameState}
-            selectedTerritory={selectedTerritory}
+            selectedHex={selectedTerritory}
             phase={phase}
             currentPlayer={currentPlayer}
-            onTerritoryClick={handleTerritoryClick}
+            onHexClick={handleTerritoryClick}
           />
         )}
       </div>
