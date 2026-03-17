@@ -492,6 +492,11 @@ export const ACTION_CARDS = [
   { id: 'allied_barracks', name: 'Allied Barracks', category: 'Diplomacy', cost: { gold: 2, ip: 1 }, heroStat: 'charisma', effect: 'Share recruitment costs with an ally for 1 turn. You gain 1 IP', emoji: '⚔️', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/94e66640d_20.png' },
   { id: 'diplomatic_favor', name: 'Diplomatic Favor', category: 'Diplomacy', cost: { gold: 2 }, heroStat: 'charisma', effect: 'Gain +3 IP this turn', emoji: '🕊️', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/637e8fc1d_21.png' },
   { id: 'non_aggression_pact', name: 'Non-Aggression Pact', category: 'Diplomacy', cost: { gold: 2, ip: 1 }, heroStat: 'charisma', effect: 'Prevent mutual attacks for 2 turns. Breaking it costs 2 IP. You gain 1 IP', emoji: '🕊️', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/3792f726b_22.png' },
+  { id: 'spiritual_pilgrimage', name: 'Spiritual Pilgrimage', category: 'Spiritual', cost: { gold: 2 }, heroStat: 'wisdom', effect: 'Gain +3 SP instantly', emoji: '🙏', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/07a04af61_1.png' },
+  { id: 'holy_shield', name: 'Holy Shield', category: 'Spiritual', cost: { gold: 2 }, heroStat: 'wisdom', effect: 'Negate all damage to one unit this turn. +1 SP', emoji: '🛡️', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d5633620a_2.png' },
+  { id: 'ritual_of_summoning', name: 'Ritual of Summoning', category: 'Spiritual', cost: { gold: 2 }, heroStat: 'wisdom', effect: 'Gain +1 SP instantly. Reduce the SP cost of your next Avatar by 2', emoji: '✨', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/a026f4a70_3.png' },
+  { id: 'temple_blessing', name: 'Temple Blessing', category: 'Spiritual', cost: { gold: 2 }, heroStat: 'wisdom', effect: 'Your Temple generates +2 SP this turn', emoji: '⛩️', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/59c018a71_4.png' },
+  { id: 'mystic_barrier', name: 'Mystic Barrier', category: 'Spiritual', cost: { gold: 2 }, heroStat: 'wisdom', effect: 'Cancel one Clandestine card targeting you. +1 SP', emoji: '✨', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/e33cfe253_5.png' },
 ];
 
 // ---- Event Cards ----
