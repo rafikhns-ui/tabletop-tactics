@@ -217,7 +217,7 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
             ⚜️ Choose Your Factions
           </h1>
           <p className="text-sm opacity-50" style={{ color: 'hsl(40,20%,65%)' }}>
-            {mode === 'ai' ? 'You vs the AI' : `${humanCount} Human${humanCount > 1 ? 's' : ''} + ${aiCount} AI — same screen`}
+            {mode === 'ai' ? `You vs ${aiCount} AI opponents` : `${humanCount} Human${humanCount > 1 ? 's' : ''} + ${aiCount} AI — same screen`}
           </p>
         </div>
 
