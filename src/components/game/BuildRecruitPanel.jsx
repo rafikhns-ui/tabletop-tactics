@@ -61,7 +61,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
               border: tab === t ? '1px solid hsl(38,80%,50%)' : '1px solid hsl(35,20%,32%)',
               color: tab === t ? 'hsl(43,90%,80%)' : 'hsl(40,20%,55%)',
             }}>
-            {t === 'build' ? '🏗️ Build' : '⚔️ Recruit'}
+            {t === 'build' ? '🏗️ Build' : t === 'recruit' ? '⚔️ Recruit' : '⬆️ Upgrade'}
           </button>
         ))}
       </div>
