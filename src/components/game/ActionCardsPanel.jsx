@@ -32,10 +32,16 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
   const [hoveredId, setHoveredId] = useState(null);
   const [drawing, setDrawing] = useState(false);
   const [newCardId, setNewCardId] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   const hand = currentPlayer.actionCards?.length > 0
     ? ACTION_CARDS.filter(c => currentPlayer.actionCards.includes(c.id))
     : [];
+
+  const categories = ['all', ...new Set(ACTION_CARDS.map(c => c.category))];
+  const filteredHand = categoryFilter === 'all' 
+    ? hand 
+    : hand.filter(c => c.category === categoryFilter);
 
   const canDraw = (currentPlayer.resources?.gold ?? 0) >= DRAW_COST;
   const deckSize = ACTION_CARDS.length;
