@@ -459,7 +459,9 @@ export default function Game() {
     return () => clearTimeout(timeout);
   }, [gameState?.currentPlayerIndex, gameState?.turn, gameMode, winner]);
 
-  if (!gameMode && !pendingMode) return <GameMenu onStart={handleMenuStart} />;
+  if (onlineSession) return <OnlineGame session={onlineSession} onLeave={() => { setOnlineSession(null); setShowLobby(false); }} />;
+  if (showLobby) return <Lobby onStartOnline={(s) => setOnlineSession(s)} onBack={() => setShowLobby(false)} />;
+  if (!gameMode && !pendingMode) return <GameMenu onStart={handleMenuStart} onOnline={() => setShowLobby(true)} />;
   if (pendingMode && !gameMode) return (
     <FactionSelect
       mode={pendingMode.mode}
