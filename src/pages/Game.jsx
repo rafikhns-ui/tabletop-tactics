@@ -145,6 +145,13 @@ export default function Game() {
               return prev;
             }
             
+            // Check if units can enter destination terrain
+            const unitType = fromHex.units?.[0]?.type || 'infantry';
+            if (!canUnitEnter(hexId, unitType)) {
+              addMessage(`⛔ Unit type cannot enter that terrain`);
+              return prev;
+            }
+            
             return {
               ...prev,
               hexes: {
