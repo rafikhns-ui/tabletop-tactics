@@ -155,7 +155,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                fill={isSelected ? ringColor : playerColor}
                stroke={isSelected ? ringColor : playerColor}
                strokeWidth="1"
-               opacity={hex.owner ? "0.8" : "0.4"}
+               opacity={hex.owner ? "0.2" : "0.08"}
                style={{ filter: glow ? `drop-shadow(${glow})` : 'none' }}
              />
 
