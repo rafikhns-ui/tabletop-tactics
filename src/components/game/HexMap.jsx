@@ -155,10 +155,27 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                }).flat().join(',')}
                fill={isSelected ? ringColor : playerColor}
                stroke={isSelected ? ringColor : playerColor}
-               strokeWidth="1"
+               strokeWidth={outlineWidth}
                opacity={hex.owner ? "0.2" : "0.08"}
                style={{ filter: glow ? `drop-shadow(${glow})` : 'none' }}
              />
+
+             {/* Selection highlight border */}
+             {isSelected && (
+               <polygon
+                 points={[0, 1, 2, 3, 4, 5].map(i => {
+                   const angle = (Math.PI / 3) * i;
+                   return [
+                     px + hexSize * Math.cos(angle),
+                     py + hexSize * Math.sin(angle),
+                   ];
+                 }).flat().join(',')}
+                 fill="none"
+                 stroke="rgba(255,200,50,0.9)"
+                 strokeWidth="2"
+                 style={{ filter: 'drop-shadow(0 0 10px rgba(255,200,50,0.6))' }}
+               />
+             )}
 
              {/* Unit count */}
              {hex.units && hex.units.length > 0 && (
