@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HEROES } from './ardoniaData';
+import { HEROES, BUILDING_DEFS } from './ardoniaData';
 
 const HERO_TYPE_ICONS = {
   Warrior: '⚔️', Spy: '🕵️', Diplomat: '🤝', Mage: '🔮',
