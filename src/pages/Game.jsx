@@ -20,6 +20,7 @@ export default function Game() {
   const [activeEvent, setActiveEvent] = useState(null);
   const [messages, setMessages] = useState([]);
   const [winner, setWinner] = useState(null);
+  const [battleLog, setBattleLog] = useState([]);
 
   const addMessage = (msg) => setMessages(prev => [...prev.slice(-4), msg]);
 
