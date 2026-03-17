@@ -22,6 +22,8 @@ export default function Game() {
   const [messages, setMessages] = useState([]);
   const [winner, setWinner] = useState(null);
   const [battleLog, setBattleLog] = useState([]);
+  const [tradeOffers, setTradeOffers] = useState([]);
+  const [bottomTab, setBottomTab] = useState('action'); // 'action' | 'diplomacy' | 'log'
 
   const addMessage = (msg) => setMessages(prev => [...prev.slice(-4), msg]);
 
