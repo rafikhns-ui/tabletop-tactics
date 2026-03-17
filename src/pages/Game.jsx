@@ -124,7 +124,7 @@ export default function Game() {
           addMessage(`🚶 Moving from ${territory.name} — pick destination`);
         }
       } else if (territoryId !== selectedTerritory) {
-        // Allow moving to any reachable territory
+        // Allow moving to any reachable territory (implementation pending)
         setSelectedTerritory(null);
         addMessage(`🚶 Unit movement initiated`);
       } else {
