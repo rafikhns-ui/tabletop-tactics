@@ -527,10 +527,7 @@ export default function Game() {
       <div className="flex items-center justify-between px-4 py-2 border-b border-border"
         style={{ background: 'linear-gradient(135deg, hsl(35,30%,10%), hsl(35,20%,14%))' }}>
         <div className="flex items-center gap-2">
-          <span className="text-xl">⚜️</span>
-          <h1 className="text-lg font-bold" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,58%)' }}>
-            Rulers of Ardonia
-          </h1>
+          <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/18fc0b373_photo-output11.png" alt="Rulers of Ardonia" className="h-10" style={{ filter: 'drop-shadow(0 0 10px rgba(255,200,50,0.3))' }} />
           <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'hsl(35,20%,22%)', color: 'hsl(40,20%,60%)', border: '1px solid hsl(35,20%,30%)' }}>
             Turn {gameState?.turn}
           </span>
