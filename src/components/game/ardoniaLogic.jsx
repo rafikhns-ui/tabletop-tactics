@@ -313,11 +313,15 @@ export const doAiTurn = (gameState) => {
   // 3. Attack best target
   const myTerrs = Object.values(state.territories).filter(t => t.owner === ai.id).sort((a, b) => b.troops - a.troops);
   for (const from of myTerrs) {
-    if (from.troops < 3) continue;
-    const targets = (ADJACENCY[from.id] || []).map(id => state.territories[id]).filter(t => t.owner !== ai.id && from.troops > t.troops + 1);
+    const fromTroops = from.units.reduce((s, u) => s + u.count, 0);
+    if (fromTroops < 3) continue;
+    const targets = (ADJACENCY[from.id] || []).map(id => state.territories[id]).filter(t => {
+      const targetTroops = t.units.reduce((s, u) => s + u.count, 0);
+      return t.owner !== ai.id && fromTroops > targetTroops + 1;
+    });
     if (targets.length > 0) {
-      const target = targets.sort((a, b) => a.troops - b.troops)[0];
-      const result = resolveBattle(from.troops, target.troops, target.fortified);
+      const target = targets.sort((a, b) => a.units.reduce((s, u) => s + u.count, 0) - b.units.reduce((s, u) => s + u.count, 0))[0];
+      const result = resolveBattle(from.units, target.units, target.hasFortress);
       state = executeAttack(state, from.id, target.id, result);
       logs.push(`🤖 AI attacked ${target.name} from ${from.name}!`);
       break;
