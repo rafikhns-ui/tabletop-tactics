@@ -802,6 +802,7 @@ export default function Game() {
             )}
               </>
             )}
+            )}
           </div>
         </div>
       </div>
