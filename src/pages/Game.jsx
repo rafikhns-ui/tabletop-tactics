@@ -309,21 +309,7 @@ export default function Game() {
     addMessage(`⭐ ${hero.name} has joined your ranks!`);
   };
 
-  const handleAssignHero = (heroId, territoryId) => {
-    setGameState(prev => {
-      // Remove hero from any previous territory
-      const newTerritories = {};
-      Object.entries(prev.territories).forEach(([id, t]) => {
-        newTerritories[id] = t.heroId === heroId ? { ...t, heroId: null } : { ...t };
-      });
-      // Assign to new territory
-      newTerritories[territoryId] = { ...newTerritories[territoryId], heroId };
-      return { ...prev, territories: newTerritories };
-    });
-    const hero = HEROES[heroId];
-    const territory = gameState.territories[territoryId];
-    addMessage(`📍 ${hero?.name} assigned to ${territory?.name}`);
-  };
+
 
   const handleDrawCard = (card) => {
     setGameState(prev => {
