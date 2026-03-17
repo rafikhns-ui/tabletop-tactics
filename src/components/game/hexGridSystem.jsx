@@ -278,3 +278,38 @@ export const getAreaEffectHexes = (targetId, radius = 1) => {
   
   return hexes;
 };
+
+// ---- TERRAIN-BASED MOVEMENT ----
+export const isOceanTerrain = (terrain) => terrain === 'ocean';
+export const isLandTerrain = (terrain) => !isOceanTerrain(terrain);
+
+export const isCoastalHex = (hexId) => {
+  const hex = HEXES[hexId];
+  if (!hex) return false;
+  
+  const neighbors = HexUtils.getNeighbors(hex.q, hex.r);
+  const terrains = neighbors
+    .map(([q, r]) => Object.values(HEXES).find(h => h.q === q && h.r === r)?.terrain)
+    .filter(Boolean);
+  
+  const hasOcean = terrains.some(t => isOceanTerrain(t));
+  const hasLand = terrains.some(t => isLandTerrain(t));
+  
+  return hasOcean && hasLand;
+};
+
+export const canUnitEnter = (hexId, unitType) => {
+  const hex = HEXES[hexId];
+  if (!hex) return false;
+  
+  const isOcean = isOceanTerrain(hex.terrain);
+  
+  if (unitType === 'naval' || unitType === 'ship') {
+    return isOcean;
+  } else if (unitType === 'coastal' || unitType === 'scout') {
+    return isCoastalHex(hexId);
+  } else {
+    // Regular land units
+    return !isOcean;
+  }
+};
