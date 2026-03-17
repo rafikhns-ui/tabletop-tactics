@@ -76,84 +76,32 @@ export const HexUtils = {
 // Grid is approximately 12-hex radius
 // Using axial coordinates (q, r) where q increases right, r increases down-left
 
-export const HEXES = {
-  // Gojeon Kingdom (north-west)
-  'gojeon_1': { id: 'gojeon_1', q: -8, r: -4, terrain: 'forest', region: 'gojeon', faction: 'gojeon', resource: null },
-  'gojeon_2': { id: 'gojeon_2', q: -9, r: -3, terrain: 'forest', region: 'gojeon', faction: 'gojeon', resource: null },
-  'gojeon_3': { id: 'gojeon_3', q: -7, r: -5, terrain: 'mountain', region: 'gojeon', faction: 'gojeon', resource: 'ore' },
-  'gojeon_4': { id: 'gojeon_4', q: -8, r: -5, terrain: 'mountain', region: 'gojeon', faction: 'gojeon', resource: 'ore' },
-
-  // Onishiman Empire (west)
-  'onishiman_1': { id: 'onishiman_1', q: -6, r: -2, terrain: 'plains', region: 'onishiman', faction: 'onishiman', resource: 'wheat' },
-  'onishiman_2': { id: 'onishiman_2', q: -5, r: -1, terrain: 'plains', region: 'onishiman', faction: 'onishiman', resource: 'wheat' },
-  'onishiman_3': { id: 'onishiman_3', q: -6, r: 0, terrain: 'plains', region: 'onishiman', faction: 'onishiman', resource: 'wheat' },
-  'onishiman_4': { id: 'onishiman_4', q: -7, r: 2, terrain: 'plains', region: 'onishiman', faction: 'onishiman', resource: null },
-  'onishiman_5': { id: 'onishiman_5', q: -6, r: 3, terrain: 'ocean', region: 'onishiman', faction: 'onishiman', resource: 'fish' },
-
-  // Inuvak Confederacy (north-central)
-  'inuvak_1': { id: 'inuvak_1', q: -2, r: -6, terrain: 'tundra', region: 'inuvak', faction: 'kadjimaran', resource: null },
-  'inuvak_2': { id: 'inuvak_2', q: 0, r: -7, terrain: 'tundra', region: 'inuvak', faction: 'kadjimaran', resource: null },
-  'inuvak_3': { id: 'inuvak_3', q: 1, r: -6, terrain: 'tundra', region: 'inuvak', faction: 'kadjimaran', resource: null },
-  'inuvak_4': { id: 'inuvak_4', q: 0, r: -8, terrain: 'tundra', region: 'inuvak', faction: 'kadjimaran', resource: null },
-
-  // Silver Union (central neutral zone)
-  'silver_1': { id: 'silver_1', q: -2, r: -2, terrain: 'plains', region: 'silver', faction: null, resource: 'gold' },
-  'silver_2': { id: 'silver_2', q: -1, r: -3, terrain: 'mountain', region: 'silver', faction: null, resource: 'gold' },
-  'silver_3': { id: 'silver_3', q: 0, r: -2, terrain: 'plains', region: 'silver', faction: null, resource: null },
-
-  // Ruskel Federation (north-east)
-  'ruskel_1': { id: 'ruskel_1', q: 4, r: -8, terrain: 'tundra', region: 'ruskel', faction: 'kadjimaran', resource: null },
-  'ruskel_2': { id: 'ruskel_2', q: 5, r: -7, terrain: 'mountain', region: 'ruskel', faction: 'kadjimaran', resource: 'ore' },
-  'ruskel_3': { id: 'ruskel_3', q: 6, r: -7, terrain: 'mountain', region: 'ruskel', faction: 'kadjimaran', resource: 'ore' },
-
-  // Icebound Horde (far north-east)
-  'icebound_1': { id: 'icebound_1', q: 7, r: -8, terrain: 'tundra', region: 'icebound', faction: 'kadjimaran', resource: null },
-  'icebound_2': { id: 'icebound_2', q: 8, r: -7, terrain: 'tundra', region: 'icebound', faction: 'kadjimaran', resource: null },
-
-  // Kadjimaran Kingdom (central)
-  'kadjimaran_1': { id: 'kadjimaran_1', q: 2, r: -4, terrain: 'desert', region: 'kadjimaran', faction: 'kadjimaran', resource: 'gold' },
-  'kadjimaran_2': { id: 'kadjimaran_2', q: 3, r: -3, terrain: 'desert', region: 'kadjimaran', faction: 'kadjimaran', resource: null },
-  'kadjimaran_3': { id: 'kadjimaran_3', q: 2, r: -2, terrain: 'desert', region: 'kadjimaran', faction: 'kadjimaran', resource: null },
-  'kadjimaran_4': { id: 'kadjimaran_4', q: 1, r: -3, terrain: 'desert', region: 'kadjimaran', faction: 'kadjimaran', resource: null },
-  'kadjimaran_5': { id: 'kadjimaran_5', q: 2, r: 0, terrain: 'desert', region: 'kadjimaran', faction: 'kadjimaran', resource: null },
-
-  // Oakhaven (east, forest)
-  'oakhaven_1': { id: 'oakhaven_1', q: 6, r: -4, terrain: 'forest', region: 'oakhaven', faction: 'republic', resource: 'wood' },
-  'oakhaven_2': { id: 'oakhaven_2', q: 7, r: -3, terrain: 'forest', region: 'oakhaven', faction: 'republic', resource: 'wood' },
-  'oakhaven_3': { id: 'oakhaven_3', q: 7, r: -4, terrain: 'forest', region: 'oakhaven', faction: 'republic', resource: 'wood' },
-
-  // Nimrudan Empire (south-east)
-  'nimrudan_1': { id: 'nimrudan_1', q: 5, r: -1, terrain: 'mountain', region: 'nimrudan', faction: 'sultanate', resource: 'ore' },
-  'nimrudan_2': { id: 'nimrudan_2', q: 6, r: 0, terrain: 'desert', region: 'nimrudan', faction: 'sultanate', resource: null },
-  'nimrudan_3': { id: 'nimrudan_3', q: 6, r: 2, terrain: 'ocean', region: 'nimrudan', faction: 'sultanate', resource: 'fish' },
-  'nimrudan_4': { id: 'nimrudan_4', q: 5, r: 3, terrain: 'ocean', region: 'nimrudan', faction: 'sultanate', resource: 'fish' },
-
-  // Hestia (south-central)
-  'hestia_1': { id: 'hestia_1', q: 1, r: 2, terrain: 'plains', region: 'hestia', faction: 'republic', resource: 'wheat' },
-  'hestia_2': { id: 'hestia_2', q: 2, r: 2, terrain: 'plains', region: 'hestia', faction: 'republic', resource: 'wheat' },
-  'hestia_3': { id: 'hestia_3', q: 1, r: 3, terrain: 'ocean', region: 'hestia', faction: 'republic', resource: 'fish' },
-
-  // Moor Sultanate (far south-east)
-  'moor_1': { id: 'moor_1', q: 5, r: 4, terrain: 'desert', region: 'moor', faction: 'sultanate', resource: null },
-  'moor_2': { id: 'moor_2', q: 6, r: 4, terrain: 'ocean', region: 'moor', faction: 'sultanate', resource: 'fish' },
-
-  // Tlalocayotlan (south-west)
-  'tlaloc_1': { id: 'tlaloc_1', q: -7, r: 4, terrain: 'forest', region: 'tlalocayotlan', faction: 'republic', resource: 'wood' },
-  'tlaloc_2': { id: 'tlaloc_2', q: -6, r: 5, terrain: 'forest', region: 'tlalocayotlan', faction: 'republic', resource: 'wood' },
-  'tlaloc_3': { id: 'tlaloc_3', q: -7, r: 6, terrain: 'ocean', region: 'tlalocayotlan', faction: 'republic', resource: 'fish' },
-
-  // Verdant Vale (south-centre, neutral)
-  'verdant_1': { id: 'verdant_1', q: -3, r: 2, terrain: 'forest', region: 'verdant', faction: null, resource: 'wood' },
-  'verdant_2': { id: 'verdant_2', q: -4, r: 3, terrain: 'forest', region: 'verdant', faction: null, resource: 'wood' },
-
-  // Iron Wastes (far west coast, neutral)
-  'iron_1': { id: 'iron_1', q: -10, r: 0, terrain: 'mountain', region: 'iron', faction: null, resource: 'ore' },
-  'iron_2': { id: 'iron_2', q: -10, r: 2, terrain: 'ocean', region: 'iron', faction: null, resource: null },
-
-  // Scorched Lands (far east, neutral)
-  'scorched_1': { id: 'scorched_1', q: 8, r: 0, terrain: 'wasteland', region: 'scorched', faction: null, resource: null },
-  'scorched_2': { id: 'scorched_2', q: 9, r: -2, terrain: 'wasteland', region: 'scorched', faction: null, resource: null },
-};
+export const HEXES = (() => {
+  const hexes = {};
+  const terrains = ['plains', 'forest', 'mountain', 'tundra', 'desert', 'ocean', 'wasteland'];
+  const regions = ['gojeon', 'onishiman', 'inuvak', 'silver', 'ruskel', 'icebound', 'kadjimaran', 'oakhaven', 'nimrudan', 'hestia', 'moor', 'tlaloc', 'verdant', 'iron', 'scorched'];
+  
+  let hexIndex = 0;
+  for (let q = -10; q <= 9; q++) {
+    for (let r = -8; r <= 6; r++) {
+      const hexId = `hex_${q}_${r}`;
+      const terrain = terrains[Math.abs(q + r) % terrains.length];
+      const region = regions[Math.abs(q * r + q + r) % regions.length];
+      
+      hexes[hexId] = {
+        id: hexId,
+        q,
+        r,
+        terrain,
+        region,
+        faction: null,
+        resource: Math.random() > 0.7 ? ['gold', 'ore', 'wood', 'fish'][Math.floor(Math.random() * 4)] : null,
+      };
+      hexIndex++;
+    }
+  }
+  return hexes;
+})();
 
 // ---- BUILD HEX ADJACENCY ----
 export const buildHexAdjacency = () => {
