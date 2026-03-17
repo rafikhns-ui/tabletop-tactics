@@ -608,7 +608,6 @@ export default function Game() {
                 gameState={gameState}
                 currentPlayer={currentPlayer}
                 onRecruit={handleRecruitHero}
-                onAssign={handleAssignHero}
               />
             )}
             {bottomTab === 'heroes' && currentPlayer?.isAI && (
