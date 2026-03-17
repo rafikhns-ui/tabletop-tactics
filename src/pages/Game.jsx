@@ -422,6 +422,17 @@ export default function Game() {
         cardEffects.luxury_tax = { duration: 1, active: true };
       } else if (card.id === 'forced_tribute') {
         cardEffects.forced_tribute = { duration: 1, active: true };
+      } else if (card.id === 'royal_marriage') {
+        newIp += 0; // IP effect handled in diplomacy
+        cardEffects.royal_marriage = { duration: 3, active: true };
+      } else if (card.id === 'allied_barracks') {
+        newIp += 1;
+        cardEffects.allied_barracks = { duration: 1, active: true };
+      } else if (card.id === 'diplomatic_favor') {
+        newIp += 3;
+      } else if (card.id === 'non_aggression_pact') {
+        newIp += 1;
+        cardEffects.non_aggression_pact = { duration: 2, active: true };
       }
       
       const newCards = (player.actionCards || []).filter(id => id !== card.id);
