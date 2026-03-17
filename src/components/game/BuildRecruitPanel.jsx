@@ -141,10 +141,9 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
 
       {tab === 'upgrade' && (
         <div className="space-y-1.5">
-          {['mine', 'sawmill', 'field'].map(id => {
-            const b = currentPlayer.buildings?.[id];
-            if (!b) return null;
+          {Object.entries(currentPlayer.buildings || {}).map(([id, b]) => {
             const def = BUILDING_DEFS[id];
+            if (!def || !def.maxLevel) return null;
             const isMaxed = b.level >= def.maxLevel;
             const upgradeCost = def.upgradeBase ? Object.entries(def.upgradeBase).reduce((acc, [k, v]) => ({ ...acc, [k]: v * b.level }), {}) : {};
             const affordable = !isMaxed && canAfford(resources, upgradeCost);
