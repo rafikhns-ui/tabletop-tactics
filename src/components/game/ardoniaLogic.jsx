@@ -105,7 +105,22 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
       : [createPlayer('p1', 'Player 1', p1f, false, 0), createPlayer('p2', 'Player 2', p2f, false, 0)];
   }
 
-  // Distribute territories evenly among all players
+  // Initialize hexes with ownership
+  const hexIds = shuffle(Object.keys(HEXES));
+  const hexes = {};
+  hexIds.forEach((id, i) => {
+    const owner = players[i % players.length].id;
+    hexes[id] = {
+      ...HEXES[id],
+      owner,
+      units: [],
+      hasFortress: false,
+      isCapital: i % players.length === 0 && Math.floor(i / players.length) === 0, // First hex per player is capital
+    };
+  });
+  const hexAdjacency = buildHexAdjacency();
+
+  // Fallback: also distribute old territories
   const ids = shuffle(Object.keys(TERRITORIES));
   const territories = {};
   ids.forEach((id, i) => {
@@ -114,25 +129,26 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
       ...TERRITORIES[id],
       owner,
       troops: 2,
-      units: [], // Array of {type: 'infantry'|'cavalry'|'ranged'|'elite'|'siege'|'naval', count: number}
+      units: [],
       hasForceress: false,
       isCapital: false,
     };
   });
-  // Mark first territory of each player as capital
   players.forEach((p, pi) => {
     const firstId = ids[pi];
     if (firstId) territories[firstId].isCapital = true;
   });
 
   return {
+    hexes,
+    hexAdjacency,
     territories,
     adjacency: ADJACENCY,
     players,
     currentPlayerIndex: 0,
     turn: 1,
     mode,
-    phase: 'collect', // collect → build → move → action → end
+    phase: 'collect',
     log: ['⚜️ Rulers of Ardonia begins! May your reign be glorious.'],
     eventCountdown: 3,
     activeEvent: null,
