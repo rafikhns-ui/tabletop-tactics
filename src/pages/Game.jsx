@@ -410,6 +410,18 @@ export default function Game() {
         cardEffects.economic_boom = { duration: 3, active: true, goldBonus: 2 };
       } else if (card.id === 'war_profiteering') {
         cardEffects.war_profiteering = { duration: Infinity, active: true };
+      } else if (card.id === 'economic_manipulation') {
+        cardEffects.economic_manipulation = { duration: 1, active: true };
+      } else if (card.id === 'tariff_war') {
+        cardEffects.tariff_war = { duration: 1, active: true };
+      } else if (card.id === 'slave_trade') {
+        cardEffects.slave_trade = { duration: 3, active: true };
+      } else if (card.id === 'debt_forgiveness') {
+        cardEffects.debt_forgiveness = { duration: 1, active: true };
+      } else if (card.id === 'luxury_tax') {
+        cardEffects.luxury_tax = { duration: 1, active: true };
+      } else if (card.id === 'forced_tribute') {
+        cardEffects.forced_tribute = { duration: 1, active: true };
       }
       
       const newCards = (player.actionCards || []).filter(id => id !== card.id);
