@@ -19,7 +19,9 @@ import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS } from '../components/game/ardoni
 export default function Game() {
   const [gameState, setGameState] = useState(null);
   const [gameMode, setGameMode] = useState(null);
-  const [pendingMode, setPendingMode] = useState(null); // mode chosen in menu, waiting for faction select
+  const [pendingMode, setPendingMode] = useState(null);
+  const [showLobby, setShowLobby] = useState(false);
+  const [onlineSession, setOnlineSession] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
   const [phase, setPhase] = useState('deploy'); // deploy → attack → fortify
   const [battle, setBattle] = useState(null);
