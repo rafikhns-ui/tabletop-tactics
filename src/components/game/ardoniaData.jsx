@@ -195,15 +195,35 @@ export const FACTIONS = {
 
 // ---- Leaders ----
 export const LEADERS = {
+  gojeon: [
+    { id: 'jeon_dynasty', name: 'Queen of the Purple Lotus', passive: '+2 IP per turn from cultural prestige', disadvantage: 'Cannot raze buildings', type: 'Diplomatic' },
+    { id: 'hwrogan_general', name: 'Hwrogan General', passive: 'Cavalry gets +1 attack and +1 defense', disadvantage: 'Cannot sign trade agreements', type: 'Military' },
+    { id: 'court_scholar', name: 'Grand Court Scholar', passive: 'All Spiritual cards cost 1 less SP', disadvantage: 'Cannot play Clandestine cards', type: 'Spiritual' },
+  ],
   onishiman: [
     { id: 'warlord_kato', name: 'Warlord Kato', passive: '+1 to all attack rolls', disadvantage: 'Cannot sign alliances', type: 'Military' },
     { id: 'shadow_empress', name: 'Shadow Empress', passive: 'Clandestine cards cost 1 less IP', disadvantage: 'Cannot play Spiritual cards', type: 'Clandestine' },
     { id: 'iron_chancellor', name: 'Iron Chancellor', passive: '+2 Gold income per turn', disadvantage: 'Units cost +1 Gold each', type: 'Economic' },
   ],
-  sultanate: [
-    { id: 'grand_mufti', name: 'Grand Mufti', passive: '+2 SP per turn', disadvantage: 'Cannot recruit Elite units', type: 'Spiritual' },
-    { id: 'merchant_sultan', name: 'Merchant Sultan', passive: 'Markets generate +2 Gold', disadvantage: 'Cannot declare war first', type: 'Economic' },
-    { id: 'architect_vizier', name: 'Architect Vizier', passive: 'Buildings cost 1 less Wood', disadvantage: 'Cannot play Clandestine cards', type: 'Builder' },
+  tlalocayotlan: [
+    { id: 'divine_chosen', name: 'The Divine Chosen', passive: '+2 SP per turn from rituals', disadvantage: 'Must spend 1 SP each turn or lose 1 troop', type: 'Spiritual' },
+    { id: 'serpent_king', name: 'Serpent King', passive: '+1 attack die in jungle/forest territories', disadvantage: 'Cannot recruit cavalry', type: 'Military' },
+    { id: 'council_elder', name: 'High Council Elder', passive: '+1 IP per turn, alliances last 1 extra turn', disadvantage: 'Cannot declare war on allies', type: 'Diplomatic' },
+  ],
+  kintei: [
+    { id: 'dragon_empress', name: 'Dragon Empress', passive: '+1 to all attack rolls, dragon bending active', disadvantage: 'Costs 1 extra SP each turn to maintain', type: 'Military' },
+    { id: 'master_engineer', name: 'Master Engineer', passive: 'Siege Engines cost 2 less to build', disadvantage: 'Cannot recruit cavalry', type: 'Economic' },
+    { id: 'wall_warden', name: 'Wall Warden', passive: '+3 defense in fortified home territories', disadvantage: 'Cannot attack first; must be attacked', type: 'Defense' },
+  ],
+  inuvak: [
+    { id: 'spirit_walker', name: 'Spirit Walker', passive: '+3 SP per turn, commune with nature spirits', disadvantage: 'Cannot build Barracks or Siege Works', type: 'Spiritual' },
+    { id: 'ice_chieftain', name: 'Ice Chieftain', passive: 'All units +1 defense in tundra territories', disadvantage: 'Units cost +1 Wheat in non-tundra', type: 'Military' },
+    { id: 'shaman_elder', name: 'Shaman Elder', passive: 'Spiritual cards reveal enemy objectives', disadvantage: 'Cannot play Clandestine cards', type: 'Spiritual' },
+  ],
+  nimrudan: [
+    { id: 'archduke_nim', name: 'Archduke Nim-Ramash', passive: '+1 to all rolls from dual-cult balance', disadvantage: 'Must maintain both temples or lose SP', type: 'Military' },
+    { id: 'ethiriel_high_priest', name: 'High Priest of Ethiriel', passive: '+2 defense, divine light shields allies', disadvantage: 'Cannot play Clandestine cards', type: 'Spiritual' },
+    { id: 'obsidian_flame_general', name: 'Obsidian Flame General', passive: '+2 attack, fire consumes enemy fortifications', disadvantage: 'Cannot form alliances', type: 'Military' },
   ],
   republic: [
     { id: 'admiral_thessa', name: 'Admiral Thessa', passive: 'Naval units get +2 combat', disadvantage: 'Cavalry costs +2 Gold', type: 'Naval' },
@@ -214,6 +234,26 @@ export const LEADERS = {
     { id: 'sun_king', name: 'Sun King Ardesh', passive: '+2 Wheat per turn', disadvantage: 'Cannot attack during night turns (even)', type: 'Spiritual' },
     { id: 'horse_khan', name: 'Horse Khan Miru', passive: 'Cavalry units cost 1 less Wheat', disadvantage: 'Mines produce -1 Gold', type: 'Military' },
     { id: 'shield_queen', name: 'Shield Queen Tara', passive: '+2 to all defense rolls', disadvantage: 'Cannot attack fortified cities', type: 'Defense' },
+  ],
+  oakhaven: [
+    { id: 'oakbinder_elder', name: 'Oakbinder Elder', passive: 'Forest territories give +3 defense via Oakbinding', disadvantage: 'Cannot burn or raze forests', type: 'Defense' },
+    { id: 'freedom_marshal', name: 'Freedom Marshal', passive: '+1 troop per turn in all owned forest territories', disadvantage: 'Cannot occupy non-forest territories without penalty', type: 'Military' },
+    { id: 'academy_head', name: 'Head of the Academy', passive: '+2 IP per turn, research unlocks hero discounts', disadvantage: 'Cannot play Clandestine cards', type: 'Diplomatic' },
+  ],
+  ruskel: [
+    { id: 'iron_chancellor_r', name: 'Iron Chancellor', passive: 'Buildings cost 2 less Gold via Dwarven contracts', disadvantage: 'Cavalry cost +2 Gold', type: 'Economic' },
+    { id: 'dwarf_marshal', name: 'Dwarf-Marshal', passive: 'Siege Engines get +3 attack', disadvantage: 'Spiritual cards cost +1 SP', type: 'Military' },
+    { id: 'industry_magnate', name: 'Industry Magnate', passive: '+2 Gold per turn from industrial output', disadvantage: 'Forest territories produce -1 Wood', type: 'Economic' },
+  ],
+  sultanate: [
+    { id: 'grand_mufti', name: 'Grand Mufti', passive: '+2 SP per turn', disadvantage: 'Cannot recruit Elite units', type: 'Spiritual' },
+    { id: 'merchant_sultan', name: 'Merchant Sultan', passive: 'Markets generate +2 Gold', disadvantage: 'Cannot declare war first', type: 'Economic' },
+    { id: 'architect_vizier', name: 'Architect Vizier', passive: 'Buildings cost 1 less Wood', disadvantage: 'Cannot play Clandestine cards', type: 'Builder' },
+  ],
+  icebound: [
+    { id: 'blizzard_khan', name: 'Blizzard Khan', passive: 'Units never retreat; +1 attack from fanaticism', disadvantage: 'Cannot sign any alliances or truces', type: 'Military' },
+    { id: 'cult_prophet', name: 'Eternal Blizzard Prophet', passive: '+2 SP per turn, shadow rituals empower troops', disadvantage: 'Must attack every turn or lose 2 SP', type: 'Spiritual' },
+    { id: 'shadowfell_champion', name: 'Shadowfell Champion', passive: 'Clandestine cards cost 0 IP', disadvantage: 'Loses 1 territory to Shadowfell influence each 3 turns', type: 'Clandestine' },
   ],
 };
 
