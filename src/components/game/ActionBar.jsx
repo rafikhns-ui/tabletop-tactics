@@ -84,6 +84,13 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
       </div>
 
       {!isAI && (
+        <ActionCardsPanel
+          currentPlayer={currentPlayer}
+          onPlayCard={onPlayCard}
+        />
+      )}
+
+      {!isAI && (
         <BuildRecruitPanel
           currentPlayer={currentPlayer}
           gameState={gameState}
