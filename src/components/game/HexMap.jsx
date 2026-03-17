@@ -162,6 +162,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         {/* Hex tiles */}
         {Object.entries(hexes).map(([hexId, hex]) => {
           const isSelected = selectedHex === hexId;
+          const isOwned = hex.owner === currentPlayer?.id;
           const canAttack = isAttackable(hexId);
           const canMove = isMovable(hexId);
           const canFortify = isFortifiable(hexId);
