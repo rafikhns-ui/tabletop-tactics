@@ -28,8 +28,9 @@ export default function Game() {
   };
 
   // Called from FactionSelect — actually start the game
-  const startGame = (mode, choices) => {
-    const state = createGameState(mode, choices);
+  const startGame = (choices, playersArr) => {
+    const mode = pendingMode.mode;
+    const state = createGameState(mode, choices, playersArr);
     const collected = collectIncome(state);
     setGameState(collected);
     setGameMode(mode);
