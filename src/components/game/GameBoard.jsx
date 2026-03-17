@@ -94,8 +94,8 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
                 backdropFilter: 'blur(2px)',
               }}
             >
-              <div className="text-xl leading-none">{BIOME_ICONS[territory.biome]}</div>
-              <div className="text-sm font-black leading-none mt-0.5 text-white" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.9)', fontFamily: "'Cinzel',serif" }}>
+              <div className="text-sm leading-none">{BIOME_ICONS[territory.biome]}</div>
+              <div className="text-xs font-black leading-none text-white" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.9)', fontFamily: "'Cinzel',serif" }}>
                 {territory.troops}
               </div>
               {territory.isCapital && (
