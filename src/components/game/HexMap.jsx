@@ -117,6 +117,48 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           });
         })}
 
+        {/* Movement arrows */}
+        {phase === 'move' && selectedHex && gameState?.hexes[selectedHex] && (
+          (() => {
+            const selectedHexData = gameState.hexes[selectedHex];
+            const selectedPos = hexToPixel(selectedHexData.q, selectedHexData.r, hexSize);
+            const selectedPx = selectedPos.x + canvasWidth / 2;
+            const selectedPy = selectedPos.y + canvasHeight / 2;
+            
+            const neighbors = HexUtils.getNeighbors(selectedHexData.q, selectedHexData.r);
+            return neighbors.map(([nq, nr], i) => {
+              const neighbor = Object.values(hexes).find(h => h.q === nq && h.r === nr);
+              if (!neighbor || neighbor.owner !== currentPlayer?.id) return null;
+              
+              const neighborPos = hexToPixel(nq, nr, hexSize);
+              const neighborPx = neighborPos.x + canvasWidth / 2;
+              const neighborPy = neighborPos.y + canvasHeight / 2;
+              
+              const dx = neighborPx - selectedPx;
+              const dy = neighborPy - selectedPy;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const angle = Math.atan2(dy, dx);
+              
+              const arrowLen = 12;
+              const endX = selectedPx + (dist / 2) * Math.cos(angle);
+              const endY = selectedPy + (dist / 2) * Math.sin(angle);
+              
+              return (
+                <g key={`arrow-${neighbor.id}`}>
+                  <line x1={selectedPx} y1={selectedPy} x2={endX} y2={endY} stroke="rgba(100,255,100,0.7)" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                </g>
+              );
+            });
+          })()
+        )}
+
+        {/* Arrow marker definition */}
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <polygon points="0 0, 10 3, 0 6" fill="rgba(100,255,100,0.7)" />
+          </marker>
+        </defs>
+
         {/* Hex tiles */}
         {Object.entries(hexes).map(([hexId, hex]) => {
           const isSelected = selectedHex === hexId;
