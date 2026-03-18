@@ -194,8 +194,8 @@ export default function PlayerPanel({ player, isActive, territories, isSelf }) {
             {hoveredObjId && (() => {
               const hoveredObj = player.objectives?.find(o => o.id === hoveredObjId);
               return hoveredObj?.image ? (
-                <div className="absolute bottom-full right-0 mb-2 pointer-events-none z-50">
-                  <img src={hoveredObj.image} alt={hoveredObj.text} className="w-40 rounded-lg shadow-2xl border border-yellow-600" />
+                <div className="fixed pointer-events-none z-50" style={{ top: '50%', right: '1rem', transform: 'translateY(-50%)' }}>
+                  <img src={hoveredObj.image} alt={hoveredObj.text} className="w-48 h-auto rounded-lg shadow-2xl border-2" style={{ borderColor: player.color }} />
                 </div>
               ) : null;
             })()}
