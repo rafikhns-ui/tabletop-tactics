@@ -595,9 +595,6 @@ export default function Game() {
       let state = {
         ...prev,
         currentPlayerIndex: nextIndex,
-        players: prev.players.map(p =>
-          p.id === nextPlayer.id ? { ...p, troopsToDeploy: p.troopsToDeploy + newTroops } : p
-        ),
         turn: prev.turn + (nextIndex === 0 ? 1 : 0),
         eventCountdown,
       };
