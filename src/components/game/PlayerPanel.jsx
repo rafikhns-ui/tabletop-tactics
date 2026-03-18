@@ -3,6 +3,8 @@ import { HEROES } from './ardoniaData';
 import PlayerDetailModal from './PlayerDetailModal';
 
 function ObjectivesModal({ player, onClose }) {
+  const [hoveredObjId, setHoveredObjId] = React.useState(null);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.75)' }}
@@ -19,11 +21,15 @@ function ObjectivesModal({ player, onClose }) {
           </div>
           <button onClick={onClose} className="text-lg opacity-50 hover:opacity-100 px-2">✕</button>
         </div>
-        <div className="p-5 space-y-3">
+        <div className="p-5 space-y-3 relative">
           {player.objectives?.map(obj => {
             const done = player.completedObjectives?.includes(obj.id);
             return (
-              <div key={obj.id} className="rounded-lg p-3"
+              <div
+                key={obj.id}
+                onMouseEnter={() => setHoveredObjId(obj.id)}
+                onMouseLeave={() => setHoveredObjId(null)}
+                className="rounded-lg p-3 cursor-pointer transition-all hover:opacity-80"
                 style={{ background: done ? 'hsl(120,30%,15%)' : 'hsl(35,20%,20%)', border: `1px solid ${done ? 'hsl(120,40%,30%)' : 'hsl(35,20%,30%)'}` }}>
                 <div className="flex items-center gap-2 mb-1">
                   <span>{done ? '✅' : '🎯'}</span>
@@ -38,6 +44,16 @@ function ObjectivesModal({ player, onClose }) {
           {(!player.objectives || player.objectives.length === 0) && (
             <p className="text-xs text-center opacity-40" style={{ color: 'hsl(40,20%,60%)' }}>No objectives drawn yet.</p>
           )}
+
+          {/* Hover card preview */}
+          {hoveredObjId && (() => {
+            const hoveredObj = player.objectives?.find(o => o.id === hoveredObjId);
+            return hoveredObj?.image ? (
+              <div className="absolute top-0 right-0 transform translate-x-full ml-3 pointer-events-none z-50">
+                <img src={hoveredObj.image} alt={hoveredObj.text} className="w-56 rounded-lg shadow-2xl border border-yellow-600" />
+              </div>
+            ) : null;
+          })()}
         </div>
       </div>
     </div>
