@@ -184,23 +184,31 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           else if (canDeploy) { ringColor = 'rgba(255,220,80,0.85)'; glow = '0 0 14px rgba(255,220,80,0.6)'; outlineWidth = '2'; }
           else if (isOwned) { ringColor = playerColor; glow = `0 0 8px ${playerColor}33`; }
 
+          const hexPoints = [0, 1, 2, 3, 4, 5].map(i => {
+            const angle = (Math.PI / 3) * i;
+            return `${px + hexSize * Math.cos(angle)},${py + hexSize * Math.sin(angle)}`;
+          }).join(' ');
+
           return (
            <g key={`hex-${hexId}`} onClick={() => onHexClick(hexId)} style={{ cursor: 'pointer' }}>
-             {/* Hex background */}
+             {/* Hex border outline — always visible */}
              <polygon
-               points={[0, 1, 2, 3, 4, 5].map(i => {
-                 const angle = (Math.PI / 3) * i;
-                 return [
-                   px + hexSize * Math.cos(angle),
-                   py + hexSize * Math.sin(angle),
-                 ];
-               }).flat().join(',')}
-               fill={isSelected ? ringColor : tileColor}
-               stroke={isSelected ? ringColor : tileColor}
-               strokeWidth={outlineWidth}
-               opacity="0.3"
-               style={{ filter: glow ? `drop-shadow(${glow})` : 'none' }}
+               points={hexPoints}
+               fill="transparent"
+               stroke="rgba(120,90,40,0.45)"
+               strokeWidth="0.8"
              />
+             {/* Hex state highlight */}
+             {(isSelected || canAttack || canFortify || canMove || canDeploy || isOwned) && (
+               <polygon
+                 points={hexPoints}
+                 fill={isSelected || canDeploy ? ringColor : 'transparent'}
+                 stroke={ringColor}
+                 strokeWidth={isSelected ? '2.5' : '1.5'}
+                 opacity={isSelected ? '0.85' : canDeploy ? '0.25' : '0.7'}
+                 style={{ filter: glow ? `drop-shadow(${glow})` : 'none' }}
+               />
+             )}
 
              {/* Selection highlight border */}
              {isSelected && (
