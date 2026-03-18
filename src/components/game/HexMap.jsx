@@ -249,7 +249,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           const canFortify = isFortifiable(hexId) && (!isWater || canUnitEnterWater(hex.units));
           const canDeploy = isDeployable(hexId) && (!isWater || hasNavalPending);
           const playerColor = getPlayerColor(hex.owner);
-          const tileColor = 'transparent';
+           const tileColor = hex.owner ? `${playerColor}25` : 'transparent';
           
           const { x, y } = hexToPixel(hex.q, hex.r, hexSize);
           const px = x + offsetX;
@@ -292,6 +292,15 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                stroke={isWater ? "rgba(50,100,255,0.5)" : "rgba(120,90,40,0.45)"}
                strokeWidth="0.8"
              />
+             {/* Ownership fill */}
+             {hex.owner && !isSelected && !canAttack && !canFortify && !canMove && !canDeploy && (
+               <polygon
+                 points={hexPoints}
+                 fill={playerColor}
+                 opacity="0.15"
+               />
+             )}
+
              {/* Hex state highlight */}
              {(isSelected || canAttack || canFortify || canMove || canDeploy || isOwned) && (
                <polygon
