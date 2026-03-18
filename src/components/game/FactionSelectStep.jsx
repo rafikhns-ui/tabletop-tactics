@@ -11,23 +11,31 @@ function FactionCard({ faction, selected, disabled, onClick }) {
     <button
       disabled={disabled}
       onClick={onClick}
-      className="text-left px-3 py-2.5 rounded-lg transition-all text-xs"
+      className="text-left px-3 py-3 rounded-lg transition-all text-xs relative overflow-hidden group"
       style={{
-        background: selected ? `${faction.color}28` : 'hsl(35,20%,18%)',
-        border: `1.5px solid ${selected ? faction.color : disabled ? 'hsl(35,20%,22%)' : 'hsl(35,20%,28%)'}`,
-        color: disabled ? 'hsl(35,20%,32%)' : selected ? faction.color : 'hsl(40,20%,65%)',
-        opacity: disabled ? 0.4 : 1,
+        background: selected ? `${faction.color}35` : 'hsl(35,20%,16%)',
+        border: `2px solid ${selected ? faction.color : disabled ? 'hsl(35,20%,20%)' : 'hsl(35,20%,26%)'}`,
+        color: disabled ? 'hsl(35,20%,30%)' : selected ? faction.color : 'hsl(40,20%,70%)',
+        opacity: disabled ? 0.35 : 1,
+        boxShadow: selected ? `0 0 20px ${faction.color}40, inset 0 0 10px ${faction.color}15` : 'none',
       }}>
-      <div className="font-bold text-sm">{faction.emoji} {faction.name}</div>
-      <div className="text-xs opacity-60 mt-0.5 italic" style={{ color: disabled ? undefined : 'hsl(40,15%,55%)' }}>
-        {faction.continent}
-      </div>
-      <div className="text-xs mt-1 leading-snug opacity-80 line-clamp-2">{faction.description}</div>
-      {selected && (
-        <div className="mt-1.5 text-xs px-2 py-1 rounded" style={{ background: `${faction.color}18`, color: 'hsl(43,80%,65%)' }}>
-          ✦ {faction.specialRule}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity" style={{ background: faction.color }} />
+      <div className="relative z-10">
+        <div className="font-bold text-sm mb-0.5">{faction.emoji} {faction.name}</div>
+        <div className="text-xs opacity-50 mb-1" style={{ color: disabled ? undefined : 'hsl(40,15%,55%)' }}>
+          {faction.continent}
         </div>
-      )}
+        <div className="text-xs mt-1 leading-snug opacity-75 line-clamp-2">{faction.description}</div>
+        {selected && (
+          <div className="mt-2 text-xs px-2 py-1.5 rounded border" style={{ 
+            background: `${faction.color}20`, 
+            borderColor: faction.color,
+            color: 'hsl(43,85%,70%)'
+          }}>
+            ✦ {faction.specialRule}
+          </div>
+        )}
+      </div>
     </button>
   );
 }
