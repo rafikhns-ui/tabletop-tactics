@@ -172,7 +172,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           const py = y + canvasHeight / 2;
 
           // Skip rendering if off-screen
-          if (px < -hexSize || px > canvasWidth + hexSize || py < -hexSize || py > canvasHeight + hexSize) return null;
+          if (px + hexSize < 0 || px - hexSize > canvasWidth || py + hexSize < 0 || py - hexSize > canvasHeight) return null;
 
           let ringColor = 'transparent';
           let glow = '';
