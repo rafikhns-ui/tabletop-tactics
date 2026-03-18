@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BUILDING_DEFS, UNIT_DEFS, HEROES } from './ardoniaData';
+import { BUILDING_DEFS, UNIT_DEFS } from './ardoniaData';
 
 const BUILDABLE = ['barracks', 'stables', 'archerytower', 'temple', 'market', 'shipyard', 'siegeworks'];
 
