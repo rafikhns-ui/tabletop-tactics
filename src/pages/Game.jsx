@@ -676,6 +676,13 @@ export default function Game() {
               {messages[messages.length - 1]}
             </div>
           )}
+          {gameState && currentPlayer && !currentPlayer.isAI && (
+            <button onClick={advancePhase}
+              className="text-xs px-3 py-1.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all"
+              style={{ fontFamily: "'Cinzel',serif", background: 'linear-gradient(135deg, hsl(38,80%,38%), hsl(38,80%,28%))', border: '1px solid hsl(38,80%,55%)', color: 'hsl(43,90%,90%)' }}>
+              {phase === 'deploy' ? '🚶 Begin Move' : phase === 'move' ? '⚔️ Begin Attack' : phase === 'attack' ? '🛡️ Fortify' : '✦ End Turn'}
+            </button>
+          )}
           <button onClick={() => { setGameState(null); setGameMode(null); setPendingMode(null); }}
             className="text-xs px-3 py-1.5 rounded hover:opacity-80"
             style={{ background: 'hsl(35,20%,22%)', border: '1px solid hsl(35,20%,35%)', color: 'hsl(40,20%,65%)' }}>
