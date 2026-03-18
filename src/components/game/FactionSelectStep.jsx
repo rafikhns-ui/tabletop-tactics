@@ -141,9 +141,13 @@ export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBac
         </div>
 
         {(mode === 'multiplayer' || mode === 'ai') && (
-          <div className="flex items-center justify-center gap-3 mb-4 p-3 rounded-xl"
-            style={{ background: 'hsl(35,20%,15%)', border: '1px solid hsl(35,20%,25%)' }}>
-            <span className="text-xs opacity-60" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,70%,55%)' }}>🤖 AI OPPONENTS:</span>
+          <div className="flex items-center justify-center gap-3 mb-8 p-4 rounded-xl backdrop-blur-sm"
+            style={{ 
+              background: 'linear-gradient(135deg, hsl(355,60%,15%), hsl(35,20%,12%))',
+              border: '1.5px solid hsl(355,60%,35%)',
+              boxShadow: '0 0 20px rgba(220,60,60,0.2)'
+            }}>
+            <span className="text-xs opacity-70 font-bold tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(355,70%,65%)' }}>⚔️ OPPOSING FORCES:</span>
             {Array.from({ length: maxAI }, (_, i) => i + 1).map(n => (
               <button key={n} onClick={() => handleAiCountChange(n)}
                 className="w-8 h-8 rounded-lg text-sm font-bold transition-all"
