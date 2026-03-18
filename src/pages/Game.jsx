@@ -22,6 +22,7 @@ import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn,
 import BuildRecruitPanel from '../components/game/BuildRecruitPanel';
 import RecruitPanel from '../components/game/RecruitPanel';
 import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS } from '../components/game/ardoniaData';
+import AvatarPanel from '../components/game/AvatarPanel';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
@@ -417,6 +418,38 @@ export default function Game() {
     } else {
       addMessage(`⚔️ Battle at ${defenderTerr.name}: A:${result.attackerLosses} lost, D:${result.defenderLosses} lost`);
     }
+  };
+
+  const handleSummonAvatar = (avatarId) => {
+    const { AVATARS } = require('../components/game/ardoniaData');
+    const avatar = Object.values(AVATARS).flat().find(a => a.id === avatarId);
+    if (!avatar) return;
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === currentPlayer.id);
+      // Check cost
+      for (const [k, v] of Object.entries(avatar.cost || {})) {
+        if (k === 'ip' && (player.ip ?? 0) < v) return prev;
+        if (k === 'sp' && (player.sp ?? 0) < v) return prev;
+        if (k !== 'ip' && k !== 'sp' && (player.resources?.[k] ?? 0) < v) return prev;
+      }
+      const newResources = { ...player.resources };
+      let newIp = player.ip ?? 0;
+      let newSp = player.sp ?? 0;
+      for (const [k, v] of Object.entries(avatar.cost || {})) {
+        if (k === 'ip') newIp -= v;
+        else if (k === 'sp') newSp -= v;
+        else newResources[k] = (newResources[k] || 0) - v;
+      }
+      const newPlayer = {
+        ...player,
+        resources: newResources,
+        ip: newIp,
+        sp: newSp,
+        activeAvatar: { id: avatarId, duration: avatar.duration },
+      };
+      return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
+    });
+    addMessage(`👹 ${avatar.name} has been summoned!`);
   };
 
   const handleRecruitHero = (heroId) => {
