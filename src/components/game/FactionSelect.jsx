@@ -174,6 +174,7 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
 
   const [players, setPlayers] = useState(() => buildPlayers(mode === 'ai' ? 1 : 0));
   const [step, setStep] = useState('pick');
+  const [showDeckAnimation, setShowDeckAnimation] = useState(false);
 
   const handleAiCountChange = (n) => {
     setAiCount(n);
