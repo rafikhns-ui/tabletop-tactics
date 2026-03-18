@@ -108,7 +108,7 @@ export default function LeaderSelectStep({ players, onConfirm, onBack }) {
           </p>
         </div>
 
-        <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(players.length, 3)}, 1fr)` }}>
+        <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${players.length}, 1fr)`, minWidth: '100%' }}>
           {players.map((player, idx) => (
             <PlayerSlot
               key={player.id}
