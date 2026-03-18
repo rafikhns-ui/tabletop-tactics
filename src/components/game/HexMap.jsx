@@ -21,37 +21,9 @@ const TERRAIN_ICONS = {
   wasteland: '💀',
 };
 
-// Set of hex indices (1-based) that are water tiles
-const WATER_HEX_INDICES = new Set([
-  // Original water tiles
-  1, 6, 15, 29, 30, 33, 66, 80, 88, 97, 144, 152, 188, 192, 199,
-  213, 222, 240, 242, 251, 300, 318, 343, 346, 362, 381, 426, 454,
-  488, 531, 543, 552, 576, 597, 603, 612, 631, 658, 675,
-  680, 683, 742, 767, 830, 918, 923, 950, 966,
-  1003, 1014, 1022, 1030, 1048, 1075, 1101, 1127, 1133, 1146, 1149, 1167, 1179,
-  1187,
-  // The Red Ocean
-  10, 120, 147, 400, 452, 466, 504, 539, 615, 791, 1016, 1134,
-  // The Strait of Winter
-  22, 219, 370, 425, 723, 1015, 1095,
-  // Eastern Depths
-  181, 263, 619, 781, 1116,
-]);
-
-// Coastal hex indices - transition zones allowing docking
-const COASTAL_HEX_INDICES = new Set([
-  // Western Coast (near Kintei/Onishiman)
-  51, 73, 291, 323, 354, 393, 415, 419, 474, 939, 969, 978, 1004, 1168,
-  // Central Island (Silver Union)
-  100, 293, 299, 510, 516, 602, 613, 753, 871, 993, 1177,
-  // Eastern Coast (near Hestia/Empire)
-  21, 56, 78, 203, 306, 390, 403, 527, 559, 703, 743, 887, 942, 1031, 1126, 1144, 1160, 1196,
-  // Northern Coast
-  5, 93, 179, 232, 347, 449, 560, 568, 833, 946, 954, 1049, 1070, 1110, 1139, 1153,
-]);
-
-const isWaterHex = (hexIndex) => WATER_HEX_INDICES.has(hexIndex);
-const isCoastalHex = (hexIndex) => COASTAL_HEX_INDICES.has(hexIndex);
+// Water and coastal tiles disabled for repositioning
+const isWaterHex = () => false;
+const isCoastalHex = () => false;
 
 // Check if unit can enter a water tile
 const canUnitEnterWater = (units) => {
