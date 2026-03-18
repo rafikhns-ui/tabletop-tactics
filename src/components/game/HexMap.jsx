@@ -293,11 +293,11 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                strokeWidth="0.8"
              />
              {/* Ownership fill */}
-             {hex.owner && (
+             {hex.owner && !isSelected && !canAttack && !canFortify && !canMove && !canDeploy && (
                <polygon
                  points={hexPoints}
                  fill={playerColor}
-                 opacity={isSelected || canAttack || canFortify || canMove || canDeploy ? "0" : "0.35"}
+                 opacity="0.15"
                />
              )}
 
