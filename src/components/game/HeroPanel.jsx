@@ -113,7 +113,10 @@ function HeroCard({ hero, status, owned, onRecruit, territories, currentPlayer }
 export default function HeroPanel({ gameState, currentPlayer, onRecruit }) {
   const [tab, setTab] = useState('owned'); // 'owned' | 'available'
   const ownedHeroIds = currentPlayer.heroes || [];
-  const availableHeroes = Object.values(HEROES).filter(h => !ownedHeroIds.includes(h.id));
+  const availableHeroes = Object.values(HEROES).filter(h =>
+    !ownedHeroIds.includes(h.id) && 
+    h.faction === currentPlayer.factionId
+  );
 
   return (
     <div className="p-3 flex flex-col gap-3">
