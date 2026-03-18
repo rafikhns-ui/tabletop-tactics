@@ -803,12 +803,13 @@ export default function Game() {
           {/* Tab bar */}
           <div className="flex border-b border-border flex-shrink-0" style={{ background: 'hsl(35,22%,13%)' }}>
             {[
-              { id: 'action', icon: '⚔️', label: 'Action' },
-              { id: 'heroes', icon: '⭐', label: 'Heroes' },
-              { id: 'build', icon: '🏗️', label: 'Build' },
-              { id: 'recruit', icon: '⚔️', label: 'Recruit' },
-              { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
-              { id: 'log', icon: '📜', label: 'Battle Log' },
+               { id: 'action', icon: '⚔️', label: 'Action' },
+               { id: 'heroes', icon: '⭐', label: 'Heroes' },
+               { id: 'build', icon: '🏗️', label: 'Build' },
+               { id: 'recruit', icon: '⚔️', label: 'Recruit' },
+               { id: 'avatars', icon: '👹', label: 'Avatars' },
+               { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
+               { id: 'log', icon: '📜', label: 'Battle Log' },
             ].map(t => (
               <button key={t.id} onClick={() => setBottomTab(t.id)}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold transition-all"
@@ -874,11 +875,22 @@ export default function Game() {
               />
             )}
             {bottomTab === 'recruit' && currentPlayer?.isAI && (
-              <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
-                Recruit available during your turn
-              </div>
-            )}
-            {bottomTab === 'diplomacy' && gameState && currentPlayer && !currentPlayer.isAI && (
+               <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
+                 Recruit available during your turn
+               </div>
+             )}
+             {bottomTab === 'avatars' && gameState && currentPlayer && !currentPlayer.isAI && (
+               <AvatarPanel
+                 currentPlayer={currentPlayer}
+                 onSummon={handleSummonAvatar}
+               />
+             )}
+             {bottomTab === 'avatars' && currentPlayer?.isAI && (
+               <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
+                 Avatars available during your turn
+               </div>
+             )}
+             {bottomTab === 'diplomacy' && gameState && currentPlayer && !currentPlayer.isAI && (
               <DiplomacyPanel
                 gameState={gameState}
                 currentPlayer={currentPlayer}
