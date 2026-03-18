@@ -54,18 +54,7 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
       </div>
 
       {phase === 'deploy' && (
-        <div className="p-2 rounded" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(43,70%,40%)' }}>
-          <div className="text-xs opacity-60 mb-2" style={{ fontFamily: "'Cinzel',serif" }}>TROOPS TO DEPLOY</div>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="text-center flex-1">
-              <div className="text-2xl font-bold" style={{ color: 'hsl(43,90%,65%)', fontFamily: "'Cinzel',serif" }}>
-                {currentPlayer.troopsToDeploy}
-              </div>
-              <div className="text-xs opacity-60">⚔️ Infantry</div>
-            </div>
-          </div>
-          <div className="text-xs opacity-50 text-center">click your territories</div>
-        </div>
+        <DeployQueue pendingUnits={currentPlayer.pendingUnits || []} />
       )}
 
       <div className="rounded p-2" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,28%)' }}>
