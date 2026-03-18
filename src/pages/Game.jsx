@@ -23,6 +23,7 @@ import BuildRecruitPanel from '../components/game/BuildRecruitPanel';
 import RecruitPanel from '../components/game/RecruitPanel';
 import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS } from '../components/game/ardoniaData';
 import AvatarPanel from '../components/game/AvatarPanel';
+import AiSetupModal from '../components/game/AiSetupModal';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
