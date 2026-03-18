@@ -135,11 +135,6 @@ export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBac
   const takenFactionIds = players.map(p => p.factionId).filter(Boolean);
   const allChosen = players.filter(p => !p.isAI).every(p => p.factionId);
 
-  const handleAiCountChange = (n) => {
-    setAiCount(n);
-    setPlayers(buildPlayers(n));
-  };
-
   const updatePlayer = (index, factionId) => {
     setPlayers(prev => prev.map((p, i) => i === index ? { ...p, factionId } : p));
   };
