@@ -131,22 +131,40 @@ export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBac
         background: `radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 100%)`
       }} />
       
-      <div className="w-full max-w-6xl px-6 py-8 relative z-10">
-        <div className="text-center mb-10">
-          <div className="mb-4 text-6xl animate-pulse" style={{ textShadow: '0 0 20px rgba(255,200,50,0.4)' }}>
+      <div className="w-full max-w-6xl px-6 py-12 relative z-10">
+        <div className="text-center mb-12">
+          <div className="mb-6 text-7xl font-black" style={{ 
+            textShadow: `0 0 40px rgba(255,200,50,0.6), 0 0 80px rgba(220,50,50,0.4), 0 8px 16px rgba(0,0,0,0.9)`,
+            animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          }}>
             ⚜️
           </div>
-          <h1 className="text-5xl font-bold mb-3" style={{ 
-            fontFamily: "'Cinzel',serif", 
-            color: 'hsl(43,95%,65%)',
-            textShadow: '0 0 30px rgba(255,200,50,0.3), 0 4px 8px rgba(0,0,0,0.8)'
+          <h1 className="text-6xl font-black mb-4 leading-tight" style={{ 
+            fontFamily: "'Cinzel',serif",
+            color: 'hsl(43,100%,70%)',
+            textShadow: `
+              0 0 40px rgba(255,200,50,0.8),
+              0 0 80px rgba(255,150,0,0.4),
+              0 8px 16px rgba(0,0,0,0.95),
+              2px 2px 0 rgba(0,0,0,0.8)
+            `,
+            letterSpacing: '0.05em'
           }}>
-            Choose Your Faction
+            CLAIM YOUR THRONE
           </h1>
-          <p className="text-sm opacity-60 tracking-widest" style={{ color: 'hsl(40,20%,70%)', fontFamily: "'Cinzel',serif" }}>
-            {mode === 'ai' ? `CONQUER ARDONIA VS ${aiCount} RIVALS` : `${humanCount} RULER${humanCount > 1 ? 'S' : ''} + ${aiCount} AI`}
+          <p className="text-sm opacity-70 tracking-[0.2em] mt-4" style={{ 
+            color: 'hsl(355,80%,60%)', 
+            fontFamily: "'Cinzel',serif",
+            textTransform: 'uppercase',
+            fontWeight: 600
+          }}>
+            {mode === 'ai' ? `⚔️ CONQUER ARDONIA — FACE ${aiCount} RIVALS` : `⚔️ ${humanCount} RULER${humanCount > 1 ? 'S' : ''} + ${aiCount} MIGHTY AI`}
           </p>
-          <div className="h-1 w-24 mx-auto mt-3 rounded-full" style={{ background: 'linear-gradient(90deg, transparent, hsl(43,90%,55%), transparent)' }} />
+          <div className="mt-6 flex gap-2 justify-center opacity-60">
+            <div style={{ width: '40px', height: '2px', background: 'linear-gradient(90deg, transparent, hsl(355,80%,60%))', marginTop: '6px' }} />
+            <div style={{ fontSize: '12px', color: 'hsl(355,80%,60%)', fontFamily: "'Cinzel',serif" }}>❖</div>
+            <div style={{ width: '40px', height: '2px', background: 'linear-gradient(90deg, hsl(355,80%,60%), transparent)', marginTop: '6px' }} />
+          </div>
         </div>
 
         {(mode === 'multiplayer' || mode === 'ai') && (
