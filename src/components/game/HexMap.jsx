@@ -308,10 +308,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
 
 
-             {/* Hex number label */}
-             <text x={px} y={py + 4} textAnchor="middle" fontSize="18" fill={isWater ? "rgba(255,255,255,0.9)" : "black"} fontFamily="'Cinzel',serif" fontWeight="bold">
-               {hexIndex}
-             </text>
+
 
              {/* Unit icons + count */}
              {hex.units && hex.units.length > 0 && (() => {
