@@ -160,8 +160,8 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
 // ---- Income calculation ----
 export const calculateIncome = (player, territories) => {
   const mine = player.buildings.mine;
-  const sawmill = player.buildings.sawmill;
-  const field = player.buildings.field;
+  const lumber_mill = player.buildings.lumber_mill;
+  const farm = player.buildings.farm;
   const market = player.buildings.market;
   const temple = player.buildings.temple;
 
@@ -170,8 +170,8 @@ export const calculateIncome = (player, territories) => {
 
   const income = {
     gold: territoryGold + (mine && !mine.disabled ? mine.level : 0) + (market ? 1 : 0),
-    wood: (sawmill && !sawmill.disabled ? sawmill.level : 0),
-    wheat: (field && !field.disabled ? field.level : 0),
+    wood: (lumber_mill && !lumber_mill.disabled ? lumber_mill.level : 0),
+    wheat: (farm && !farm.disabled ? farm.level : 0),
     sp: (temple && !temple.disabled ? temple.level : 0) + (player.factionId === 'sultanate' ? 1 : 0),
     ip: (market ? 1 : 0) + (player.factionId === 'republic' ? 1 : 0),
   };
