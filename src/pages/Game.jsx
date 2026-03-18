@@ -79,7 +79,17 @@ export default function Game() {
   // Called from FactionSelect — actually start the game
   const startGame = (choices, playersArr) => {
     const mode = pendingMode.mode;
-    const state = createGameState(mode, choices, playersArr);
+    // Assign leader objects to players based on leaderIndex
+    const playersWithLeaders = playersArr.map(p => {
+      if (p.factionId && p.leaderIndex !== undefined) {
+        const factionLeaders = LEADERS[p.factionId] || [];
+        const leader = factionLeaders[p.leaderIndex];
+        return { ...p, leader, leaderActive: true };
+      }
+      return p;
+    });
+    
+    const state = createGameState(mode, choices, playersWithLeaders);
     const collected = collectIncome(state);
     // Zero out auto-assigned troopsToDeploy — troops come from recruiting only
     collected.players = collected.players.map(p => ({ ...p, troopsToDeploy: 0, pendingUnits: [] }));
