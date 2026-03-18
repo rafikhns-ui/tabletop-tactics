@@ -103,16 +103,33 @@ export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBac
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start p-6 overflow-auto"
-      style={{ background: 'linear-gradient(160deg, hsl(35,25%,10%), hsl(35,20%,8%))' }}>
-      <div className="w-full max-w-6xl">
-        <div className="text-center mb-4">
-          <h1 className="text-3xl font-bold mb-1" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,58%)' }}>
-            ⚜️ Choose Your Factions
+    <div className="min-h-screen flex flex-col items-center justify-start overflow-auto relative"
+      style={{ 
+        background: 'linear-gradient(160deg, hsl(35,25%,8%), hsl(35,20%,5%))',
+        backgroundAttachment: 'fixed'
+      }}>
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ 
+        background: `radial-gradient(circle at 20% 50%, hsl(43,90%,50%), transparent 50%),
+                     radial-gradient(circle at 80% 80%, hsl(38,70%,40%), transparent 50%)`
+      }} />
+      
+      <div className="w-full max-w-6xl px-6 py-8 relative z-10">
+        <div className="text-center mb-10">
+          <div className="mb-4 text-6xl animate-pulse" style={{ textShadow: '0 0 20px rgba(255,200,50,0.4)' }}>
+            ⚜️
+          </div>
+          <h1 className="text-5xl font-bold mb-3" style={{ 
+            fontFamily: "'Cinzel',serif", 
+            color: 'hsl(43,95%,65%)',
+            textShadow: '0 0 30px rgba(255,200,50,0.3), 0 4px 8px rgba(0,0,0,0.8)'
+          }}>
+            Choose Your Faction
           </h1>
-          <p className="text-sm opacity-50" style={{ color: 'hsl(40,20%,65%)' }}>
-            {mode === 'ai' ? `You vs ${aiCount} AI opponents` : `${humanCount} Human${humanCount > 1 ? 's' : ''} + ${aiCount} AI — same screen`}
+          <p className="text-sm opacity-60 tracking-widest" style={{ color: 'hsl(40,20%,70%)', fontFamily: "'Cinzel',serif" }}>
+            {mode === 'ai' ? `CONQUER ARDONIA VS ${aiCount} RIVALS` : `${humanCount} RULER${humanCount > 1 ? 'S' : ''} + ${aiCount} AI`}
           </p>
+          <div className="h-1 w-24 mx-auto mt-3 rounded-full" style={{ background: 'linear-gradient(90deg, transparent, hsl(43,90%,55%), transparent)' }} />
         </div>
 
         {(mode === 'multiplayer' || mode === 'ai') && (
