@@ -747,8 +747,9 @@ export default function Game() {
       <FactionSelectStep
         mode={pendingMode.mode}
         playerCount={pendingMode.playerCount}
+        setupPlayers={setupPlayers}
         onNext={handleFactionSelectComplete}
-        onBack={() => { setPendingMode(null); setSetupStep(null); }}
+        onBack={() => { setPendingMode(null); setSetupStep(null); setShowAiSetup(false); setSetupPlayers(null); }}
       />
     );
   }
