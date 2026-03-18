@@ -860,7 +860,6 @@ export default function Game() {
                 gameState={gameState}
                 onBuild={handleBuild}
                 onUpgrade={handleUpgrade}
-                onBuildFortress={handleBuildFortress}
               />
             )}
             {bottomTab === 'build' && currentPlayer?.isAI && (
