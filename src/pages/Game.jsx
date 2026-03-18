@@ -93,7 +93,7 @@ export default function Game() {
       return p;
     });
     
-    const state = createGameState(mode, choices, playersWithLeaders);
+    const state = createGameState(mode, playersWithLeaders);
     const collected = collectIncome(state);
     // Zero out auto-assigned troopsToDeploy — troops come from recruiting only
     collected.players = collected.players.map(p => ({ ...p, troopsToDeploy: 0, pendingUnits: [] }));
