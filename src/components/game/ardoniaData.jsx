@@ -422,6 +422,10 @@ export const OBJECTIVES = [
   { id: 'ip_dominance', category: 'Political', text: 'Accumulate 8 Influence Points', secret: true },
   { id: 'summon_avatar', category: 'Spiritual', text: 'Summon an Avatar once', secret: true },
   { id: 'sp_accumulate', category: 'Spiritual', text: 'Accumulate 10 Spiritual Points', secret: true },
+  { id: 'political_dominance', category: 'Political', text: 'Reach 25 Influence Points', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/e23dae1f0_1.png' },
+  { id: 'puppet_master', category: 'Political', text: 'Force a player to sign a treaty with another player & sign a treaty with a nation involved in a conflict', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/c0ca90b96_2.png' },
+  { id: 'trusted_ally', category: 'Political', text: 'Cumulate 10 turns of alliance (with one or different players)', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/180d4dd12_3.png' },
+  { id: 'cunning_deceiver', category: 'Political', text: 'Convince another player to betray their ally through diplomacy or trade', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/8e877b144_4.png' },
 ];
 
 // ---- Building Definitions ----
