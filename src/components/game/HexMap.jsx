@@ -38,7 +38,20 @@ const WATER_HEX_INDICES = new Set([
   181, 263, 619, 781, 1116,
 ]);
 
+// Coastal hex indices - transition zones allowing docking
+const COASTAL_HEX_INDICES = new Set([
+  // Western Coast (near Kintei/Onishiman)
+  51, 73, 291, 323, 354, 393, 415, 419, 474, 939, 969, 978, 1004, 1168,
+  // Central Island (Silver Union)
+  100, 293, 299, 510, 516, 602, 613, 753, 871, 993, 1177,
+  // Eastern Coast (near Hestia/Empire)
+  21, 56, 78, 203, 306, 390, 403, 527, 559, 703, 743, 887, 942, 1031, 1126, 1144, 1160, 1196,
+  // Northern Coast
+  5, 93, 179, 232, 347, 449, 560, 568, 833, 946, 954, 1049, 1070, 1110, 1139, 1153,
+]);
+
 const isWaterHex = (hexIndex) => WATER_HEX_INDICES.has(hexIndex);
+const isCoastalHex = (hexIndex) => COASTAL_HEX_INDICES.has(hexIndex);
 
 // Check if unit can enter a water tile
 const canUnitEnterWater = (units) => {
