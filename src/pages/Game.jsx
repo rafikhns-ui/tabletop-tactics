@@ -622,13 +622,9 @@ export default function Game() {
       (newState.log || []).slice(-3).forEach(l => addMessage(l));
       // End AI turn
       const nextIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
-      const nextP = gameState.players[nextIndex];
-      const ownedCount = Object.values(newState.territories).filter(t => t.owner === nextP.id).length;
-      const newTroops = Math.max(3, Math.floor(ownedCount / 3));
       setGameState(s => collectIncome({
         ...s,
         currentPlayerIndex: nextIndex,
-        players: s.players.map(p => p.id === nextP.id ? { ...p, troopsToDeploy: p.troopsToDeploy + newTroops } : p),
         turn: s.turn + (nextIndex === 0 ? 1 : 0),
       }));
       setPhase('deploy');
