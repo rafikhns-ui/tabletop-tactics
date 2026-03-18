@@ -143,39 +143,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
         </div>
       )}
 
-      {tab === 'fortress' && (
-        <div className="space-y-1.5">
-          {ownedTerritories.length === 0 && (
-            <div className="text-xs text-center opacity-40 py-2" style={{ color: 'hsl(40,20%,60%)' }}>
-              No territories owned
-            </div>
-          )}
-          {ownedTerritories.map(t => {
-            const hasF = t.hasFortress;
-            const affordable = !hasF && canAfford(resources, BUILDING_DEFS.fortress?.cost);
-            return (
-              <div key={t.id} className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold" style={{ ...s, color: 'hsl(40,30%,80%)' }}>
-                    🏰 {t.name}
-                  </span>
-                  <button
-                    onClick={() => onBuildFortress(t.id)}
-                    disabled={!affordable}
-                    className="text-xs px-2 py-0.5 rounded font-bold transition-all hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
-                    style={{ ...s, background: hasF ? 'hsl(35,30%,20%)' : 'hsl(38,70%,30%)', border: '1px solid hsl(38,80%,50%)', color: hasF ? 'hsl(40,20%,50%)' : 'hsl(43,90%,80%)' }}>
-                    {hasF ? 'Built' : 'Build'}
-                  </button>
-                </div>
-                <div className="text-xs opacity-55 mt-0.5" style={{ color: 'hsl(40,20%,65%)' }}>
-                  +3 defense, required for fortification
-                </div>
-                {!hasF && <CostTag cost={BUILDING_DEFS.fortress?.cost} resources={resources} />}
-              </div>
-            );
-          })}
-        </div>
-      )}
+
 
       {previewImage && (
         <div className="fixed pointer-events-none z-50" style={{ top: '50%', right: '2rem', transform: 'translateY(-50%)' }}>
