@@ -60,8 +60,8 @@ function PlayerSlot({ index, factionId, onChange, takenFactionIds, isAI }) {
         <div className="p-3 space-y-3">
           {CONTINENT_ORDER.map(continent => (
             <div key={continent}>
-              <div className="text-xs mb-1.5 opacity-40 tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,70%,55%)' }}>
-                {continent === 'Mangian' ? '🌍 WESTERN — MANGIAN' : '🌏 EASTERN — SHARQIAN'}
+              <div className="text-sm mb-2.5 opacity-70 tracking-widest font-bold" style={{ fontFamily: "'Cinzel',serif", color: continent === 'Mangian' ? 'hsl(200,70%,55%)' : 'hsl(40,80%,55%)' }}>
+                {continent === 'Mangian' ? '🌍 WESTERN REALM — MANGIAN' : '🌏 EASTERN REALM — SHARQIAN'}
               </div>
               <div className="grid grid-cols-2 gap-1.5">
                 {PLAYABLE_FACTIONS.filter(f => f.continent === continent).map(f => (
