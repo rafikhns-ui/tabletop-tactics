@@ -76,7 +76,11 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
             const b = BUILDING_DEFS[id];
             const affordable = canAfford(resources, b.cost);
             return (
-              <div key={id} className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
+              <div
+                key={id}
+                onMouseEnter={() => setPreviewImage(b.image)}
+                onMouseLeave={() => setPreviewImage(null)}
+                className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold" style={{ ...s, color: 'hsl(40,30%,80%)' }}>
                     {b.emoji} {b.name}
