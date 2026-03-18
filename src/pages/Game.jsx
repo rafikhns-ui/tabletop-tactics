@@ -36,6 +36,19 @@ export default function Game() {
   const [tradeOffers, setTradeOffers] = useState([]);
   const [bottomTab, setBottomTab] = useState('action'); // 'action' | 'diplomacy' | 'log'
 
+  // Reorder pendingUnits so the selected type comes first
+  const handleSelectDeployUnit = (unitType) => {
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === prev.players[prev.currentPlayerIndex].id);
+      const pending = [...(player.pendingUnits || [])];
+      const idx = pending.indexOf(unitType);
+      if (idx <= 0) return prev; // already first or not found
+      pending.splice(idx, 1);
+      pending.unshift(unitType);
+      return { ...prev, players: prev.players.map(p => p.id === player.id ? { ...p, pendingUnits: pending } : p) };
+    });
+  };
+
   const addMessage = (msg) => setMessages(prev => [...prev.slice(-4), msg]);
 
   // Called from GameMenu — go to faction select
