@@ -116,7 +116,11 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
             const upgradeCost = def.upgradeBase ? Object.entries(def.upgradeBase).reduce((acc, [k, v]) => ({ ...acc, [k]: v * b.level }), {}) : {};
             const affordable = !isMaxed && canAfford(resources, upgradeCost);
             return (
-              <div key={id} className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
+              <div
+                key={id}
+                onMouseEnter={() => setPreviewImage(def.image)}
+                onMouseLeave={() => setPreviewImage(null)}
+                className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold" style={{ ...s, color: 'hsl(40,30%,80%)' }}>
                     {def.emoji} {def.name} <span style={{ color: 'hsl(43,80%,60%)' }}>Lvl {b.level}</span>
