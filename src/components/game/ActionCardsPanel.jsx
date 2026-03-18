@@ -237,7 +237,7 @@ export default function ActionCardsPanel({ currentPlayer, onPlayCard, onDrawCard
                     {isHovered && (
                       <div className="absolute bottom-full left-0 mb-2 z-50 w-56 rounded-lg overflow-hidden pointer-events-none"
                        style={{
-                          transform: 'translateX(-20%)',
+                          transform: 'translateX(10%)',
                           boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
                         }}>
                         {card.image ? (
