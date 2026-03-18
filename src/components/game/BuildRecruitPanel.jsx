@@ -32,7 +32,7 @@ function CostTag({ cost, resources }) {
   );
 }
 
-export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onRecruit, onUpgrade, onBuildFortress }) {
+export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onRecruit, onUpgrade, onBuildFortress, phase }) {
   const [tab, setTab] = useState('build'); // 'build' | 'recruit' | 'upgrade' | 'fortress'
   const { resources } = currentPlayer;
   const ownedBuildings = Object.keys(currentPlayer.buildings || {});
