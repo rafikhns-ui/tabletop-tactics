@@ -39,7 +39,7 @@ function PlayerSlot({ index, player, leaderIndex, onChange }) {
         <div className="w-3 h-3 rounded-full" style={{ background: playerColor }} />
         <div>
           <span className="text-sm font-bold" style={{ fontFamily: "'Cinzel',serif", color: playerColor }}>
-            {player.isAI ? `🤖 AI Player` : 'Player'}
+            Player
           </span>
           <div className="text-xs opacity-60 mt-0.5">
             {faction?.emoji} {faction?.name}
