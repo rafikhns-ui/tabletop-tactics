@@ -22,12 +22,9 @@ const TERRAIN_ICONS = {
 };
 
 export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick }) {
-  const hexSize = 16;
-  const viewPadding = 60;
-
-  // Calculate canvas dimensions
-  const canvasWidth = 1000;
-  const canvasHeight = 700;
+  const hexSize = 14;
+  const canvasWidth = 1100;
+  const canvasHeight = 780;
 
   const getPlayerColor = (ownerId) => {
     if (!ownerId) return 'transparent';
