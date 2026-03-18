@@ -113,6 +113,41 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
   );
 }
 
+function DeployQueue({ pendingUnits }) {
+  // Count by type
+  const counts = {};
+  pendingUnits.forEach(u => { counts[u] = (counts[u] || 0) + 1; });
+  const entries = Object.entries(counts);
+
+  return (
+    <div className="p-2 rounded" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(43,70%,40%)' }}>
+      <div className="text-xs opacity-60 mb-2" style={{ fontFamily: "'Cinzel',serif" }}>TROOPS TO DEPLOY</div>
+      {pendingUnits.length === 0 ? (
+        <div className="text-xs text-center opacity-40 py-1" style={{ color: 'hsl(40,20%,60%)' }}>
+          Recruit troops to deploy
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {entries.map(([type, count]) => {
+              const def = UNIT_DEFS[type];
+              return (
+                <div key={type} className="flex items-center gap-1 px-2 py-1 rounded text-xs font-bold"
+                  style={{ background: 'hsl(38,60%,22%)', border: '1px solid hsl(43,70%,40%)', color: 'hsl(43,90%,75%)', fontFamily: "'Cinzel',serif" }}>
+                  <span>{def?.emoji || '⚔️'}</span>
+                  <span>{def?.name || type}</span>
+                  <span className="ml-1 px-1 rounded-full" style={{ background: 'hsl(43,80%,30%)', color: 'hsl(43,90%,85%)' }}>×{count}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="text-xs opacity-50 text-center">click your territories to place</div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function IncomeRow({ icon, label, value }) {
   return (
     <div className="flex items-center justify-between text-xs" style={{ color: 'hsl(40,20%,65%)' }}>
