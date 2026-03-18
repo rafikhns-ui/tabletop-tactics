@@ -23,12 +23,19 @@ const TERRAIN_ICONS = {
 
 // Set of hex indices (1-based) that are water tiles
 const WATER_HEX_INDICES = new Set([
+  // Original water tiles
   1, 6, 15, 29, 30, 33, 66, 80, 88, 97, 144, 152, 188, 192, 199,
   213, 222, 240, 242, 251, 300, 318, 343, 346, 362, 381, 426, 454,
   488, 531, 543, 552, 576, 597, 603, 612, 631, 658, 675,
   680, 683, 742, 767, 830, 918, 923, 950, 966,
   1003, 1014, 1022, 1030, 1048, 1075, 1101, 1127, 1133, 1146, 1149, 1167, 1179,
   1187,
+  // The Red Ocean
+  10, 120, 147, 400, 452, 466, 504, 539, 615, 791, 1016, 1134,
+  // The Strait of Winter
+  22, 219, 370, 425, 723, 1015, 1095,
+  // Eastern Depths
+  181, 263, 619, 781, 1116,
 ]);
 
 const isWaterHex = (hexIndex) => WATER_HEX_INDICES.has(hexIndex);
