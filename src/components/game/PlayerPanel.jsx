@@ -64,6 +64,7 @@ export default function PlayerPanel({ player, isActive, territories, isSelf }) {
   const [expanded, setExpanded] = useState(false);
   const [showObjectives, setShowObjectives] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [hoveredObjId, setHoveredObjId] = useState(null);
   const owned = Object.values(territories).filter(t => t.owner === player.id).length;
   const total = Object.keys(territories).length;
   const pct = Math.round((owned / total) * 100);
