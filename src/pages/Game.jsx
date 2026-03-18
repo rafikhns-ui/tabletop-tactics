@@ -60,11 +60,25 @@ export default function Game() {
 
   const addMessage = (msg) => setMessages(prev => [...prev.slice(-4), msg]);
 
-  // Called from GameMenu — go to faction select
+  // Called from GameMenu — go to AI setup or faction select
   const handleMenuStart = (mode, count) => {
     const modeConfig = { mode, playerCount: count || 2 };
     setPendingMode(modeConfig);
     setGameStartMode(modeConfig);
+    
+    // If mode is 'ai', show AI setup modal instead of faction select
+    if (mode === 'ai') {
+      setShowAiSetup(true);
+    } else {
+      setSetupStep('faction');
+    }
+  };
+
+  const handleAiSetupComplete = (aiPlayers) => {
+    // Create player for human (choose faction now)
+    const humanPlayer = { id: 'player1', name: 'You', isAI: false, leaderIndex: 0 };
+    setSetupPlayers([humanPlayer, ...aiPlayers]);
+    setShowAiSetup(false);
     setSetupStep('faction');
   };
 
