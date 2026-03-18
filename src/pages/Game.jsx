@@ -758,8 +758,7 @@ export default function Game() {
 
           <div className="flex-1 overflow-y-auto">
             {bottomTab === 'action' && gameState && currentPlayer && (
-              <>
-                <ActionBar
+              <ActionBar
                 gameState={gameState}
                 currentPlayer={currentPlayer}
                 phase={phase}
@@ -769,8 +768,6 @@ export default function Game() {
                 onDrawCard={handleDrawCard}
                 onSelectDeployUnit={handleSelectDeployUnit}
               />
-                <UnitBreakdown currentPlayer={currentPlayer} gameState={gameState} />
-              </>
             )}
             {bottomTab === 'heroes' && gameState && currentPlayer && !currentPlayer.isAI && (
               <HeroPanel
