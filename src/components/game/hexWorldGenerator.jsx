@@ -220,11 +220,12 @@ const createChokepoints = (grid) => {
 // ---- SMOOTH COASTLINES ----
 // Create irregular coastlines by adjusting water/land borders
 const smoothCoastlines = (grid) => {
-  const smoothed = [...grid];
+  let smoothed = [...grid];
   const iterations = 2;
 
   for (let iter = 0; iter < iterations; iter++) {
-    for (let idx = 0; idx < grid.length; idx++) {
+    const temp = [...smoothed];
+    for (let idx = 0; idx < smoothed.length; idx++) {
       const [q, r] = toCoords(idx);
       const neighbors = HexUtils.getNeighbors(q, r);
       
@@ -234,19 +235,20 @@ const smoothCoastlines = (grid) => {
       for (const [nq, nr] of neighbors) {
         const nIdx = toIndex(nq, nr);
         if (nIdx >= 0) {
-          if (grid[nIdx] === TERRAIN_TYPES.WATER) waterNeighbors++;
+          if (smoothed[nIdx] === TERRAIN_TYPES.WATER) waterNeighbors++;
           else landNeighbors++;
         }
       }
 
       // Smooth edges: if surrounded mostly by one type, become that type
-      if (waterNeighbors >= 4 && grid[idx] === TERRAIN_TYPES.LAND) {
-        smoothed[idx] = TERRAIN_TYPES.WATER;
+      if (waterNeighbors >= 4 && smoothed[idx] === TERRAIN_TYPES.LAND) {
+        temp[idx] = TERRAIN_TYPES.WATER;
       }
-      if (landNeighbors >= 4 && grid[idx] === TERRAIN_TYPES.WATER) {
-        smoothed[idx] = TERRAIN_TYPES.LAND;
+      if (landNeighbors >= 4 && smoothed[idx] === TERRAIN_TYPES.WATER) {
+        temp[idx] = TERRAIN_TYPES.LAND;
       }
     }
+    smoothed = temp;
   }
 
   return smoothed;
