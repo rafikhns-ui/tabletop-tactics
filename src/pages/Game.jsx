@@ -48,13 +48,15 @@ export default function Game() {
     const mode = pendingMode.mode;
     const state = createGameState(mode, choices, playersArr);
     const collected = collectIncome(state);
+    // Zero out auto-assigned troopsToDeploy — troops come from recruiting only
+    collected.players = collected.players.map(p => ({ ...p, troopsToDeploy: 0, pendingUnits: [] }));
     setGameState(collected);
     setGameMode(mode);
     setPendingMode(null);
     setPhase('deploy');
     setSelectedTerritory(null);
     setWinner(null);
-    setMessages(['⚜️ Rulers of Ardonia begins! Deploy your first reinforcements.']);
+    setMessages(['⚜️ Rulers of Ardonia begins! Recruit troops then deploy them.']);
     setTradeOffers([]);
     setBottomTab('action');
   };
