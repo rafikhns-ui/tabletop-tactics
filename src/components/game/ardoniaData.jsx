@@ -430,6 +430,9 @@ export const OBJECTIVES = [
   { id: 'avatars_call', category: 'Spiritual', text: 'Summon two avatars', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d44212424_6.png' },
   { id: 'age_of_avatars', category: 'Spiritual', text: 'Summon a legendary Avatar', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/39b9d0449_7.png' },
   { id: 'keeper_of_faith', category: 'Spiritual', text: 'Upgrade your Temple to its maximum level. The temple cannot be damaged for 3 turns. You should be in control of your capital', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/66b5a23b5_8.png' },
+  { id: 'mystic_enlightenment', category: 'Spiritual', text: 'Spend at least 10 SP in a single turn', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/a504bd2c3_9.png' },
+  { id: 'merchant_king', category: 'Economic', text: 'Accumulate 30 gold in your treasury', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ab346314f_10.png' },
+  { id: 'economic_alliance', category: 'Economic', text: 'Maintain 3 active Trade Agreements for 5 turns', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/a04fc9c7d_11.png' },
 ];
 
 // ---- Building Definitions ----
