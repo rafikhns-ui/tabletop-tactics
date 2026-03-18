@@ -426,6 +426,10 @@ export const OBJECTIVES = [
   { id: 'puppet_master', category: 'Political', text: 'Force a player to sign a treaty with another player & sign a treaty with a nation involved in a conflict', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/c0ca90b96_2.png' },
   { id: 'trusted_ally', category: 'Political', text: 'Cumulate 10 turns of alliance (with one or different players)', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/180d4dd12_3.png' },
   { id: 'cunning_deceiver', category: 'Political', text: 'Convince another player to betray their ally through diplomacy or trade', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/8e877b144_4.png' },
+  { id: 'mystical_dominance', category: 'Spiritual', text: 'Reach 25 Spiritual Points', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ac4fac07b_5.png' },
+  { id: 'avatars_call', category: 'Spiritual', text: 'Summon two avatars', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d44212424_6.png' },
+  { id: 'age_of_avatars', category: 'Spiritual', text: 'Summon a legendary Avatar', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/39b9d0449_7.png' },
+  { id: 'keeper_of_faith', category: 'Spiritual', text: 'Upgrade your Temple to its maximum level. The temple cannot be damaged for 3 turns. You should be in control of your capital', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/66b5a23b5_8.png' },
 ];
 
 // ---- Building Definitions ----
