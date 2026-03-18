@@ -331,14 +331,7 @@ export default function Game() {
       const player = prev.players.find(p => p.id === currentPlayer.id);
       const territory = prev.territories[territoryId];
       if (!territory || territory.owner !== player.id) return prev;
-      
-      // Check for Imperial Stronghold
-      if (!player.buildings?.['imperial_stronghold']) {
-        addMessage('🏯 Need Imperial Stronghold to build fortresses!');
-        return prev;
-      }
-      
-      const cost = { gold: 5, wood: 3 };
+      const cost = BUILDING_DEFS.fortress?.cost || {};
       // Check resources
       for (const [k, v] of Object.entries(cost)) {
         if ((player.resources?.[k] ?? 0) < v) return prev;
