@@ -436,6 +436,9 @@ export const OBJECTIVES = [
   { id: 'industrial_expansion', category: 'Economic', text: 'Upgrade your resource production buildings to their maximum level', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/91bb28006_12.png' },
   { id: 'port_authority', category: 'Economic', text: 'Upgrade your Port to its maximum level', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/4af107aa5_13.png' },
   { id: 'taxation_mastery', category: 'Economic', text: 'Earn at least 15 Gold in a single turn', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/33a031462_14.png' },
+  { id: 'warlords_path', category: 'Military', text: 'Conquer and hold for 3 turns, 5 enemy-controlled territories', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/56a487aaf_15.png' },
+  { id: 'supreme_commander', category: 'Military', text: 'Control an army of at least 12 units at one time', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/0eec3c3ca_16.png' },
+  { id: 'city_crusher', category: 'Military', text: 'Successfully besiege and conquer two Fortified City', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/cf12aeb9c_17.png' },
 ];
 
 // ---- Building Definitions ----
