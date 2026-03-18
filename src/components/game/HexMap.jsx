@@ -277,24 +277,6 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
           return (
            <g key={`hex-${hexId}`} onClick={handleClick} style={{ cursor: 'pointer' }}>
-             {/* Water tile blue overlay */}
-             {isWater && (
-               <polygon
-                 points={hexPoints}
-                 fill="rgba(0,0,255,0.3)"
-                 stroke="rgba(50,100,255,0.6)"
-                 strokeWidth="0.8"
-               />
-             )}
-             {/* Coastal tile light blue/green overlay */}
-             {isCoastal && (
-               <polygon
-                 points={hexPoints}
-                 fill="rgba(50,180,160,0.28)"
-                 stroke="rgba(60,200,180,0.55)"
-                 strokeWidth="0.8"
-               />
-             )}
              {/* Hex border outline — always visible */}
              <polygon
                points={hexPoints}
