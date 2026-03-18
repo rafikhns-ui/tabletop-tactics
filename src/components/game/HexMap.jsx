@@ -240,13 +240,20 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                />
              )}
 
-             {/* Unit count */}
-             {hex.units && hex.units.length > 0 && (
-               <text x={px} y={py + 8} textAnchor="middle" fontSize="12" fill="#fff" fontFamily="'Cinzel',serif" fontWeight="bold"
-                 style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
-                 ⚔️ {hex.units.reduce((sum, u) => sum + u.count, 0)}
-               </text>
-             )}
+             {/* Unit icons + count */}
+             {hex.units && hex.units.length > 0 && (() => {
+               const UNIT_EMOJIS = { infantry: '⚔️', cavalry: '🐴', ranged: '🏹', siege: '💣', naval: '⚓', elite: '🛡️' };
+               const total = hex.units.reduce((sum, u) => sum + u.count, 0);
+               // Show emoji of the dominant unit type
+               const dominant = hex.units.reduce((a, b) => (b.count > a.count ? b : a));
+               const emoji = UNIT_EMOJIS[dominant.type] || '⚔️';
+               return (
+                 <text x={px} y={py + 7} textAnchor="middle" fontSize="11" fill="#fff" fontFamily="'Cinzel',serif" fontWeight="bold"
+                   style={{ textShadow: '1px 1px 3px rgba(0,0,0,1)' }}>
+                   {emoji} {total}
+                 </text>
+               );
+             })()}
 
 
            </g>
