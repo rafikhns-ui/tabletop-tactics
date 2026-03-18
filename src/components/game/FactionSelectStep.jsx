@@ -150,12 +150,13 @@ export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBac
             <span className="text-xs opacity-70 font-bold tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(355,70%,65%)' }}>⚔️ OPPOSING FORCES:</span>
             {Array.from({ length: maxAI }, (_, i) => i + 1).map(n => (
               <button key={n} onClick={() => handleAiCountChange(n)}
-                className="w-8 h-8 rounded-lg text-sm font-bold transition-all"
+                className="w-10 h-10 rounded-lg text-sm font-bold transition-all hover:scale-110 active:scale-95"
                 style={{
-                  background: aiCount === n ? 'hsl(355,60%,35%)' : 'hsl(35,20%,22%)',
-                  border: `1px solid ${aiCount === n ? 'hsl(355,60%,55%)' : 'hsl(35,20%,32%)'}`,
-                  color: aiCount === n ? 'hsl(40,30%,95%)' : 'hsl(40,20%,50%)',
+                  background: aiCount === n ? 'linear-gradient(135deg, hsl(355,70%,45%), hsl(355,70%,35%))' : 'hsl(35,20%,20%)',
+                  border: `1.5px solid ${aiCount === n ? 'hsl(355,80%,55%)' : 'hsl(35,20%,30%)'}`,
+                  color: aiCount === n ? 'hsl(40,30%,98%)' : 'hsl(40,20%,55%)',
                   fontFamily: "'Cinzel',serif",
+                  boxShadow: aiCount === n ? '0 0 15px rgba(220,60,60,0.4)' : 'none',
                 }}>
                 {n}
               </button>
