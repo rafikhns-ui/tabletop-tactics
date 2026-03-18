@@ -74,8 +74,8 @@ export default function ObjectivesStep({ players, onNext, onBack }) {
             </p>
           </div>
 
-          <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(playersWithObjectives.length, 3)}, 1fr)` }}>
-            {playersWithObjectives.map((player, idx) => {
+          <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(playersWithObjectives.filter(p => !p.isAI).length, 3)}, 1fr)` }}>
+            {playersWithObjectives.filter(p => !p.isAI).map((player, idx) => {
               const PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
               const color = PLAYER_COLORS[idx];
 
