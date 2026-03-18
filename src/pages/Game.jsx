@@ -837,9 +837,9 @@ export default function Game() {
           <div className="flex border-b border-border flex-shrink-0" style={{ background: 'hsl(35,22%,13%)' }}>
             {[
                { id: 'action', icon: '⚔️', label: 'Action' },
-               { id: 'heroes', icon: '⭐', label: 'Heroes' },
                { id: 'build', icon: '🏗️', label: 'Build' },
                { id: 'recruit', icon: '⚔️', label: 'Recruit' },
+               { id: 'heroes', icon: '⭐', label: 'Heroes' },
                { id: 'avatars', icon: '👹', label: 'Avatars' },
                { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
                { id: 'log', icon: '📜', label: 'Battle Log' },
