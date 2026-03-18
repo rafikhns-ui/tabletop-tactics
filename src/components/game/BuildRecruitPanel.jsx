@@ -51,7 +51,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
     <div className="rounded p-2" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,28%)' }}>
       {/* Tabs */}
       <div className="flex gap-1 mb-2">
-        {['build', 'upgrade', 'fortress'].map(t => (
+        {['build', 'upgrade'].map(t => (
           <button key={t} onClick={() => setTab(t)}
             className="flex-1 py-1 rounded text-xs font-bold transition-all"
             style={{
@@ -60,7 +60,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
               border: tab === t ? '1px solid hsl(38,80%,50%)' : '1px solid hsl(35,20%,32%)',
               color: tab === t ? 'hsl(43,90%,80%)' : 'hsl(40,20%,55%)',
             }}>
-            {t === 'build' ? '🏗️ Build' : t === 'upgrade' ? '⬆️ Upgrade' : '🏰 Fort'}
+            {t === 'build' ? '🏗️ Build' : '⬆️ Upgrade'}
           </button>
         ))}
       </div>
