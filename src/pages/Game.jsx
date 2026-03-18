@@ -88,25 +88,34 @@ export default function Game() {
     if (!hex) return;
 
     if (phase === 'deploy') {
-      if (hex.owner === currentPlayer.id && currentPlayer.troopsToDeploy > 0) {
-        // Check if terrain allows land unit deployment
-        if (!canUnitEnter(hexId, 'infantry')) {
-          addMessage('⛔ Cannot deploy land units in ocean');
+      const pending = currentPlayer.pendingUnits || [];
+      if (hex.owner === currentPlayer.id && pending.length > 0) {
+        const unitType = pending[0]; // deploy the first queued unit
+        if (!canUnitEnter(hexId, unitType)) {
+          addMessage(`⛔ ${unitType} cannot enter that terrain`);
           return;
         }
         setGameState(prev => {
+          const player = prev.players.find(p => p.id === currentPlayer.id);
+          const newPending = [...(player.pendingUnits || [])];
+          newPending.shift();
+          const hexUnits = [...(prev.hexes[hexId]?.units || [])];
+          const existing = hexUnits.find(u => u.type === unitType);
+          if (existing) existing.count += 1;
+          else hexUnits.push({ type: unitType, count: 1 });
           const next = {
             ...prev,
             hexes: {
               ...prev.hexes,
-              [hexId]: { ...hex, units: [...(hex.units || []), { type: 'infantry', count: 1 }] },
+              [hexId]: { ...prev.hexes[hexId], units: hexUnits },
             },
             players: prev.players.map(p =>
-              p.id === currentPlayer.id ? { ...p, troopsToDeploy: p.troopsToDeploy - 1 } : p
+              p.id === currentPlayer.id ? { ...p, pendingUnits: newPending } : p
             ),
           };
           return checkObjectives(next);
         });
+        addMessage(`🏰 Deployed ${unitType} to hex`);
       }
     } else if (phase === 'attack') {
       if (!selectedTerritory) {
