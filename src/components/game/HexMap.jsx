@@ -201,6 +201,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         {Object.entries(hexes).map(([hexId, hex], hexArrayIndex) => {
           const hexIndex = hexArrayIndex + 1;
           const isWater = isWaterHex(hexIndex);
+          const isCoastal = !isWater && isCoastalHex(hexIndex);
           const isSelected = selectedHex === hexId;
           const isOwned = hex.owner === currentPlayer?.id;
           const canAttack = isAttackable(hexId);
