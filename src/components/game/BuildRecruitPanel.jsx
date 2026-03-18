@@ -31,6 +31,7 @@ function CostTag({ cost, resources }) {
 
 export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onUpgrade, onBuildFortress, phase }) {
   const [tab, setTab] = useState('build'); // 'build' | 'upgrade' | 'fortress'
+  const [previewImage, setPreviewImage] = useState(null);
   const { resources } = currentPlayer;
   const ownedBuildings = Object.keys(currentPlayer.buildings || {});
   const ownedTerritories = Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id);
