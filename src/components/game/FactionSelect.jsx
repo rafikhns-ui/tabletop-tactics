@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FACTIONS, LEADERS, OBJECTIVES } from './ardoniaData';
+import ObjectiveDeckAnimation from './ObjectiveDeckAnimation';
 
 const shuffle = (arr) => {
   const a = [...arr];
