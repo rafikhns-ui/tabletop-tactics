@@ -490,19 +490,17 @@ export const OBJECTIVES = [
 // ---- Building Definitions ----
 export const BUILDING_DEFS = {
   // Starting buildings (every player has these)
-  mine:     { id: 'mine',     name: 'Mine',      emoji: '⛏️',  starting: true, maxLevel: 3, upgradeBase: { gold: 3, wood: 2 }, effect: 'gold', effectPerLevel: 1, description: '+1 Gold/turn per level' },
-  sawmill:  { id: 'sawmill',  name: 'Sawmill',   emoji: '🪵',  starting: true, maxLevel: 3, upgradeBase: { gold: 2, wood: 2 }, effect: 'wood', effectPerLevel: 1, description: '+1 Wood/turn per level' },
-  field:    { id: 'field',    name: 'Field',     emoji: '🌾',  starting: true, maxLevel: 3, upgradeBase: { gold: 2, wheat: 1 }, effect: 'wheat', effectPerLevel: 1, description: '+1 Wheat/turn per level' },
-  treasury: { id: 'treasury', name: 'Treasury',  emoji: '🏦',  starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'storage', effectPerLevel: 5, description: '+5 max resource storage per level' },
-  // Constructible
-  barracks:  { id: 'barracks',  name: 'Barracks',       emoji: '⚔️',  starting: false, cost: { gold: 5, wood: 3 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 2 }, description: 'Recruit Infantry & Elite units' },
-  stables:   { id: 'stables',   name: 'Stables',         emoji: '🐴',  starting: false, cost: { gold: 4, wood: 3, wheat: 2 }, maxLevel: 3, upgradeBase: { gold: 2, wood: 2, wheat: 1 }, description: 'Recruit Cavalry units' },
-  archerytower: { id: 'archerytower', name: 'Archery Tower', emoji: '🏹', starting: false, cost: { gold: 4, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 2, wood: 3 }, description: 'Recruit Ranged units' },
-  temple:    { id: 'temple',    name: 'Temple',          emoji: '⛩️',  starting: false, cost: { gold: 6, wood: 3, wheat: 2 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 2, wheat: 1 }, effect: 'sp', effectPerLevel: 1, description: '+1 SP/turn, Avatar summoning' },
-  market:    { id: 'market',    name: 'Market',          emoji: '🏪',  starting: false, cost: { gold: 5, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 3 }, effect: 'gold', description: '+1 Gold/turn, enables Trade' },
-  shipyard:  { id: 'shipyard',  name: 'Naval Shipyard',  emoji: '⚓',  starting: false, cost: { gold: 6, wood: 6 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 4 }, description: 'Recruit Naval units (coastal only)' },
-  siegeworks:{ id: 'siegeworks',name: 'Siege Works',     emoji: '🏗️',  starting: false, cost: { gold: 5, wood: 5 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 3 }, description: 'Recruit Siege Engines' },
-  fortress:  { id: 'fortress',  name: 'Fortress',        emoji: '🏰',  starting: false, cost: { gold: 8, wood: 6, stone: 4 }, maxLevel: 1, description: '+3 defense, placeable on territory' },
+  mine:     { id: 'mine',     name: 'Mine',      emoji: '⛏️',  starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 2 }, effect: 'gold', effectPerLevel: { 1: 2, 2: 3, 3: 6 }, description: 'Gold production', unlocks: {} },
+  lumber_mill: { id: 'lumber_mill', name: 'Lumber Mill', emoji: '🪵', starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'wood', effectPerLevel: { 1: 1, 2: 1, 3: 2 }, description: 'Wood production, can trade at lvl 2', unlocks: {} },
+  farm:     { id: 'farm',    name: 'Farm',     emoji: '🌾',  starting: true, maxLevel: 3, upgradeBase: { gold: 3, wheat: 2 }, effect: 'wheat', effectPerLevel: { 1: 1, 2: 2, 3: 3 }, description: 'Wheat production', unlocks: {} },
+  treasury: { id: 'treasury', name: 'Treasury',  emoji: '🏦',  starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'storage', effectPerLevel: 5, description: '+5 max resource storage per level', unlocks: {} },
+  // Constructible - Onishiman buildings
+  imperial_stronghold: { id: 'imperial_stronghold', name: 'Imperial Stronghold', emoji: '🏯', starting: false, cost: { gold: 8, wood: 5 }, maxLevel: 1, upgradeBase: {}, description: '+2 defending roll, walls can be built in owned territories', unlocks: {} },
+  omitoji_dojo: { id: 'omitoji_dojo', name: 'Omitoji Dojo', emoji: '⛩️', starting: false, cost: { gold: 6, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 2 }, description: 'Unlock hero and unit recruitment', unlocks: { 1: 'omotojo_warlock', 2: 'sorcerer_hero', 3: 'magic_cost_reduction' } },
+  spirit_gate: { id: 'spirit_gate', name: 'The Spirit Gate', emoji: '🌙', starting: false, cost: { gold: 8, wood: 5 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'sp', effectPerLevel: { 1: 1, 2: 1, 3: 1 }, description: 'Summon avatars at each level', unlocks: { 1: 'basic_avatar', 2: 'advanced_avatar', 3: 'legendary_avatar' } },
+  tower_of_intrigues: { id: 'tower_of_intrigues', name: 'Tower of Intrigues', emoji: '🏛️', starting: false, cost: { gold: 7, wood: 5 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, description: 'Unlock hero classes', unlocks: { 1: 'strategist_hero', 2: 'diplomat_hero', 3: 'spy_hero' } },
+  siege_engine_workshop: { id: 'siege_engine_workshop', name: 'Siege Engine Workshop', emoji: '🏗️', starting: false, cost: { gold: 8, wood: 6 }, maxLevel: 2, upgradeBase: { gold: 4, wood: 4 }, description: 'Unlock ranged units', unlocks: { 1: 'ranged_unit', 2: 'wildfire_thrower' } },
+  fighting_pit: { id: 'fighting_pit', name: 'Fighting Pit', emoji: '⚔️', starting: false, cost: { gold: 7, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 3 }, description: 'Unlock combat units and heroes', unlocks: { 1: 'melee_infantry', 2: 'warlord_hero', 3: 'elite_unit' } },
 };
 
 // ---- Unit Definitions ----
