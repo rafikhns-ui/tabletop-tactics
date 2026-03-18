@@ -86,20 +86,28 @@ export default function ObjectivesStep({ players, onNext, onBack }) {
                       {player.isAI ? `🤖 AI Player` : 'Player'}
                     </div>
                   </div>
-                  <div className="p-4 space-y-3">
-                    {player.objectives?.map(obj => (
-                      <div key={obj.id} className="rounded-lg overflow-hidden border" style={{ borderColor: 'hsl(35,20%,30%)' }}>
-                        {obj.image && (
-                          <img src={obj.image} alt={obj.text} className="w-full h-auto" />
-                        )}
-                        <div className="p-2 bg-black/30" style={{ color: 'hsl(40,20%,70%)' }}>
-                          <div className="text-xs font-bold" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,80%,65%)' }}>
-                            [{obj.category}]
+                  <div className="p-4">
+                    {!player.isAI ? (
+                      <div className="space-y-3">
+                        {player.objectives?.map(obj => (
+                          <div key={obj.id} className="rounded-lg overflow-hidden border" style={{ borderColor: 'hsl(35,20%,30%)' }}>
+                            {obj.image && (
+                              <img src={obj.image} alt={obj.text} className="w-full h-auto" />
+                            )}
+                            <div className="p-2 bg-black/30" style={{ color: 'hsl(40,20%,70%)' }}>
+                              <div className="text-xs font-bold" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,80%,65%)' }}>
+                                [{obj.category}]
+                              </div>
+                              <p className="text-xs leading-relaxed mt-1">{obj.text}</p>
+                            </div>
                           </div>
-                          <p className="text-xs leading-relaxed mt-1">{obj.text}</p>
-                        </div>
+                        ))}
                       </div>
-                    ))}
+                    ) : (
+                      <div className="text-xs opacity-50 italic" style={{ color: 'hsl(40,20%,60%)' }}>
+                        🔒 Secret objectives (hidden)
+                      </div>
+                    )}
                   </div>
                 </div>
               );
