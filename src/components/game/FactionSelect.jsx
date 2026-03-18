@@ -218,6 +218,7 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
   return (
     <div className="min-h-screen flex flex-col items-center justify-start p-6 overflow-auto"
       style={{ background: 'linear-gradient(160deg, hsl(35,25%,10%), hsl(35,20%,8%))' }}>
+      {showDeckAnimation && <ObjectiveDeckAnimation players={players} onComplete={handleAnimationComplete} />}
       <div className="w-full max-w-6xl">
         <div className="text-center mb-4">
           <h1 className="text-3xl font-bold mb-1" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,58%)' }}>
