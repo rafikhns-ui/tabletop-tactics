@@ -787,7 +787,6 @@ export default function Game() {
                 currentPlayer={currentPlayer}
                 gameState={gameState}
                 onBuild={handleBuild}
-                onRecruit={handleRecruit}
                 onUpgrade={handleUpgrade}
                 onBuildFortress={handleBuildFortress}
               />
@@ -795,6 +794,17 @@ export default function Game() {
             {bottomTab === 'build' && currentPlayer?.isAI && (
               <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
                 Build available during your turn
+              </div>
+            )}
+            {bottomTab === 'recruit' && gameState && currentPlayer && !currentPlayer.isAI && (
+              <RecruitPanel
+                currentPlayer={currentPlayer}
+                onRecruit={handleRecruit}
+              />
+            )}
+            {bottomTab === 'recruit' && currentPlayer?.isAI && (
+              <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
+                Recruit available during your turn
               </div>
             )}
             {bottomTab === 'diplomacy' && gameState && currentPlayer && !currentPlayer.isAI && (
