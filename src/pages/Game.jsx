@@ -765,12 +765,8 @@ export default function Game() {
                 phase={phase}
                 onAdvancePhase={advancePhase}
                 isAI={currentPlayer.isAI}
-                onBuild={handleBuild}
-                onRecruit={handleRecruit}
                 onPlayCard={handlePlayCard}
                 onDrawCard={handleDrawCard}
-                onUpgrade={handleUpgrade}
-                onBuildFortress={handleBuildFortress}
                 onSelectDeployUnit={handleSelectDeployUnit}
               />
                 <UnitBreakdown currentPlayer={currentPlayer} gameState={gameState} />
