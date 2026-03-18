@@ -739,6 +739,7 @@ export default function Game() {
 
   if (onlineSession) return <OnlineGame session={onlineSession} onLeave={() => { setOnlineSession(null); setShowLobby(false); }} />;
   if (showLobby) return <Lobby onStartOnline={(s) => setOnlineSession(s)} onBack={() => setShowLobby(false)} />;
+  if (showAiSetup) return <AiSetupModal onStart={handleAiSetupComplete} onBack={() => { setShowAiSetup(false); setPendingMode(null); setGameStartMode(null); }} />;
   if (!gameMode && !pendingMode) return <GameMenu onStart={handleMenuStart} onOnline={() => setShowLobby(true)} />;
   
   if (pendingMode && setupStep === 'faction') {
