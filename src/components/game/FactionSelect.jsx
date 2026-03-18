@@ -117,8 +117,8 @@ function PlayerSlot({ index, choices, onChange, takenFactionIds, isAI }) {
             </div>
           ))}
 
-          {/* Leader select */}
-          {faction && leaders.length > 0 && (
+          {/* Leader select — only after objectives drawn */}
+          {faction && leaders.length > 0 && choices.objectives && (
             <div>
               <div className="text-xs mb-1.5 opacity-40 tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,70%,55%)' }}>
                 CHOOSE LEADER
