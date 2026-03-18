@@ -9,19 +9,43 @@ function LeaderCard({ leader, selected, onClick }) {
   return (
     <>
       <button onMouseEnter={() => setShowPreview(true)} onMouseLeave={() => setShowPreview(false)} onClick={onClick}
-        className="w-full text-left px-3 py-2 rounded-lg transition-all text-xs relative"
+        className="w-full text-left px-4 py-3 rounded-sm transition-all text-xs relative border-2 overflow-hidden group"
         style={{
-          background: selected ? 'hsl(38,70%,22%)' : 'hsl(35,20%,18%)',
-          border: `1px solid ${selected ? 'hsl(38,80%,50%)' : 'hsl(35,20%,28%)'}`,
-          color: selected ? 'hsl(43,90%,80%)' : 'hsl(40,20%,65%)',
+          background: selected 
+            ? 'linear-gradient(135deg, hsl(270,80%,20%), hsl(200,70%,15%))' 
+            : 'linear-gradient(135deg, hsl(0,0%,12%), hsl(35,15%,10%))',
+          borderColor: selected ? 'hsl(270,90%,55%)' : 'hsl(0,0%,25%)',
+          color: selected ? 'hsl(270,90%,80%)' : 'hsl(40,20%,65%)',
+          boxShadow: selected 
+            ? `0 0 25px hsl(270,90%,55%)50, inset 0 0 15px hsl(270,80%,40%)20` 
+            : '0 4px 8px rgba(0,0,0,0.6)',
         }}>
-        <div className="font-bold">{leader.name} <span className="opacity-40 font-normal text-xs">({leader.type})</span></div>
-        <div className="opacity-70 mt-0.5">✦ {leader.passive}</div>
-        <div className="opacity-45 mt-0.5">✗ {leader.disadvantage}</div>
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ background: 'hsl(270,90%,55%)', filter: 'blur(15px)' }} />
+        {selected && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            background: 'hsl(270,90%,55%)',
+            boxShadow: '0 0 10px hsl(270,90%,55%)'
+          }} />
+        )}
+        <div className="relative z-10">
+          <div className="font-black text-sm mb-1" style={{ letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            {leader.name} <span className="opacity-40 font-normal text-xs">({leader.type})</span>
+          </div>
+          <div className="opacity-70 mt-0.5 text-xs">⚔️ {leader.passive}</div>
+          <div className="opacity-50 mt-0.5 text-xs">⚠️ {leader.disadvantage}</div>
+        </div>
       </button>
       {showPreview && leader.image && (
         <div className="fixed pointer-events-none z-50" style={{ top: '50%', right: '2rem', transform: 'translateY(-50%)' }}>
-          <img src={leader.image} alt={leader.name} className="w-80 h-auto rounded-lg shadow-2xl border-4" style={{ borderColor: 'hsl(43,80%,55%)' }} />
+          <img src={leader.image} alt={leader.name} className="w-80 h-auto rounded-sm shadow-2xl border-4" style={{ 
+            borderColor: 'hsl(270,90%,55%)',
+            boxShadow: '0 0 40px hsl(270,90%,55%)50'
+          }} />
         </div>
       )}
     </>
