@@ -38,33 +38,47 @@ export default function ObjectiveDeckAnimation({ players, onComplete }) {
         </div>
 
         {/* Animated cards coming out */}
-        {revealed.map((i, idx) => (
-          <div
-            key={i}
-            className="absolute"
-            style={{
-              animation: `cardDraw 0.6s ease-out forwards`,
-              animationDelay: `${idx * 0.6}s`,
-            }}>
-            <div className="w-32 h-40 rounded-lg p-3 text-xs"
+        {revealed.map((i, idx) => {
+          const objective = players[i]?.objectives?.[0];
+          return (
+            <div
+              key={i}
+              className="absolute"
               style={{
-                background: 'linear-gradient(135deg, hsl(35,40%,22%), hsl(35,30%,15%))',
-                border: '1.5px solid hsl(43,85%,55%)',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.7)',
-                fontFamily: "'Crimson Text', serif",
-                color: 'hsl(40,25%,80%)',
+                animation: `cardDraw 0.6s ease-out forwards`,
+                animationDelay: `${idx * 0.6}s`,
               }}>
-              <div className="text-center text-xs opacity-60 mb-1" style={{ fontFamily: "'Cinzel',serif" }}>
-                Secret Objective
-              </div>
-              <div className="h-full flex items-center justify-center text-center leading-tight">
-                <span style={{ fontSize: '11px' }}>
-                  {players[i]?.objectives?.[0]?.text || 'Unknown'}
-                </span>
+              <div className="w-40 h-56 rounded-lg overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(35,40%,22%), hsl(35,30%,15%))',
+                  border: '1.5px solid hsl(43,85%,55%)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.7)',
+                }}>
+                {objective?.image ? (
+                  <img src={objective.image} alt={objective.text} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full p-3 flex flex-col justify-between"
+                    style={{
+                      fontFamily: "'Crimson Text', serif",
+                      color: 'hsl(40,25%,80%)',
+                    }}>
+                    <div className="text-center text-xs opacity-60" style={{ fontFamily: "'Cinzel',serif" }}>
+                      Secret Objective
+                    </div>
+                    <div className="flex items-center justify-center text-center text-xs leading-tight flex-1">
+                      <span>
+                        {objective?.text || 'Unknown'}
+                      </span>
+                    </div>
+                    <div className="text-xs opacity-60" style={{ fontFamily: "'Cinzel',serif" }}>
+                      [{objective?.category}]
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Confetti effect */}
         {!isAnimating && (
