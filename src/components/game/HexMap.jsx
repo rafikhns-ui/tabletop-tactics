@@ -210,39 +210,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                />
              )}
 
-             {/* Selection highlight border */}
-             {isSelected && (
-               <polygon
-                 points={[0, 1, 2, 3, 4, 5].map(i => {
-                   const angle = (Math.PI / 3) * i;
-                   return [
-                     px + hexSize * Math.cos(angle),
-                     py + hexSize * Math.sin(angle),
-                   ];
-                 }).flat().join(',')}
-                 fill="none"
-                 stroke="rgba(255,200,50,0.9)"
-                 strokeWidth="2"
-                 style={{ filter: 'drop-shadow(0 0 10px rgba(255,200,50,0.6))' }}
-               />
-             )}
 
-             {/* Deploy highlight border (pulsing gold) */}
-             {canDeploy && !isSelected && (
-               <polygon
-                 points={[0, 1, 2, 3, 4, 5].map(i => {
-                   const angle = (Math.PI / 3) * i;
-                   return [
-                     px + hexSize * Math.cos(angle),
-                     py + hexSize * Math.sin(angle),
-                   ];
-                 }).flat().join(',')}
-                 fill="rgba(255,220,80,0.18)"
-                 stroke="rgba(255,220,80,0.9)"
-                 strokeWidth="2"
-                 style={{ filter: 'drop-shadow(0 0 8px rgba(255,220,80,0.7))' }}
-               />
-             )}
 
              {/* Hex number label */}
              <text x={px} y={py + 4} textAnchor="middle" fontSize="8" fill="black" fontFamily="'Cinzel',serif" fontWeight="bold">
