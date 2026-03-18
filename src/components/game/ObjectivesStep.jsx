@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { OBJECTIVES } from './ardoniaData';
+import { OBJECTIVES, FACTIONS } from './ardoniaData';
 import ObjectiveDeckAnimation from './ObjectiveDeckAnimation';
 
 const shuffle = (arr) => {
