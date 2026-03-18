@@ -1,5 +1,4 @@
 import React from 'react';
-import BuildRecruitPanel from './BuildRecruitPanel';
 import ActionCardsPanel from './ActionCardsPanel';
 import { UNIT_DEFS } from './ardoniaData';
 
