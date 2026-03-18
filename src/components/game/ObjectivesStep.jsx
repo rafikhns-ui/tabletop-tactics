@@ -161,16 +161,32 @@ export default function ObjectivesStep({ players, onNext, onBack }) {
             })}
           </div>
 
-          <div className="flex gap-3 justify-center pb-8">
+          <div className="flex gap-4 justify-center pb-12">
             <button onClick={onBack}
-              className="px-5 py-2.5 rounded-lg text-sm hover:opacity-80 transition-all"
-              style={{ background: 'hsl(35,20%,20%)', border: '1px solid hsl(35,20%,35%)', color: 'hsl(40,20%,65%)', fontFamily: "'Cinzel',serif" }}>
-              ← Back
+              className="px-6 py-3 text-sm font-bold transition-all border-2 rounded-sm hover:opacity-90 active:scale-95"
+              style={{ 
+                background: 'linear-gradient(135deg, hsl(0,0%,15%), hsl(35,15%,12%))', 
+                borderColor: 'hsl(0,0%,30%)', 
+                color: 'hsl(40,20%,70%)', 
+                fontFamily: "'Cinzel',serif",
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.7)'
+              }}>
+              ← Return
             </button>
             <button onClick={handleNext}
-              className="px-6 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 transition-all"
-              style={{ fontFamily: "'Cinzel',serif", background: 'linear-gradient(135deg, hsl(38,80%,38%), hsl(38,80%,28%))', border: '1px solid hsl(38,80%,55%)', color: 'hsl(43,90%,90%)' }}>
-              👑 Choose Leaders
+              className="px-8 py-3 text-sm font-black transition-all border-2 rounded-sm hover:scale-105 active:scale-95"
+              style={{
+                fontFamily: "'Cinzel',serif",
+                background: 'linear-gradient(135deg, hsl(43,85%,35%), hsl(43,85%,20%))',
+                borderColor: 'hsl(43,90%,60%)',
+                color: 'hsl(0,0%,98%)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                boxShadow: '0 0 30px rgba(255,200,50,0.5), 0 0 60px rgba(255,200,50,0.25), 0 4px 12px rgba(0,0,0,0.8)',
+              }}>
+              👑 Claim Your Champions
             </button>
           </div>
         </div>
