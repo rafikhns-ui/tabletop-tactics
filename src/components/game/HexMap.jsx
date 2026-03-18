@@ -198,8 +198,8 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         </defs>
 
         {/* Hex tiles */}
-        {Object.entries(hexes).map(([hexId, hex], hexArrayIndex) => {
-          const hexIndex = hexArrayIndex + 1;
+        {Object.entries(hexes).map(([hexId, hex]) => {
+          const hexIndex = hex._stableIndex;
           const isWater = isWaterHex(hexIndex);
           const isCoastal = !isWater && isCoastalHex(hexIndex);
           const isSelected = selectedHex === hexId;
