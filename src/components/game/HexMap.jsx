@@ -64,22 +64,44 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   const canvasWidth = 1800;
   const canvasHeight = 1460;
 
-  const [focusedHex, setFocusedHex] = useState(null); // { hexId, hex, px, py }
-  const [viewBox, setViewBox] = useState({ x: 0, y: 0, w: canvasWidth, h: canvasHeight });
+  const [focusedHex, setFocusedHex] = useState(null);
+  const defaultVB = { x: 0, y: 0, w: canvasWidth, h: canvasHeight };
+  const [viewBox, setViewBox] = useState(defaultVB);
+  const animRef = useRef(null);
+  const currentVB = useRef(defaultVB);
 
-  const zoomToHex = useCallback((hex, px, py) => {
+  const animateTo = useCallback((target) => {
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+    const ease = 0.1;
+    const step = () => {
+      const cur = currentVB.current;
+      const nx = cur.x + (target.x - cur.x) * ease;
+      const ny = cur.y + (target.y - cur.y) * ease;
+      const nw = cur.w + (target.w - cur.w) * ease;
+      const nh = cur.h + (target.h - cur.h) * ease;
+      const done =
+        Math.abs(nx - target.x) < 0.5 &&
+        Math.abs(ny - target.y) < 0.5 &&
+        Math.abs(nw - target.w) < 0.5 &&
+        Math.abs(nh - target.h) < 0.5;
+      const next = done ? target : { x: nx, y: ny, w: nw, h: nh };
+      currentVB.current = next;
+      setViewBox({ ...next });
+      if (!done) animRef.current = requestAnimationFrame(step);
+    };
+    animRef.current = requestAnimationFrame(step);
+  }, []);
+
+  useEffect(() => () => { if (animRef.current) cancelAnimationFrame(animRef.current); }, []);
+
+  const zoomToHex = useCallback((px, py) => {
     const zoomW = canvasWidth * 0.35;
     const zoomH = canvasHeight * 0.35;
-    setViewBox({
-      x: px - zoomW / 2,
-      y: py - zoomH / 2,
-      w: zoomW,
-      h: zoomH,
-    });
-  }, [canvasWidth, canvasHeight]);
+    animateTo({ x: px - zoomW / 2, y: py - zoomH / 2, w: zoomW, h: zoomH });
+  }, [canvasWidth, canvasHeight, animateTo]);
 
   const resetZoom = () => {
-    setViewBox({ x: 0, y: 0, w: canvasWidth, h: canvasHeight });
+    animateTo(defaultVB);
     setFocusedHex(null);
   };
 
