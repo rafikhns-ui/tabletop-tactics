@@ -668,14 +668,37 @@ export default function Game() {
   if (onlineSession) return <OnlineGame session={onlineSession} onLeave={() => { setOnlineSession(null); setShowLobby(false); }} />;
   if (showLobby) return <Lobby onStartOnline={(s) => setOnlineSession(s)} onBack={() => setShowLobby(false)} />;
   if (!gameMode && !pendingMode) return <GameMenu onStart={handleMenuStart} onOnline={() => setShowLobby(true)} />;
-  if (pendingMode && !gameMode) return (
-    <FactionSelect
-      mode={pendingMode.mode}
-      playerCount={pendingMode.playerCount}
-      onConfirm={(choices, playersArr) => startGame(choices, playersArr)}
-      onBack={() => setPendingMode(null)}
-    />
-  );
+  
+  if (pendingMode && setupStep === 'faction') {
+    return (
+      <FactionSelectStep
+        mode={pendingMode.mode}
+        playerCount={pendingMode.playerCount}
+        onNext={handleFactionSelectComplete}
+        onBack={() => { setPendingMode(null); setSetupStep(null); }}
+      />
+    );
+  }
+
+  if (setupStep === 'objectives' && setupPlayers) {
+    return (
+      <ObjectivesStep
+        players={setupPlayers}
+        onNext={handleObjectivesComplete}
+        onBack={() => setSetupStep('faction')}
+      />
+    );
+  }
+
+  if (setupStep === 'leader' && setupPlayers) {
+    return (
+      <LeaderSelectStep
+        players={setupPlayers}
+        onConfirm={handleLeaderSelectComplete}
+        onBack={() => setSetupStep('objectives')}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background" style={{ fontFamily: "'Crimson Text', serif" }}>
