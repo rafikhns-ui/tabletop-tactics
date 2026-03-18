@@ -113,11 +113,11 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
   );
 }
 
-function DeployQueue({ pendingUnits }) {
-  // Count by type
+function DeployQueue({ pendingUnits, onSelectUnit }) {
   const counts = {};
   pendingUnits.forEach(u => { counts[u] = (counts[u] || 0) + 1; });
   const entries = Object.entries(counts);
+  const nextType = pendingUnits[0];
 
   return (
     <div className="p-2 rounded" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(43,70%,40%)' }}>
@@ -131,17 +131,29 @@ function DeployQueue({ pendingUnits }) {
           <div className="flex flex-wrap gap-1.5 mb-2">
             {entries.map(([type, count]) => {
               const def = UNIT_DEFS[type];
+              const isNext = type === nextType;
               return (
-                <div key={type} className="flex items-center gap-1 px-2 py-1 rounded text-xs font-bold"
-                  style={{ background: 'hsl(38,60%,22%)', border: '1px solid hsl(43,70%,40%)', color: 'hsl(43,90%,75%)', fontFamily: "'Cinzel',serif" }}>
-                  <span>{def?.emoji || '⚔️'}</span>
+                <button
+                  key={type}
+                  onClick={() => onSelectUnit && onSelectUnit(type)}
+                  className="flex items-center gap-1 px-2 py-1.5 rounded text-xs font-bold transition-all hover:scale-105 active:scale-95"
+                  style={{
+                    background: isNext ? 'hsl(43,70%,28%)' : 'hsl(38,40%,18%)',
+                    border: isNext ? '2px solid hsl(43,90%,60%)' : '1px solid hsl(35,20%,35%)',
+                    color: isNext ? 'hsl(43,95%,85%)' : 'hsl(40,25%,65%)',
+                    fontFamily: "'Cinzel',serif",
+                    boxShadow: isNext ? '0 0 12px rgba(255,200,50,0.4)' : 'none',
+                    cursor: 'pointer',
+                  }}>
+                  <span className="text-base">{def?.emoji || '⚔️'}</span>
                   <span>{def?.name || type}</span>
-                  <span className="ml-1 px-1 rounded-full" style={{ background: 'hsl(43,80%,30%)', color: 'hsl(43,90%,85%)' }}>×{count}</span>
-                </div>
+                  <span className="ml-1 px-1 rounded-full text-xs" style={{ background: isNext ? 'hsl(43,80%,38%)' : 'hsl(35,20%,28%)', color: isNext ? 'hsl(43,95%,90%)' : 'hsl(40,20%,60%)' }}>×{count}</span>
+                  {isNext && <span className="text-xs ml-0.5" style={{ color: 'hsl(43,90%,75%)', fontSize: '9px' }}>▶ NEXT</span>}
+                </button>
               );
             })}
           </div>
-          <div className="text-xs opacity-50 text-center">click your territories to place</div>
+          <div className="text-xs opacity-50 text-center">click a unit type to select, then click your territory</div>
         </>
       )}
     </div>
