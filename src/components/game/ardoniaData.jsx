@@ -433,6 +433,9 @@ export const OBJECTIVES = [
   { id: 'mystic_enlightenment', category: 'Spiritual', text: 'Spend at least 10 SP in a single turn', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/a504bd2c3_9.png' },
   { id: 'merchant_king', category: 'Economic', text: 'Accumulate 30 gold in your treasury', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ab346314f_10.png' },
   { id: 'economic_alliance', category: 'Economic', text: 'Maintain 3 active Trade Agreements for 5 turns', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/a04fc9c7d_11.png' },
+  { id: 'industrial_expansion', category: 'Economic', text: 'Upgrade your resource production buildings to their maximum level', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/91bb28006_12.png' },
+  { id: 'port_authority', category: 'Economic', text: 'Upgrade your Port to its maximum level', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/4af107aa5_13.png' },
+  { id: 'taxation_mastery', category: 'Economic', text: 'Earn at least 15 Gold in a single turn', secret: true, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/33a031462_14.png' },
 ];
 
 // ---- Building Definitions ----
