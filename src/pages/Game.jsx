@@ -734,6 +734,7 @@ export default function Game() {
               { id: 'action', icon: '⚔️', label: 'Action' },
               { id: 'heroes', icon: '⭐', label: 'Heroes' },
               { id: 'build', icon: '🏗️', label: 'Build' },
+              { id: 'recruit', icon: '⚔️', label: 'Recruit' },
               { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
               { id: 'log', icon: '📜', label: 'Battle Log' },
             ].map(t => (
