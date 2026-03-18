@@ -256,26 +256,14 @@ export default function Game() {
         if ((newResources[k] ?? 0) < v) return prev;
         newResources[k] -= v;
       }
-      // Add unit to capital or first owned territory
-      const capital = Object.values(prev.territories).find(t => t.owner === player.id && t.isCapital)
-        || Object.values(prev.territories).find(t => t.owner === player.id);
-      if (!capital) return prev;
-      const newCapital = { ...capital };
-      newCapital.units = [...(capital.units || [])];
-      const existingUnit = newCapital.units.find(u => u.type === unitId);
-      if (existingUnit) {
-        existingUnit.count += 1;
-      } else {
-        newCapital.units.push({ type: unitId, count: 1 });
-      }
-      newCapital.troops = newCapital.units.reduce((s, u) => s + u.count, 0);
+      // Add to pendingUnits queue for deployment
+      const pendingUnits = [...(player.pendingUnits || []), unitId];
       return {
         ...prev,
-        players: prev.players.map(p => p.id === player.id ? { ...p, resources: newResources } : p),
-        territories: { ...prev.territories, [capital.id]: newCapital },
+        players: prev.players.map(p => p.id === player.id ? { ...p, resources: newResources, pendingUnits } : p),
       };
     });
-    addMessage(`⚔️ Recruited ${unitId} to your capital!`);
+    addMessage(`⚔️ Recruited ${def.name} — deploy it on the map!`);
   };
 
   const handleBuildFortress = (territoryId) => {
