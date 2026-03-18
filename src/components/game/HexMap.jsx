@@ -185,7 +185,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           else if (canAttack) { ringColor = 'rgba(255,60,60,0.8)'; glow = '0 0 15px rgba(255,60,60,0.4)'; }
           else if (canFortify) { ringColor = 'rgba(60,180,255,0.8)'; glow = '0 0 12px rgba(60,180,255,0.4)'; }
           else if (canMove) { ringColor = 'rgba(100,255,100,0.7)'; glow = '0 0 10px rgba(100,255,100,0.3)'; }
-          else if (canDeploy) { ringColor = playerColor; }
+          else if (canDeploy) { ringColor = 'rgba(255,220,80,0.85)'; glow = '0 0 14px rgba(255,220,80,0.6)'; outlineWidth = '2'; }
           else if (isOwned) { ringColor = playerColor; glow = `0 0 8px ${playerColor}33`; }
 
           return (
