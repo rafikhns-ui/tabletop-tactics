@@ -326,13 +326,14 @@ export default function Game() {
     addMessage(`⚔️ Recruited ${def.name} — deploy it on the map!`);
   };
 
-  const handleBuildFortress = (territoryId) => {
+  const handleBuildImperialStronghold = (territoryId) => {
     setGameState(prev => {
       const player = prev.players.find(p => p.id === currentPlayer.id);
       const territory = prev.territories[territoryId];
       if (!territory || territory.owner !== player.id) return prev;
-      const cost = BUILDING_DEFS.fortress?.cost || {};
-      // Check resources
+      if (territory.buildings?.imperial_stronghold) return prev;
+      
+      const cost = { gold: 8, wood: 5 };
       for (const [k, v] of Object.entries(cost)) {
         if ((player.resources?.[k] ?? 0) < v) return prev;
       }
@@ -340,13 +341,17 @@ export default function Game() {
       for (const [k, v] of Object.entries(cost)) {
         newResources[k] = (newResources[k] || 0) - v;
       }
+      const newTerritory = {
+        ...territory,
+        buildings: { ...territory.buildings, imperial_stronghold: { level: 1 } }
+      };
       return {
         ...prev,
         players: prev.players.map(p => p.id === player.id ? { ...p, resources: newResources } : p),
-        territories: { ...prev.territories, [territoryId]: { ...territory, hasFortress: true } },
+        territories: { ...prev.territories, [territoryId]: newTerritory },
       };
     });
-    addMessage(`🏰 Fortress built in ${gameState.territories[territoryId].name}!`);
+    addMessage(`🏯 Imperial Stronghold built in ${gameState.territories[territoryId].name}!`);
   };
 
   const handleBattleResult = (result) => {
