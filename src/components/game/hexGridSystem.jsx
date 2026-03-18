@@ -108,7 +108,7 @@ export const HEXES = (() => {
   for (let q = -30; q <= 30; q++) {
     for (let r = -22; r <= 22; r++) {
       const hexId = `hex_${q}_${r}`;
-      const terrain = isLandTile(q, r) ? getTerrainForLand(q, r) : 'ocean';
+      const terrain = getTerrainForLand(q, r); // all land, no ocean
       const region = regions[Math.abs(q * r + q + r) % regions.length];
       
       hexes[hexId] = {
@@ -118,7 +118,7 @@ export const HEXES = (() => {
         terrain,
         region,
         faction: null,
-        resource: terrain !== 'ocean' && Math.random() > 0.7 ? ['gold', 'ore', 'wood', 'fish'][Math.floor(Math.random() * 4)] : null,
+        resource: Math.random() > 0.7 ? ['gold', 'ore', 'wood', 'fish'][Math.floor(Math.random() * 4)] : null,
       };
     }
   }
