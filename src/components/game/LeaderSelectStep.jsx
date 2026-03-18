@@ -58,30 +58,33 @@ function PlayerSlot({ index, player, leaderIndex, onChange }) {
   const playerColor = PLAYER_COLORS[index];
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: `1.5px solid ${playerColor}44`, background: 'hsl(35,20%,13%)' }}>
-      <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: `${playerColor}18`, borderBottom: `1px solid ${playerColor}33` }}>
-        <div className="w-3 h-3 rounded-full" style={{ background: playerColor }} />
+    <div className="rounded-sm overflow-hidden border-2" style={{ borderColor: `${playerColor}66`, background: 'linear-gradient(135deg, hsl(0,0%,12%), hsl(35,15%,10%))' }}>
+      <div className="px-4 py-3 flex items-center gap-3" style={{ 
+        background: `linear-gradient(135deg, ${playerColor}25, ${playerColor}12)`, 
+        borderBottom: `2px solid ${playerColor}44` 
+      }}>
+        <div className="w-2.5 h-2.5 rounded-full" style={{ background: playerColor, boxShadow: `0 0 8px ${playerColor}` }} />
         <div>
-          <span className="text-sm font-bold" style={{ fontFamily: "'Cinzel',serif", color: playerColor }}>
+          <span className="text-sm font-black tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: playerColor, textTransform: 'uppercase' }}>
             Player
           </span>
-          <div className="text-xs opacity-60 mt-0.5">
+          <div className="text-xs opacity-70 mt-0.5">
             {faction?.emoji} {faction?.name}
           </div>
         </div>
       </div>
 
       {player.isAI ? (
-        <div className="px-4 py-3 text-xs opacity-40 italic" style={{ color: 'hsl(40,20%,60%)' }}>
-          AI will be assigned a leader automatically.
+        <div className="px-4 py-4 text-xs opacity-50 italic" style={{ color: 'hsl(40,20%,60%)', fontFamily: "'Cinzel',serif" }}>
+          🤖 AI will select a leader automatically.
         </div>
       ) : (
-        <div className="p-3 space-y-2">
-          <div className="text-xs mb-2 opacity-40 tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,70%,55%)' }}>
-            CHOOSE YOUR LEADER
+        <div className="p-4 space-y-2">
+          <div className="text-xs mb-3 opacity-60 tracking-[0.1em] font-black" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(270,80%,60%)', textTransform: 'uppercase' }}>
+            ⚔️ Choose Your Champion
           </div>
           {leaders.length > 0 ? (
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               {leaders.map((l, i) => (
                 <LeaderCard key={l.id} leader={l} selected={leaderIndex === i} onClick={() => onChange(i)} />
               ))}
