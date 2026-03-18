@@ -32,8 +32,8 @@ function CostTag({ cost, resources }) {
   );
 }
 
-export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onRecruit, onUpgrade, onBuildFortress, phase }) {
-  const [tab, setTab] = useState('build'); // 'build' | 'recruit' | 'upgrade' | 'fortress'
+export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onUpgrade, onBuildFortress, phase }) {
+  const [tab, setTab] = useState('build'); // 'build' | 'upgrade' | 'fortress'
   const { resources } = currentPlayer;
   const ownedBuildings = Object.keys(currentPlayer.buildings || {});
   const ownedTerritories = Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id);
