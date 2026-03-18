@@ -26,7 +26,7 @@ function calcIncome(player, territories) {
   };
 }
 
-export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePhase, isAI, onBuild, onRecruit, onPlayCard, onDrawCard, onUpgrade, onBuildFortress }) {
+export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePhase, isAI, onBuild, onRecruit, onPlayCard, onDrawCard, onUpgrade, onBuildFortress, onSelectDeployUnit }) {
   if (!currentPlayer) return null;
   const income = calcIncome(currentPlayer, gameState.territories);
 
