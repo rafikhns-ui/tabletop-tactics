@@ -113,13 +113,22 @@ export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBac
   return (
     <div className="min-h-screen flex flex-col items-center justify-start overflow-auto relative"
       style={{ 
-        background: 'linear-gradient(160deg, hsl(35,25%,8%), hsl(35,20%,5%))',
+        background: 'linear-gradient(160deg, hsl(0,0%,5%), hsl(35,20%,8%), hsl(0,0%,3%))',
         backgroundAttachment: 'fixed'
       }}>
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ 
-        background: `radial-gradient(circle at 20% 50%, hsl(43,90%,50%), transparent 50%),
-                     radial-gradient(circle at 80% 80%, hsl(38,70%,40%), transparent 50%)`
+      {/* Dramatic background with atmospheric layers */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ 
+        background: `
+          radial-gradient(ellipse 800px 600px at 20% 30%, hsl(355,80%,25%), transparent 60%),
+          radial-gradient(ellipse 900px 700px at 80% 70%, hsl(43,90%,20%), transparent 60%),
+          radial-gradient(ellipse 600px 800px at 50% 100%, hsl(355,60%,15%), transparent 70%)
+        `,
+        filter: 'blur(100px)'
+      }} />
+      
+      {/* Dramatic overlay with vignette */}
+      <div className="absolute inset-0 opacity-40 pointer-events-none" style={{
+        background: `radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 100%)`
       }} />
       
       <div className="w-full max-w-6xl px-6 py-8 relative z-10">
