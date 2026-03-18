@@ -491,7 +491,7 @@ export const OBJECTIVES = [
 export const BUILDING_DEFS = {
   // Starting buildings (every player has these)
   mine:     { id: 'mine',     name: 'Mine',      emoji: '⛏️',  starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 2 }, effect: 'gold', effectPerLevel: { 1: 2, 2: 3, 3: 6 }, description: 'Gold production', unlocks: {} },
-  lumber_mill: { id: 'lumber_mill', name: 'Lumber Mill', emoji: '🪵', starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'wood', effectPerLevel: { 1: 1, 2: 1, 3: 2 }, description: 'Wood production, can trade at lvl 2', unlocks: {} },
+  lumber_mill: { id: 'lumber_mill', name: 'Lumber Mill', emoji: '🪵', starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'wood', effectPerLevel: { 1: 1, 2: 1, 3: 2 }, description: 'Wood production, can trade at lvl 2', unlocks: {}, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/fa337750f_30.png' },
   farm:     { id: 'farm',    name: 'Farm',     emoji: '🌾',  starting: true, maxLevel: 3, upgradeBase: { gold: 3, wheat: 2 }, effect: 'wheat', effectPerLevel: { 1: 1, 2: 2, 3: 3 }, description: 'Wheat production', unlocks: {} },
   treasury: { id: 'treasury', name: 'Treasury',  emoji: '🏦',  starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'storage', effectPerLevel: 5, description: '+5 max resource storage per level', unlocks: {} },
   // Constructible - Onishiman buildings
