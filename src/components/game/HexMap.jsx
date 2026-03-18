@@ -297,7 +297,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                <polygon
                  points={hexPoints}
                  fill={playerColor}
-                 opacity="0.15"
+                 opacity="0.4"
                />
              )}
 
