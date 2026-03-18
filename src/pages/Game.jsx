@@ -77,8 +77,8 @@ export default function Game() {
   };
 
   // Called from FactionSelect — actually start the game
-  const startGame = (choices, playersArr) => {
-    const mode = pendingMode.mode;
+  const startGame = (modeConfig, playersArr) => {
+    const mode = modeConfig.mode;
     // Assign leader objects to players based on leaderIndex
     const playersWithLeaders = playersArr.map(p => {
       if (p.factionId) {
