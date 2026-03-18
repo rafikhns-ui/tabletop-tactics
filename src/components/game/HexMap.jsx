@@ -72,7 +72,24 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
     return gameState?.players.find(p => p.id === ownerId)?.color || '#666';
   };
 
-  const hexes = gameState?.hexes || HEXES;
+  const rawHexes = gameState?.hexes || HEXES;
+
+  // Assign stable sequential indices sorted left-to-right, top-to-bottom
+  const hexes = useMemo(() => {
+    const entries = Object.entries(rawHexes);
+    entries.sort(([, a], [, b]) => {
+      const pa = hexToPixel(a.q, a.r, 36);
+      const pb = hexToPixel(b.q, b.r, 36);
+      const rowDiff = Math.round((pa.y - pb.y) / 10);
+      if (rowDiff !== 0) return rowDiff;
+      return pa.x - pb.x;
+    });
+    const result = {};
+    entries.forEach(([id, hex], i) => {
+      result[id] = { ...hex, _stableIndex: i + 1 };
+    });
+    return result;
+  }, [rawHexes]);
 
   const isAttackable = (hexId) => {
     if (phase !== 'attack' || !selectedHex) return false;
