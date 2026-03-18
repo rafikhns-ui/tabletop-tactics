@@ -297,7 +297,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
               resetZoom();
             } else {
               setFocusedHex({ hexId, hex, px, py });
-              zoomToHex(hex, px, py);
+              zoomToHex(px, py);
             }
           };
 
