@@ -216,7 +216,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
 
              {/* Hex number label */}
-             <text x={px} y={py + 4} textAnchor="middle" fontSize="13" fill="black" fontFamily="'Cinzel',serif" fontWeight="bold">
+             <text x={px} y={py + 4} textAnchor="middle" fontSize="18" fill="black" fontFamily="'Cinzel',serif" fontWeight="bold">
                {Object.keys(hexes).indexOf(hexId) + 1}
              </text>
 
