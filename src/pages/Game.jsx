@@ -101,6 +101,9 @@ export default function Game() {
     setGameState(collected);
     setGameMode(mode);
     setPendingMode(null);
+    setGameStartMode(null);
+    setSetupStep(null);
+    setSetupPlayers(null);
     setPhase('deploy');
     setSelectedTerritory(null);
     setWinner(null);
