@@ -191,6 +191,7 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
   const allChosen = players.filter(p => !p.isAI).every(p => p.factionId);
 
   const handleDrawObjectives = () => {
+    setShowDeckAnimation(true);
     // Pick a random faction for AI
     const available = PLAYABLE_FACTIONS.map(f => f.id).filter(id => !takenFactionIds.includes(id));
     setPlayers(prev => prev.map(p => {
@@ -200,6 +201,10 @@ export default function FactionSelect({ mode, playerCount = 2, onConfirm, onBack
       }
       return { ...p, objectives: drawObjectives(p.factionId) };
     }));
+  };
+
+  const handleAnimationComplete = () => {
+    setShowDeckAnimation(false);
     setStep('objectives');
   };
 
