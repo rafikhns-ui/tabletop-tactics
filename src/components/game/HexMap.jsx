@@ -80,7 +80,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   const isDeployable = (hexId) => {
     if (phase !== 'deploy') return false;
     const hex = hexes[hexId];
-    return hex.owner === currentPlayer?.id && currentPlayer?.troopsToDeploy > 0;
+    return hex.owner === currentPlayer?.id && (currentPlayer?.pendingUnits?.length || 0) > 0;
   };
 
   return (
