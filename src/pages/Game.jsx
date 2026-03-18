@@ -29,6 +29,7 @@ export default function Game() {
   const [pendingMode, setPendingMode] = useState(null);
   const [setupStep, setSetupStep] = useState(null); // 'faction' → 'objectives' → 'leader'
   const [setupPlayers, setSetupPlayers] = useState(null);
+  const [gameStartMode, setGameStartMode] = useState(null); // preserve mode through setup
   const [showLobby, setShowLobby] = useState(false);
   const [onlineSession, setOnlineSession] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
