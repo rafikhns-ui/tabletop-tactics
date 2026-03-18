@@ -502,9 +502,16 @@ export const ACTION_CARDS = [
   { id: 'avatars_echo', name: "Avatar's Echo", category: 'Spiritual', cost: { gold: 2 }, heroStat: 'wisdom', effect: 'Your Avatar may use its active ability an additional time this turn. -1SP', emoji: '👻', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/85e40c984_8.png' },
   { id: 'sanctified_ground', name: 'Sanctified Ground', category: 'Spiritual', cost: { gold: 2 }, heroStat: 'wisdom', effect: 'Enemy units entering a designated territory roll -1 in battle this turn', emoji: '⛩️', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/e0dbdd5ca_9.png' },
   { id: 'echoes_of_prophecy', name: 'Echoes of Prophecy', category: 'Spiritual', cost: { gold: 2 }, heroStat: 'wisdom', effect: 'Choose a player. You may predict one of their next actions. If correct, gain +2 SP', emoji: '🔯', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/87fcd905d_10.png' },
-];
+  // Clandestine cards
+  { id: 'spys_network', name: "Spy's Network", category: 'Clandestine', cost: { gold: 2, ip: 2 }, heroStat: 'stealth', effect: 'Look at the Trade and Diplomacy cards in another player\'s hand.', emoji: '🕵️', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/b99ca1035_1.png' },
+  { id: 'smugglers_network', name: "Smuggler's Network", category: 'Clandestine', cost: { gold: 2, ip: 2 }, heroStat: 'stealth', effect: 'Allows trade even during an Embargo. You lose 1 IP.', emoji: '🚢', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/976f2b6ad_2.png' },
+  { id: 'black_market_deal', name: 'Black Market Deal', category: 'Clandestine', cost: { gold: 2, ip: 2 }, heroStat: 'stealth', effect: 'Double the resources you gain for trade. Lose 1 IP.', emoji: '💰', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/1c353a27f_3.png' },
+  { id: 'theft_ring', name: 'Theft Ring', category: 'Clandestine', cost: { ip: 2, gold: 2 }, heroStat: 'stealth', effect: 'Steal 3 Resources of your choice from another player. Roll d6 (2+ succeeds). Cost: 2 IP.', emoji: '💎', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b732e420481df67e8a6804/26e6fdc0d_5.png' },
+  { id: 'spy_infiltration', name: 'Spy Infiltration', category: 'Clandestine', cost: { ip: 2, gold: 2 }, heroStat: 'stealth', effect: 'Force a player to reveal their hand. Cost: 2 IP.', emoji: '❄️', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/b51e084ed_6.png' },
+  { id: 'shadow_network', name: 'Shadow Network', category: 'Clandestine', cost: { ip: 2, gold: 2 }, heroStat: 'stealth', effect: 'Look at a player\'s objectives. Cost: 2 IP.', emoji: '👻', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/b51e084ed_6.png' },
+  ];
 
-// ---- Event Cards ----
+  // ---- Event Cards ----
 export const EVENT_CARDS = [
   { id: 'famine', name: 'Great Famine', effect: 'All players lose 2 Wheat. Units without supply lose 1 troop.', emoji: '🌵', duration: 1 },
   { id: 'plague', name: 'Plague of Ashvale', effect: 'All players lose 1 hero use this turn.', emoji: '☠️', duration: 1 },
