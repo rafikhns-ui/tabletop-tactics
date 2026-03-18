@@ -81,10 +81,11 @@ export default function Game() {
     const mode = pendingMode.mode;
     // Assign leader objects to players based on leaderIndex
     const playersWithLeaders = playersArr.map(p => {
-      if (p.factionId && p.leaderIndex !== undefined) {
+      if (p.factionId) {
         const factionLeaders = LEADERS[p.factionId] || [];
-        const leader = factionLeaders[p.leaderIndex];
-        return { ...p, leader, leaderActive: true };
+        const leaderIndex = p.leaderIndex ?? 0;
+        const leader = factionLeaders[leaderIndex];
+        return { ...p, leaderIndex, leader, leaderActive: !!leader };
       }
       return p;
     });
