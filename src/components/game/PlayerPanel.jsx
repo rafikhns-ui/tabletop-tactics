@@ -170,7 +170,7 @@ export default function PlayerPanel({ player, isActive, territories, isSelf }) {
             </div>
           )}
 
-          <div>
+          <div className="relative">
             <div className="flex items-center justify-between mb-1">
               <div className="text-xs font-semibold opacity-50" style={{ fontFamily: "'Cinzel',serif" }}>OBJECTIVES</div>
               {isSelf && <button onClick={() => setShowObjectives(true)} className="text-xs opacity-60 hover:opacity-100" style={{ color: 'hsl(43,80%,60%)' }}>📜 View</button>}
@@ -178,13 +178,27 @@ export default function PlayerPanel({ player, isActive, territories, isSelf }) {
             {player.objectives?.map(obj => {
               const done = player.completedObjectives?.includes(obj.id);
               return (
-                <div key={obj.id} className="flex items-center gap-1.5 text-xs px-1.5 py-1 rounded mb-1"
+                <div
+                  key={obj.id}
+                  onMouseEnter={() => setHoveredObjId(obj.id)}
+                  onMouseLeave={() => setHoveredObjId(null)}
+                  className="flex items-center gap-1.5 text-xs px-1.5 py-1 rounded mb-1 cursor-pointer transition-all hover:opacity-80"
                   style={{ background: done ? 'hsl(120,30%,18%)' : 'hsl(35,20%,20%)', border: `1px solid ${done ? 'hsl(120,40%,30%)' : 'hsl(35,20%,30%)'}`, color: done ? 'hsl(120,50%,65%)' : 'hsl(40,20%,65%)' }}>
                   <span>{done ? '✅' : '🎯'}</span>
                   <span className="truncate">{isSelf || done ? (done ? obj.text : `[${obj.category}] — Secret`) : '[???] — Hidden'}</span>
                 </div>
               );
             })}
+
+            {/* Hover card preview */}
+            {hoveredObjId && (() => {
+              const hoveredObj = player.objectives?.find(o => o.id === hoveredObjId);
+              return hoveredObj?.image ? (
+                <div className="absolute bottom-full right-0 mb-2 pointer-events-none z-50">
+                  <img src={hoveredObj.image} alt={hoveredObj.text} className="w-40 rounded-lg shadow-2xl border border-yellow-600" />
+                </div>
+              ) : null;
+            })()}
           </div>
         </div>
       )}
