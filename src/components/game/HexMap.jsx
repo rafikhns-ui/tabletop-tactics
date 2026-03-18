@@ -269,8 +269,18 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             return `${px + hexSize * Math.cos(angle)},${py + hexSize * Math.sin(angle)}`;
           }).join(' ');
 
+          const handleClick = () => {
+            onHexClick(hexId);
+            if (focusedHex?.hexId === hexId) {
+              resetZoom();
+            } else {
+              setFocusedHex({ hexId, hex, px, py });
+              zoomToHex(hex, px, py);
+            }
+          };
+
           return (
-           <g key={`hex-${hexId}`} onClick={() => onHexClick(hexId)} style={{ cursor: 'pointer' }}>
+           <g key={`hex-${hexId}`} onClick={handleClick} style={{ cursor: 'pointer' }}>
              {/* Water tile blue overlay */}
              {isWater && (
                <polygon
