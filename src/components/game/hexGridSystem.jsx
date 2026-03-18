@@ -243,7 +243,20 @@ export const TERRAIN_PROPS = {
   tundra: { movementCost: 1, defense: 1, vision: 2 },
   desert: { movementCost: 2, defense: 0, vision: 3 },
   ocean: { movementCost: 1, defense: 0, vision: 3, naval: true },
+  water: { movementCost: 1, defense: 0, vision: 3, naval: true },
   wasteland: { movementCost: 3, defense: 0, vision: 2, hazardous: true },
+};
+
+// Unit tags for water movement restriction
+// UnitTag: "Naval" or "Flying" can enter water; "Land" cannot
+export const UNIT_TAGS = {
+  infantry: 'Land',
+  cavalry: 'Land',
+  ranged: 'Land',
+  siege: 'Land',
+  elite: 'Land',
+  naval: 'Naval',
+  flying: 'Flying',
 };
 
 // ---- HEX VISUALIZATION (for rendering) ----
