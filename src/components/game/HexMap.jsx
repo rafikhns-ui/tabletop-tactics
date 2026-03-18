@@ -62,7 +62,9 @@ const canUnitEnterWater = (units) => {
 export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick }) {
   const hexSize = 36;
   const canvasWidth = 1800;
-  const canvasHeight = 1460;
+  const canvasHeight = 1200;
+  const offsetX = 900; // Center hex grid horizontally
+  const offsetY = 600;  // Center hex grid vertically
 
   const [focusedHex, setFocusedHex] = useState(null);
   const defaultVB = { x: 0, y: 0, w: canvasWidth, h: canvasHeight };
