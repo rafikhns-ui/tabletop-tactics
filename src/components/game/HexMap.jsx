@@ -272,8 +272,8 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           const tileColor = 'transparent';
           
           const { x, y } = hexToPixel(hex.q, hex.r, hexSize);
-          const px = x + canvasWidth / 2;
-          const py = y + canvasHeight / 2;
+          const px = x + offsetX;
+          const py = y + offsetY;
 
           // Skip rendering if off-screen
           if (px + hexSize < 0 || px - hexSize > canvasWidth || py + hexSize < 0 || py - hexSize > canvasHeight) return null;
