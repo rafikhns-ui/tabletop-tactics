@@ -6,7 +6,6 @@ import BattleLog from '../components/game/BattleLog';
 import DiplomacyPanel from '../components/game/DiplomacyPanel';
 import HeroPanel from '../components/game/HeroPanel';
 import DeployableTroopsPanel from '../components/game/DeployableTroopsPanel';
-import UnitBreakdown from '../components/game/UnitBreakdown';
 import { HEROES } from '../components/game/ardoniaData';
 import { getHeroCombatBonus } from '../components/game/ardoniaLogic';
 import { HexUtils, canUnitEnter } from '../components/game/hexGridSystem';
