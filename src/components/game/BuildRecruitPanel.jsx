@@ -145,11 +145,6 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
 
       {tab === 'fortress' && (
         <div className="space-y-1.5">
-          {!ownedBuildings.includes('imperial_stronghold') && (
-            <div className="text-xs px-2 py-1.5 rounded mb-2" style={{ background: 'hsl(0,40%,18%)', color: 'hsl(0,60%,70%)' }}>
-              🏯 Requires Imperial Stronghold to build fortresses
-            </div>
-          )}
           {ownedTerritories.length === 0 && (
             <div className="text-xs text-center opacity-40 py-2" style={{ color: 'hsl(40,20%,60%)' }}>
               No territories owned
@@ -157,9 +152,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
           )}
           {ownedTerritories.map(t => {
             const hasF = t.hasFortress;
-            const canBuildFort = ownedBuildings.includes('imperial_stronghold') && !hasF;
-            const fortCost = { gold: 5, wood: 3 };
-            const affordable = canBuildFort && canAfford(resources, fortCost);
+            const affordable = !hasF && canAfford(resources, BUILDING_DEFS.fortress?.cost);
             return (
               <div key={t.id} className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
                 <div className="flex items-center justify-between">
@@ -175,9 +168,9 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
                   </button>
                 </div>
                 <div className="text-xs opacity-55 mt-0.5" style={{ color: 'hsl(40,20%,65%)' }}>
-                  +3 defense
+                  +3 defense, required for fortification
                 </div>
-                {!hasF && <CostTag cost={fortCost} resources={resources} />}
+                {!hasF && <CostTag cost={BUILDING_DEFS.fortress?.cost} resources={resources} />}
               </div>
             );
           })}
