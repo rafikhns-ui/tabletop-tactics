@@ -200,35 +200,7 @@ export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBac
           </div>
         </div>
 
-        {(mode === 'multiplayer' || mode === 'ai') && (
-          <div className="flex items-center justify-center gap-4 mb-10 p-5 rounded-sm backdrop-blur-md border"
-            style={{ 
-              background: 'linear-gradient(135deg, hsl(355,70%,10%), hsl(0,0%,8%))',
-              borderColor: 'hsl(355,80%,35%)',
-              boxShadow: '0 0 40px rgba(220,60,60,0.25), inset 0 0 20px rgba(220,60,60,0.05)'
-            }}>
-            <span className="text-xs opacity-80 font-black tracking-[0.15em]" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(355,90%,65%)', textTransform: 'uppercase' }}>⚔️ Opposing Forces</span>
-            <div style={{ width: '1px', height: '24px', background: 'hsl(355,80%,35%)' }} />
-            {Array.from({ length: maxAI }, (_, i) => i + 1).map(n => (
-              <button key={n} onClick={() => handleAiCountChange(n)}
-                className="w-11 h-11 text-sm font-black transition-all hover:scale-125 active:scale-95 border-2 rounded-sm"
-                style={{
-                  background: aiCount === n 
-                    ? `linear-gradient(135deg, hsl(355,80%,40%), hsl(355,80%,25%))` 
-                    : 'linear-gradient(135deg, hsl(0,0%,15%), hsl(35,15%,10%))',
-                  borderColor: aiCount === n ? 'hsl(355,90%,55%)' : 'hsl(0,0%,25%)',
-                  color: aiCount === n ? 'hsl(0,0%,98%)' : 'hsl(40,20%,50%)',
-                  fontFamily: "'Cinzel',serif",
-                  boxShadow: aiCount === n 
-                    ? '0 0 25px rgba(220,60,60,0.6), 0 0 50px rgba(220,60,60,0.3), inset 0 0 10px rgba(220,60,60,0.2)' 
-                    : '0 4px 8px rgba(0,0,0,0.6)',
-                  letterSpacing: '0.05em'
-                }}>
-                {n}
-              </button>
-            ))}
-          </div>
-        )}
+
 
         <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(humanCount, 3)}, 1fr)` }}>
           {players.filter(p => !p.isAI).map((p, i) => (
