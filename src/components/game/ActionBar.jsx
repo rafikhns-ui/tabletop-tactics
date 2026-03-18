@@ -86,17 +86,6 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
         />
       )}
 
-      {!isAI && (
-        <BuildRecruitPanel
-          currentPlayer={currentPlayer}
-          gameState={gameState}
-          onBuild={onBuild}
-          onRecruit={onRecruit}
-          onUpgrade={onUpgrade}
-          onBuildFortress={onBuildFortress}
-        />
-      )}
-
       {!isAI ? (
         <button onClick={onAdvancePhase}
           className="w-full py-2.5 rounded-lg text-sm font-bold hover:opacity-90 active:scale-95 transition-all"
