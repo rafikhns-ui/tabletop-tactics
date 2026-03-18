@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { UNIT_DEFS } from './ardoniaData';
 
 const UNIT_UNLOCK = {
-  barracks:     ['infantry', 'elite'],
-  stables:      ['cavalry'],
-  archerytower: ['ranged'],
-  siegeworks:   ['siege'],
-  shipyard:     ['naval'],
+  barracks:     ['infantry', 'elite', 'spearmen_infantry'],
+  stables:      ['cavalry', 'onishiman_cavalry'],
+  archerytower: ['ranged', 'imperial_crossbow'],
+  siegeworks:   ['siege', 'wildfire_thrower'],
+  shipyard:     ['naval', 'infamous_reapership'],
+  omitoji_dojo: ['onmmy_warlocks', 'night_blade_clan'],
 };
 
 function canAfford(resources, cost) {
@@ -30,6 +31,7 @@ function CostTag({ cost, resources }) {
 }
 
 export default function RecruitPanel({ currentPlayer, onRecruit }) {
+  const [previewImage, setPreviewImage] = useState(null);
   const { resources } = currentPlayer;
   const ownedBuildings = Object.keys(currentPlayer.buildings || {});
 
@@ -41,7 +43,7 @@ export default function RecruitPanel({ currentPlayer, onRecruit }) {
   const s = { fontFamily: "'Cinzel',serif" };
 
   return (
-    <div className="p-2 space-y-1.5">
+    <div className="p-2 space-y-1.5 relative">
       {uniqueUnits.length === 0 && (
         <div className="text-xs text-center opacity-40 py-4" style={{ color: 'hsl(40,20%,60%)' }}>
           Build Barracks, Stables, etc. to unlock units
@@ -53,7 +55,9 @@ export default function RecruitPanel({ currentPlayer, onRecruit }) {
         const queuedCount = (currentPlayer.pendingUnits || []).filter(uid => uid === id).length;
         const isNext = (currentPlayer.pendingUnits || [])[0] === id;
         return (
-          <div key={id} className="rounded p-2 transition-all"
+          <div key={id} className="rounded p-2 transition-all cursor-pointer"
+            onMouseEnter={() => u.image && setPreviewImage(u.image)}
+            onMouseLeave={() => setPreviewImage(null)}
             style={{
               background: isNext ? 'hsl(43,50%,20%)' : 'hsl(35,20%,21%)',
               border: isNext ? '1px solid hsl(43,80%,55%)' : '1px solid hsl(35,20%,30%)',
