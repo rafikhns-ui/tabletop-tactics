@@ -88,7 +88,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
       className="relative rounded-xl overflow-hidden border-2"
       style={{
         width: '100%',
-        aspectRatio: '1600/1000',
+        aspectRatio: '16/9',
         backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b732e420481df67e8a6804/62c454dca_NemRma69YXUdPY6orqTHe3.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -96,7 +96,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         boxShadow: '0 0 60px rgba(180,140,40,0.15)',
       }}
     >
-      <svg width="100%" height="100%" viewBox={`0 0 ${canvasWidth} ${canvasHeight}`} preserveAspectRatio="xMidYMid meet" style={{ position: 'absolute', inset: 0 }}>
+      <svg width="100%" height="100%" viewBox={`0 0 ${canvasWidth} ${canvasHeight}`} preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0 }}>
         {/* Background grid lines */}
         {Object.entries(hexes).map(([hexId, hex]) => {
           const neighbors = HexUtils.getNeighbors(hex.q, hex.r);
