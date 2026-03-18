@@ -134,8 +134,8 @@ export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBac
           </div>
         )}
 
-        <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(humanCount + aiCount, 3)}, 1fr)` }}>
-          {players.map((p, i) => (
+        <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(humanCount, 3)}, 1fr)` }}>
+          {players.filter(p => !p.isAI).map((p, i) => (
             <PlayerSlot
               key={p.id}
               index={i}
