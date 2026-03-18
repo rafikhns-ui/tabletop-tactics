@@ -116,27 +116,28 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
             const upgradeCost = def.upgradeBase ? Object.entries(def.upgradeBase).reduce((acc, [k, v]) => ({ ...acc, [k]: v * b.level }), {}) : {};
             const affordable = !isMaxed && canAfford(resources, upgradeCost);
             return (
-              <div
-                key={id}
-                onMouseEnter={() => setPreviewImage(def.image)}
-                onMouseLeave={() => setPreviewImage(null)}
-                className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold" style={{ ...s, color: 'hsl(40,30%,80%)' }}>
-                    {def.emoji} {def.name} <span style={{ color: 'hsl(43,80%,60%)' }}>Lvl {b.level}</span>
-                  </span>
-                  <button
-                    onClick={() => onUpgrade(id)}
-                    disabled={!affordable}
-                    className="text-xs px-2 py-0.5 rounded font-bold transition-all hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
-                    style={{ ...s, background: isMaxed ? 'hsl(35,30%,20%)' : 'hsl(38,70%,30%)', border: '1px solid hsl(38,80%,50%)', color: isMaxed ? 'hsl(40,20%,50%)' : 'hsl(43,90%,80%)' }}>
-                    {isMaxed ? 'MAX' : 'Upgrade'}
-                  </button>
+              <div key={id}>
+                <div
+                  onMouseEnter={() => setPreviewImage(def.image)}
+                  onMouseLeave={() => setPreviewImage(null)}
+                  className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold" style={{ ...s, color: 'hsl(40,30%,80%)' }}>
+                      {def.emoji} {def.name} <span style={{ color: 'hsl(43,80%,60%)' }}>Lvl {b.level}</span>
+                    </span>
+                    <button
+                      onClick={() => onUpgrade(id)}
+                      disabled={!affordable}
+                      className="text-xs px-2 py-0.5 rounded font-bold transition-all hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
+                      style={{ ...s, background: isMaxed ? 'hsl(35,30%,20%)' : 'hsl(38,70%,30%)', border: '1px solid hsl(38,80%,50%)', color: isMaxed ? 'hsl(40,20%,50%)' : 'hsl(43,90%,80%)' }}>
+                      {isMaxed ? 'MAX' : 'Upgrade'}
+                    </button>
+                  </div>
+                  <div className="text-xs opacity-55 mt-0.5" style={{ color: 'hsl(40,20%,65%)' }}>
+                    {def.description} {isMaxed && '(Max level)'}
+                  </div>
+                  {!isMaxed && <CostTag cost={upgradeCost} resources={resources} />}
                 </div>
-                <div className="text-xs opacity-55 mt-0.5" style={{ color: 'hsl(40,20%,65%)' }}>
-                  {def.description} {isMaxed && '(Max level)'}
-                </div>
-                {!isMaxed && <CostTag cost={upgradeCost} resources={resources} />}
               </div>
             );
           })}
