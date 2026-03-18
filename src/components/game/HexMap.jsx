@@ -240,6 +240,11 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                />
              )}
 
+             {/* Hex number label */}
+             <text x={px} y={py - 6} textAnchor="middle" fontSize="7" fill="rgba(255,230,150,0.7)" fontFamily="'Cinzel',serif">
+               {hexId}
+             </text>
+
              {/* Unit icons + count */}
              {hex.units && hex.units.length > 0 && (() => {
                const UNIT_EMOJIS = { infantry: '⚔️', cavalry: '🐴', ranged: '🏹', siege: '💣', naval: '⚓', elite: '🛡️' };
