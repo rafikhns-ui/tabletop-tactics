@@ -7,6 +7,7 @@ const HERO_TYPE_ICONS = {
 };
 
 function HeroCard({ hero, status, owned, onRecruit, territories, currentPlayer }) {
+  const [showPreview, setShowPreview] = React.useState(false);
   const canAfford = Object.entries(hero.cost || {}).every(([k, v]) => {
     if (k === 'ip') return (currentPlayer.ip ?? 0) >= v;
     if (k === 'sp') return (currentPlayer.sp ?? 0) >= v;
@@ -16,45 +17,57 @@ function HeroCard({ hero, status, owned, onRecruit, territories, currentPlayer }
 
   if (!owned) {
     return (
-      <div className="rounded-lg p-2.5" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,30%)' }}>
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-base">{HERO_TYPE_ICONS[hero.type]}</span>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold truncate" style={{ color: 'hsl(43,80%,70%)', fontFamily: "'Cinzel',serif" }}>{hero.name}</div>
-            <div className="text-xs opacity-50">{hero.type}</div>
+      <>
+        <div
+          onMouseEnter={() => setShowPreview(true)}
+          onMouseLeave={() => setShowPreview(false)}
+          className="rounded-lg p-2.5 relative"
+          style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,30%)' }}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-base">{HERO_TYPE_ICONS[hero.type]}</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-bold truncate" style={{ color: 'hsl(43,80%,70%)', fontFamily: "'Cinzel',serif" }}>{hero.name}</div>
+              <div className="text-xs opacity-50">{hero.type}</div>
+            </div>
           </div>
-        </div>
-        <div className="text-xs mb-2 leading-relaxed" style={{ color: 'hsl(40,20%,60%)' }}>
-          <span className="font-semibold" style={{ color: 'hsl(43,70%,60%)' }}>Passive: </span>
-          {hero.passive}
-        </div>
-        <div className="text-xs mb-2 opacity-60">{hero.ability}</div>
-        <div className="flex items-center justify-between">
-          <div className="flex gap-1">
-            {Object.entries(hero.cost || {}).map(([k, v]) => (
-              <span key={k} className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'hsl(35,20%,24%)', color: 'hsl(43,80%,65%)' }}>
-                {k === 'gold' ? '🪙' : k === 'ip' ? '💬' : k === 'sp' ? '✨' : '?'}{v}
-              </span>
-            ))}
+          <div className="text-xs mb-2 leading-relaxed" style={{ color: 'hsl(40,20%,60%)' }}>
+            <span className="font-semibold" style={{ color: 'hsl(43,70%,60%)' }}>Passive: </span>
+            {hero.passive}
           </div>
-          <button onClick={() => onRecruit(hero.id)} disabled={!canAfford || !hasRequiredBuilding}
-            className="text-xs px-2 py-1 rounded font-bold transition-all"
-            style={{
-              background: (canAfford && hasRequiredBuilding) ? 'hsl(38,70%,30%)' : 'hsl(35,15%,22%)',
-              border: `1px solid ${(canAfford && hasRequiredBuilding) ? 'hsl(38,70%,50%)' : 'hsl(35,15%,30%)'}`,
-              color: (canAfford && hasRequiredBuilding) ? 'hsl(43,90%,75%)' : 'hsl(40,15%,40%)',
-              cursor: (canAfford && hasRequiredBuilding) ? 'pointer' : 'not-allowed',
-              fontFamily: "'Cinzel',serif",
-            }}>
-            Recruit
-          </button>
+          <div className="text-xs mb-2 opacity-60">{hero.ability}</div>
+          <div className="flex items-center justify-between">
+            <div className="flex gap-1">
+              {Object.entries(hero.cost || {}).map(([k, v]) => (
+                <span key={k} className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'hsl(35,20%,24%)', color: 'hsl(43,80%,65%)' }}>
+                  {k === 'gold' ? '🪙' : k === 'ip' ? '💬' : k === 'sp' ? '✨' : k === 'crystals' ? '💎' : '?'}{v}
+                </span>
+              ))}
+            </div>
+            <button onClick={() => onRecruit(hero.id)} disabled={!canAfford || !hasRequiredBuilding}
+              className="text-xs px-2 py-1 rounded font-bold transition-all"
+              style={{
+                background: (canAfford && hasRequiredBuilding) ? 'hsl(38,70%,30%)' : 'hsl(35,15%,22%)',
+                border: `1px solid ${(canAfford && hasRequiredBuilding) ? 'hsl(38,70%,50%)' : 'hsl(35,15%,30%)'}`,
+                color: (canAfford && hasRequiredBuilding) ? 'hsl(43,90%,75%)' : 'hsl(40,15%,40%)',
+                cursor: (canAfford && hasRequiredBuilding) ? 'pointer' : 'not-allowed',
+                fontFamily: "'Cinzel',serif",
+              }}>
+              Recruit
+            </button>
+          </div>
+          {!hasRequiredBuilding && (
+            <div className="text-xs mt-1.5 px-1.5 py-1 rounded" style={{ background: 'hsl(0,40%,18%)', color: 'hsl(0,60%,70%)' }}>
+              Requires {BUILDING_DEFS[hero.requiredBuilding]?.emoji} {BUILDING_DEFS[hero.requiredBuilding]?.name}
+            </div>
+          )}
         </div>
-        {!hasRequiredBuilding && (
-          <div className="text-xs mt-1.5 px-1.5 py-1 rounded" style={{ background: 'hsl(0,40%,18%)', color: 'hsl(0,60%,70%)' }}>
-            Requires {BUILDING_DEFS[hero.requiredBuilding]?.emoji} {BUILDING_DEFS[hero.requiredBuilding]?.name}
+        {showPreview && hero.image && (
+          <div className="fixed pointer-events-none z-50" style={{ top: '50%', right: '2rem', transform: 'translateY(-50%)' }}>
+            <img src={hero.image} alt={hero.name} className="w-96 h-auto rounded-sm shadow-2xl border-4" style={{ borderColor: 'hsl(43,90%,55%)', boxShadow: '0 0 40px hsl(43,90%,55%)50' }} />
           </div>
         )}
-      </div>
+      </>
     );
   }
 
