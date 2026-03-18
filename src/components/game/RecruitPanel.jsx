@@ -90,6 +90,12 @@ export default function RecruitPanel({ currentPlayer, onRecruit }) {
           </div>
         );
       })}
+      
+      {previewImage && (
+        <div className="fixed pointer-events-none z-50" style={{ top: '50%', right: '2rem', transform: 'translateY(-50%)' }}>
+          <img src={previewImage} alt="Unit preview" className="w-96 h-auto rounded-sm shadow-2xl border-4" style={{ borderColor: 'hsl(43,90%,55%)', boxShadow: '0 0 40px hsl(43,90%,55%)50' }} />
+        </div>
+      )}
     </div>
   );
 }
