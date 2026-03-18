@@ -4,18 +4,27 @@ import { FACTIONS, LEADERS } from './ardoniaData';
 const PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
 
 function LeaderCard({ leader, selected, onClick }) {
+  const [showPreview, setShowPreview] = React.useState(false);
+  
   return (
-    <button onClick={onClick}
-      className="w-full text-left px-3 py-2 rounded-lg transition-all text-xs"
-      style={{
-        background: selected ? 'hsl(38,70%,22%)' : 'hsl(35,20%,18%)',
-        border: `1px solid ${selected ? 'hsl(38,80%,50%)' : 'hsl(35,20%,28%)'}`,
-        color: selected ? 'hsl(43,90%,80%)' : 'hsl(40,20%,65%)',
-      }}>
-      <div className="font-bold">{leader.name} <span className="opacity-40 font-normal text-xs">({leader.type})</span></div>
-      <div className="opacity-70 mt-0.5">✦ {leader.passive}</div>
-      <div className="opacity-45 mt-0.5">✗ {leader.disadvantage}</div>
-    </button>
+    <>
+      <button onMouseEnter={() => setShowPreview(true)} onMouseLeave={() => setShowPreview(false)} onClick={onClick}
+        className="w-full text-left px-3 py-2 rounded-lg transition-all text-xs relative"
+        style={{
+          background: selected ? 'hsl(38,70%,22%)' : 'hsl(35,20%,18%)',
+          border: `1px solid ${selected ? 'hsl(38,80%,50%)' : 'hsl(35,20%,28%)'}`,
+          color: selected ? 'hsl(43,90%,80%)' : 'hsl(40,20%,65%)',
+        }}>
+        <div className="font-bold">{leader.name} <span className="opacity-40 font-normal text-xs">({leader.type})</span></div>
+        <div className="opacity-70 mt-0.5">✦ {leader.passive}</div>
+        <div className="opacity-45 mt-0.5">✗ {leader.disadvantage}</div>
+      </button>
+      {showPreview && leader.image && (
+        <div className="fixed pointer-events-none z-50" style={{ top: '50%', right: '2rem', transform: 'translateY(-50%)' }}>
+          <img src={leader.image} alt={leader.name} className="w-80 h-auto rounded-lg shadow-2xl border-4" style={{ borderColor: 'hsl(43,80%,55%)' }} />
+        </div>
+      )}
+    </>
   );
 }
 
