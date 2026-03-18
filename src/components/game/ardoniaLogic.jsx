@@ -177,7 +177,7 @@ export const calculateIncome = (player, territories) => {
   };
 
   // Leader bonuses
-  if (player.leaderActive) {
+  if (player.leaderActive && player.leader) {
     if (player.leader.id === 'iron_chancellor') income.gold += 2;
     if (player.leader.id === 'merchant_sultan' && market) income.gold += 1;
     if (player.leader.id === 'sun_king') income.wheat += 2;
