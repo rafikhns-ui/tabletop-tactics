@@ -96,15 +96,52 @@ export default function LeaderSelectStep({ players, onConfirm, onBack }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start p-6 overflow-auto"
-      style={{ background: 'linear-gradient(160deg, hsl(35,25%,10%), hsl(35,20%,8%))' }}>
-      <div className="w-full max-w-6xl">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,58%)' }}>
-            👑 Select Your Leaders
+    <div className="min-h-screen flex flex-col items-center justify-start overflow-auto relative"
+      style={{ 
+        background: 'linear-gradient(160deg, hsl(0,0%,5%), hsl(35,20%,8%), hsl(0,0%,3%))',
+        backgroundAttachment: 'fixed'
+      }}>
+      {/* Dramatic background */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ 
+        background: `
+          radial-gradient(ellipse 800px 600px at 20% 30%, hsl(200,80%,25%), transparent 60%),
+          radial-gradient(ellipse 900px 700px at 80% 70%, hsl(355,80%,20%), transparent 60%),
+          radial-gradient(ellipse 600px 800px at 50% 100%, hsl(200,60%,15%), transparent 70%)
+        `,
+        filter: 'blur(100px)'
+      }} />
+      <div className="absolute inset-0 opacity-40 pointer-events-none" style={{
+        background: `radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 100%)`
+      }} />
+      
+      <div className="w-full max-w-6xl px-6 py-12 relative z-10">
+        <div className="text-center mb-10">
+          <div className="mb-6 text-7xl font-black" style={{ 
+            textShadow: `0 0 40px rgba(200,100,255,0.6), 0 0 80px rgba(100,150,255,0.4), 0 8px 16px rgba(0,0,0,0.9)`,
+            animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          }}>
+            👑
+          </div>
+          <h1 className="text-6xl font-black mb-4" style={{ 
+            fontFamily: "'Cinzel',serif",
+            color: 'hsl(270,90%,65%)',
+            textShadow: `
+              0 0 40px rgba(200,100,255,0.8),
+              0 0 80px rgba(150,100,255,0.4),
+              0 8px 16px rgba(0,0,0,0.95),
+              2px 2px 0 rgba(0,0,0,0.8)
+            `,
+            letterSpacing: '0.05em'
+          }}>
+            SELECT YOUR CHAMPIONS
           </h1>
-          <p className="text-sm opacity-50" style={{ color: 'hsl(40,20%,65%)' }}>
-            Each faction has unique leaders with special abilities
+          <p className="text-sm opacity-70 tracking-[0.15em] mt-4" style={{ 
+            color: 'hsl(200,80%,60%)', 
+            fontFamily: "'Cinzel',serif",
+            textTransform: 'uppercase',
+            fontWeight: 600
+          }}>
+            ⚔️ MASTERS OF WAR & DIPLOMACY
           </p>
         </div>
 
