@@ -33,6 +33,7 @@ export default function Game() {
   const [setupPlayers, setSetupPlayers] = useState(null);
   const [gameStartMode, setGameStartMode] = useState(null); // preserve mode through setup
   const [showLobby, setShowLobby] = useState(false);
+  const [showAiSetup, setShowAiSetup] = useState(false);
   const [onlineSession, setOnlineSession] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
   const [phase, setPhase] = useState('deploy'); // deploy → move → attack → fortify
