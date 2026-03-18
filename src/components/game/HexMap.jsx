@@ -156,14 +156,22 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
       style={{
         width: '100%',
         aspectRatio: '16/9',
-        backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b732e420481df67e8a6804/62c454dca_NemRma69YXUdPY6orqTHe3.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
         borderColor: 'hsl(43,70%,50%)',
         boxShadow: '0 0 60px rgba(180,140,40,0.15)',
+        background: 'hsl(35,25%,12%)',
       }}
     >
       <svg width="100%" height="100%" viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`} preserveAspectRatio="xMidYMid meet" style={{ position: 'absolute', inset: 0 }}>
+        {/* Background map image */}
+        <image
+          href="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b732e420481df67e8a6804/62c454dca_NemRma69YXUdPY6orqTHe3.jpg"
+          x="0"
+          y="0"
+          width={canvasWidth}
+          height={canvasHeight}
+          preserveAspectRatio="none"
+        />
+        
         {/* Background grid lines */}
         {Object.entries(hexes).map(([hexId, hex]) => {
           const neighbors = HexUtils.getNeighbors(hex.q, hex.r);
