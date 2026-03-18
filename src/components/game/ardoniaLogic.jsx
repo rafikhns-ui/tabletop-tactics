@@ -107,20 +107,27 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
   }
 
   // Initialize hexes with ownership using procedural generation
-   const generatedHexWorld = generateWorldMap();
-   const hexIds = shuffle(Object.keys(generatedHexWorld));
-   const hexes = {};
-   hexIds.forEach((id, i) => {
-     const owner = players[i % players.length].id;
-     hexes[id] = {
-       ...generatedHexWorld[id],
-       owner,
-       units: [],
-       hasFortress: false,
-       isCapital: i % players.length === 0 && Math.floor(i / players.length) === 0,
-     };
-   });
-   const hexAdjacency = buildHexAdjacency();
+    const generatedHexWorld = generateWorldMap();
+    const onishimanTerritories = new Set([604,625,505,525,506,526,527,507,548,568,589,588,567,587,606,566,586,585,604,625,626,627,628,648,668,687,707,680,685,706,726,705,684,704,705,745,765,787,806,826,807,826,825,805,826,804,784,744]);
+    const onishimanPlayerId = players.find(p => p.factionId === 'onishiman')?.id;
+
+    const hexIds = shuffle(Object.keys(generatedHexWorld));
+    const hexes = {};
+    hexIds.forEach((id, i) => {
+      let owner = players[i % players.length].id;
+      // Assign Onishiman territories to the Onishiman player if they exist
+      if (onishimanPlayerId && onishimanTerritories.has(parseInt(id))) {
+        owner = onishimanPlayerId;
+      }
+      hexes[id] = {
+        ...generatedHexWorld[id],
+        owner,
+        units: [],
+        hasFortress: false,
+        isCapital: i % players.length === 0 && Math.floor(i / players.length) === 0,
+      };
+    });
+    const hexAdjacency = buildHexAdjacency();
 
   // Fallback: also distribute old territories
   const ids = shuffle(Object.keys(TERRITORIES));
