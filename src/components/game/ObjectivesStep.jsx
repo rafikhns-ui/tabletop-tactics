@@ -34,7 +34,7 @@ export default function ObjectivesStep({ players, onNext, onBack }) {
 
   useEffect(() => {
     // Draw objectives for all players
-    const PLAYABLE_FACTIONS = Object.values(require('./ardoniaData').FACTIONS).filter(f => f.playable);
+    const PLAYABLE_FACTIONS = Object.values(FACTIONS).filter(f => f.playable);
     const takenFactionIds = players.map(p => p.factionId).filter(Boolean);
     const available = PLAYABLE_FACTIONS.map(f => f.id).filter(id => !takenFactionIds.includes(id));
 
