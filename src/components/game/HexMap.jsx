@@ -178,13 +178,18 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         </defs>
 
         {/* Hex tiles */}
-        {Object.entries(hexes).map(([hexId, hex]) => {
+        {Object.entries(hexes).map(([hexId, hex], hexArrayIndex) => {
+          const hexIndex = hexArrayIndex + 1;
+          const isWater = isWaterHex(hexIndex);
           const isSelected = selectedHex === hexId;
           const isOwned = hex.owner === currentPlayer?.id;
           const canAttack = isAttackable(hexId);
-          const canMove = isMovable(hexId);
-          const canFortify = isFortifiable(hexId);
-          const canDeploy = isDeployable(hexId);
+          // For water tiles, only allow move/deploy if player has naval/flying units
+          const pendingUnits = currentPlayer?.pendingUnits || [];
+          const hasNavalPending = pendingUnits.some(u => u === 'naval' || u === 'flying');
+          const canMove = isMovable(hexId) && (!isWater || canUnitEnterWater(hex.units));
+          const canFortify = isFortifiable(hexId) && (!isWater || canUnitEnterWater(hex.units));
+          const canDeploy = isDeployable(hexId) && (!isWater || hasNavalPending);
           const playerColor = getPlayerColor(hex.owner);
           const tileColor = 'transparent';
           
