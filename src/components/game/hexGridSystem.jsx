@@ -105,8 +105,8 @@ export const HEXES = (() => {
   const hexes = {};
   const regions = ['gojeon', 'onishiman', 'inuvak', 'silver', 'ruskel', 'icebound', 'kadjimaran', 'oakhaven', 'nimrudan', 'hestia', 'moor', 'tlaloc', 'verdant', 'iron', 'scorched'];
   
-  for (let q = -37; q <= 37; q++) {
-    for (let r = -27; r <= 27; r++) {
+  for (let q = -32; q <= 32; q++) {
+    for (let r = -22; r <= 22; r++) {
       const hexId = `hex_${q}_${r}`;
       const terrain = getTerrainForLand(q, r); // all land, no ocean
       const region = regions[Math.abs(q * r + q + r) % regions.length];
