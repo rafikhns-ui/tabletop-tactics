@@ -247,6 +247,15 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                  strokeWidth="0.8"
                />
              )}
+             {/* Coastal tile light blue/green overlay */}
+             {isCoastal && (
+               <polygon
+                 points={hexPoints}
+                 fill="rgba(50,180,160,0.28)"
+                 stroke="rgba(60,200,180,0.55)"
+                 strokeWidth="0.8"
+               />
+             )}
              {/* Hex border outline — always visible */}
              <polygon
                points={hexPoints}
