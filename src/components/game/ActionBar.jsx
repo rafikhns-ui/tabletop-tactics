@@ -55,7 +55,7 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
       </div>
 
       {phase === 'deploy' && (
-        <DeployQueue pendingUnits={currentPlayer.pendingUnits || []} />
+        <DeployQueue pendingUnits={currentPlayer.pendingUnits || []} onSelectUnit={onSelectDeployUnit} />
       )}
 
       <div className="rounded p-2" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,28%)' }}>
