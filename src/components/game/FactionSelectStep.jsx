@@ -119,18 +119,19 @@ function PlayerSlot({ index, factionId, onChange, takenFactionIds, isAI }) {
   );
 }
 
-export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBack }) {
-  const [aiCount, setAiCount] = useState(mode === 'ai' ? 3 : 0);
-  const humanCount = mode === 'ai' ? 1 : playerCount;
-  const maxAI = mode === 'ai' ? 3 : Math.max(0, 5 - humanCount);
-
-  const buildPlayers = (aiC) => Array.from({ length: humanCount + aiC }, (_, i) => ({
-    id: i >= humanCount ? `ai${i - humanCount + 1}` : `p${i + 1}`,
-    isAI: i >= humanCount,
+export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBack, setupPlayers }) {
+  // If setupPlayers provided (from AI setup), use those; otherwise build fresh
+  const initialPlayers = setupPlayers || Array.from({ length: playerCount }, (_, i) => ({
+    id: `p${i + 1}`,
+    isAI: false,
     factionId: null,
   }));
 
-  const [players, setPlayers] = useState(() => buildPlayers(mode === 'ai' ? 1 : 0));
+  const humanCount = initialPlayers.filter(p => !p.isAI).length;
+  const aiCount = initialPlayers.filter(p => p.isAI).length;
+  const maxAI = Math.max(0, 5 - humanCount);
+
+  const [players, setPlayers] = useState(initialPlayers);
   const takenFactionIds = players.map(p => p.factionId).filter(Boolean);
   const allChosen = players.filter(p => !p.isAI).every(p => p.factionId);
 
