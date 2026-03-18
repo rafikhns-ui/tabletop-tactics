@@ -23,7 +23,7 @@ export default function UnitBreakdown({ currentPlayer, gameState }) {
           UNIT TYPES
         </div>
         <div className="text-xs" style={{ color: 'hsl(40,20%,60%)' }}>
-          {currentPlayer?.troopsToDeploy || 0} troops available
+          {(currentPlayer?.pendingUnits || []).length} queued to deploy
         </div>
       </div>
       
