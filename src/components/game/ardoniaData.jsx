@@ -278,9 +278,10 @@ export const LEADERS = {
     { id: 'court_scholar', name: 'Grand Court Scholar', passive: 'All Spiritual cards cost 1 less SP', disadvantage: 'Cannot play Clandestine cards', type: 'Spiritual' },
   ],
   onishiman: [
-    { id: 'warlord_kato', name: 'Warlord Kato', passive: '+1 to all attack rolls', disadvantage: 'Cannot sign alliances', type: 'Military' },
-    { id: 'shadow_empress', name: 'Shadow Empress', passive: 'Clandestine cards cost 1 less IP', disadvantage: 'Cannot play Spiritual cards', type: 'Clandestine' },
-    { id: 'iron_chancellor', name: 'Iron Chancellor', passive: '+2 Gold income per turn', disadvantage: 'Units cost +1 Gold each', type: 'Economic' },
+    { id: 'tenujin_usurper', name: 'Tenujin, The Usurper', passive: 'Each Avatar summon grants +1 IP and +1 Gold. Temples cost 1 Crystal to upgrade. Once per game, summon an Avatar for 2 fewer Crystals (-1 turn duration).', disadvantage: 'Other players gain +1 IP when resisting your diplomacy/trade offers. If your Temple is targeted, discard 1 Spiritual or Arcane card immediately.', type: 'Spiritual' },
+    { id: 'itako_viper', name: 'Itako, The Crimson Viper', passive: 'Once per round in diplomatic negotiations, spend 2 IP to reroll or force opponent to roll with disadvantage. Draw 1 extra Trade or Diplomacy card (max 7 hand).', disadvantage: 'Unit recruitment costs +1 Gold for all non-hero military units.', type: 'Political' },
+    { id: 'onaka_master', name: 'Onaka, Master of Coin', passive: 'At turn start, gain +1 Gold per Port-containing territory. Once per round, pay 3 Gold to draw 2 Trade or Clandestine cards (keep 1).', disadvantage: 'Pay 1 Gold at end of every round. If unable, discard a Trade or Economic card at random.', type: 'Wealth' },
+    { id: 'nutsune_wrath', name: 'Nutsune, The Blazing Wrath', passive: 'Once per round declare Relentless Assault: melee units in chosen army roll +1; conquer = +1 IP. Barracks cost 1 less Gold to build.', disadvantage: 'After conquering a territory, discard 1 Trade or Diplomacy card if you have any.', type: 'War' },
   ],
   tlalocayotlan: [
     { id: 'divine_chosen', name: 'The Divine Chosen', passive: '+2 SP per turn from rituals', disadvantage: 'Must spend 1 SP each turn or lose 1 troop', type: 'Spiritual' },
