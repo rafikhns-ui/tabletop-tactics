@@ -353,6 +353,74 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         style={{ background: 'rgba(0,0,0,0.7)', color: 'hsl(43,90%,75%)' }}>
         {phase.toUpperCase()}
       </div>
+
+      {/* Zoom out button */}
+      {focusedHex && (
+        <button
+          onClick={resetZoom}
+          className="absolute top-2 right-2 text-xs font-bold px-3 py-1.5 rounded-lg transition-all hover:opacity-90 active:scale-95"
+          style={{ background: 'rgba(0,0,0,0.75)', border: '1px solid hsl(43,70%,50%)', color: 'hsl(43,90%,75%)', fontFamily: "'Cinzel',serif" }}
+        >
+          ← Zoom Out
+        </button>
+      )}
+
+      {/* Region info panel */}
+      {focusedHex && (() => {
+        const { hex, hexId } = focusedHex;
+        const hexIndex = hex._stableIndex;
+        const isWater = isWaterHex(hexIndex);
+        const isCoastal = !isWater && isCoastalHex(hexIndex);
+        const regionKey = hex.region;
+        const regionData = REGIONS[regionKey];
+        const owner = gameState?.players.find(p => p.id === hex.owner);
+        const units = hex.units || [];
+        const totalUnits = units.reduce((s, u) => s + u.count, 0);
+        const TERRAIN_ICONS_MAP = { plains: '🌾', forest: '🌲', mountain: '⛰️', tundra: '❄️', desert: '🏜️', ocean: '🌊', wasteland: '💀' };
+
+        return (
+          <div
+            className="absolute bottom-3 left-3 rounded-xl p-3 max-w-xs"
+            style={{
+              background: 'rgba(20,14,8,0.92)',
+              border: '1px solid hsl(43,70%,45%)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.7)',
+              fontFamily: "'Crimson Text', serif",
+              color: 'hsl(40,25%,80%)',
+              minWidth: '200px',
+            }}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <span style={{ fontSize: '20px' }}>{TERRAIN_ICONS_MAP[hex.terrain] || '🗺️'}</span>
+              <div>
+                <div className="font-bold text-sm" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,85%,65%)' }}>
+                  {regionData?.name || regionKey || 'Unknown Region'}
+                </div>
+                <div className="text-xs opacity-60 capitalize">{isWater ? '🌊 Water' : isCoastal ? '⚓ Coastal' : `${hex.terrain}`} · Hex #{hexIndex}</div>
+              </div>
+            </div>
+            {regionData?.bonus && (
+              <div className="text-xs mt-1.5 italic opacity-75 leading-snug border-t pt-1.5" style={{ borderColor: 'hsl(43,40%,25%)' }}>
+                {regionData.bonus}
+              </div>
+            )}
+            {owner && (
+              <div className="text-xs mt-1.5 flex items-center gap-1.5">
+                <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: owner.color }} />
+                <span>Controlled by <strong>{owner.name}</strong></span>
+              </div>
+            )}
+            {totalUnits > 0 && (
+              <div className="text-xs mt-1 opacity-70">
+                ⚔️ {totalUnits} unit{totalUnits !== 1 ? 's' : ''} stationed
+              </div>
+            )}
+            {hex.resource && (
+              <div className="text-xs mt-1 opacity-70">💎 Resource: {hex.resource}</div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
