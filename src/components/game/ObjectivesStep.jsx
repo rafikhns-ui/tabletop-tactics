@@ -117,39 +117,46 @@ export default function ObjectivesStep({ players, onNext, onBack }) {
               const color = PLAYER_COLORS[idx];
 
               return (
-                <div key={player.id} className="rounded-xl overflow-hidden" style={{ border: `1.5px solid ${color}44`, background: 'hsl(35,20%,13%)' }}>
-                  <div className="px-4 py-3" style={{ background: `${color}18`, borderBottom: `1px solid ${color}33` }}>
-                    <div className="text-sm font-bold" style={{ fontFamily: "'Cinzel',serif", color: color }}>
-                      {player.isAI ? `🤖 AI Player` : 'Player'}
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    {!player.isAI ? (
-                      <div className="space-y-3">
-                        {player.objectives?.map(obj => (
-                          <div key={obj.id} className="rounded-sm overflow-hidden border-2" style={{ 
-                            borderColor: 'hsl(43,80%,50%)',
-                            boxShadow: '0 0 15px rgba(255,200,50,0.2), inset 0 0 10px rgba(255,200,50,0.05)'
-                          }}>
-                            {obj.image && (
-                              <img src={obj.image} alt={obj.text} className="w-full h-auto" style={{ boxShadow: 'inset 0 0 20px rgba(0,0,0,0.3)' }} />
-                            )}
-                            <div className="p-3 bg-gradient-to-b from-black/60 to-black/80" style={{ color: 'hsl(40,20%,75%)' }}>
-                              <div className="text-xs font-black tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,70%)', textTransform: 'uppercase' }}>
-                                ⚔️ {obj.category}
-                              </div>
-                              <p className="text-xs leading-relaxed mt-2">{obj.text}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-xs opacity-50 italic" style={{ color: 'hsl(40,20%,60%)' }}>
-                        🔒 Secret objectives (hidden)
-                      </div>
-                    )}
-                  </div>
-                </div>
+               <div key={player.id} className="rounded-sm overflow-hidden border-2" style={{ 
+                 borderColor: `${color}66`, 
+                 background: 'linear-gradient(135deg, hsl(0,0%,12%), hsl(35,15%,10%))'
+               }}>
+                 <div className="px-4 py-3 flex items-center gap-2" style={{ 
+                   background: `linear-gradient(135deg, ${color}25, ${color}12)`, 
+                   borderBottom: `2px solid ${color}44`
+                 }}>
+                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
+                   <div className="text-sm font-black tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: color, textTransform: 'uppercase' }}>
+                     {player.isAI ? `🤖 AI` : 'Player'}
+                   </div>
+                 </div>
+                 <div className="p-4">
+                   {!player.isAI ? (
+                     <div className="space-y-3">
+                       {player.objectives?.map(obj => (
+                         <div key={obj.id} className="rounded-sm overflow-hidden border-2" style={{ 
+                           borderColor: 'hsl(43,80%,50%)',
+                           boxShadow: '0 0 15px rgba(255,200,50,0.2), inset 0 0 10px rgba(255,200,50,0.05)'
+                         }}>
+                           {obj.image && (
+                             <img src={obj.image} alt={obj.text} className="w-full h-auto" style={{ boxShadow: 'inset 0 0 20px rgba(0,0,0,0.3)' }} />
+                           )}
+                           <div className="p-3 bg-gradient-to-b from-black/60 to-black/80" style={{ color: 'hsl(40,20%,75%)' }}>
+                             <div className="text-xs font-black tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,70%)', textTransform: 'uppercase' }}>
+                               ⚔️ {obj.category}
+                             </div>
+                             <p className="text-xs leading-relaxed mt-2">{obj.text}</p>
+                           </div>
+                         </div>
+                       ))}
+                     </div>
+                   ) : (
+                     <div className="text-xs opacity-50 italic" style={{ color: 'hsl(40,20%,60%)', fontFamily: "'Cinzel',serif" }}>
+                       🔒 Secret objectives (hidden)
+                     </div>
+                   )}
+                 </div>
+               </div>
               );
             })}
           </div>
