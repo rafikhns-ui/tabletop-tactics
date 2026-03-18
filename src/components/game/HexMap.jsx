@@ -189,7 +189,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         boxShadow: '0 0 60px rgba(180,140,40,0.15)',
       }}
     >
-      <svg width="100%" height="100%" viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`} preserveAspectRatio="xMidYMid meet" style={{ position: 'absolute', inset: 0, transition: 'all 0.5s cubic-bezier(0.4,0,0.2,1)' }}>
+      <svg width="100%" height="100%" viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`} preserveAspectRatio="xMidYMid meet" style={{ position: 'absolute', inset: 0 }}>
         {/* Background grid lines */}
         {Object.entries(hexes).map(([hexId, hex]) => {
           const neighbors = HexUtils.getNeighbors(hex.q, hex.r);
