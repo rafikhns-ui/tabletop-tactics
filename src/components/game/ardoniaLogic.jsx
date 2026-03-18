@@ -108,7 +108,7 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
 
   // Initialize hexes with ownership using procedural generation
     const generatedHexWorld = generateWorldMap();
-    const onishimanTerritories = new Set([604,625,505,525,506,526,527,507,548,568,589,588,567,587,606,566,586,585,604,625,626,627,628,648,668,687,707,680,685,706,726,705,684,704,705,745,765,787,806,826,807,826,825,805,826,804,784,744,546,605,666,646,607,647,785,824,746,766,747,727,767,545,645,608,708,786,764,664]);
+    const onishimanTerritories = new Set([505,545,586,605,645,526,567,588,607,608,628,668,708,727,747,726,786,806,825,807,826,765,785,764,784,745,705,684,664,704,546,585,604,625,525,506,527,507,548,568,589,587,606,566,626,627,648,687,707,680,685,706,805,804,744,824,746,766,767,680]);
     const onishimanPlayerId = players.find(p => p.factionId === 'onishiman')?.id;
 
     const hexIds = shuffle(Object.keys(generatedHexWorld));
