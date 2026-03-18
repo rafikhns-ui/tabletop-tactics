@@ -1,6 +1,7 @@
 import React from 'react';
 import BuildRecruitPanel from './BuildRecruitPanel';
 import ActionCardsPanel from './ActionCardsPanel';
+import { UNIT_DEFS } from './ardoniaData';
 
 const PHASES = [
   { id: 'deploy', icon: '🏰', label: 'Deploy', desc: 'Place reinforcements on your territories.' },
