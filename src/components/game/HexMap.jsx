@@ -223,6 +223,23 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                />
              )}
 
+             {/* Deploy highlight border (pulsing gold) */}
+             {canDeploy && !isSelected && (
+               <polygon
+                 points={[0, 1, 2, 3, 4, 5].map(i => {
+                   const angle = (Math.PI / 3) * i;
+                   return [
+                     px + hexSize * Math.cos(angle),
+                     py + hexSize * Math.sin(angle),
+                   ];
+                 }).flat().join(',')}
+                 fill="rgba(255,220,80,0.18)"
+                 stroke="rgba(255,220,80,0.9)"
+                 strokeWidth="2"
+                 style={{ filter: 'drop-shadow(0 0 8px rgba(255,220,80,0.7))' }}
+               />
+             )}
+
              {/* Unit count */}
              {hex.units && hex.units.length > 0 && (
                <text x={px} y={py + 8} textAnchor="middle" fontSize="12" fill="#fff" fontFamily="'Cinzel',serif" fontWeight="bold"
