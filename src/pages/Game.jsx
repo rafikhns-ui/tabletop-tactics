@@ -59,7 +59,9 @@ export default function Game() {
 
   // Called from GameMenu — go to faction select
   const handleMenuStart = (mode, count) => {
-    setPendingMode({ mode, playerCount: count || 2 });
+    const modeConfig = { mode, playerCount: count || 2 };
+    setPendingMode(modeConfig);
+    setGameStartMode(modeConfig);
     setSetupStep('faction');
   };
 
