@@ -583,9 +583,6 @@ export default function Game() {
     setGameState(prev => {
       if (!prev) return prev;
       const nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length;
-      const nextPlayer = prev.players[nextIndex];
-      const ownedCount = Object.values(prev.territories).filter(t => t.owner === nextPlayer.id).length;
-      const newTroops = Math.max(3, Math.floor(ownedCount / 3));
       // Decrement event countdown
       let eventCountdown = (prev.eventCountdown || 3) - 1;
       let eventTrigger = null;
