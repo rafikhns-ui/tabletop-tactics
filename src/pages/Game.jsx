@@ -59,6 +59,21 @@ export default function Game() {
   // Called from GameMenu — go to faction select
   const handleMenuStart = (mode, count) => {
     setPendingMode({ mode, playerCount: count || 2 });
+    setSetupStep('faction');
+  };
+
+  const handleFactionSelectComplete = (players) => {
+    setSetupPlayers(players);
+    setSetupStep('objectives');
+  };
+
+  const handleObjectivesComplete = (playersWithObjectives) => {
+    setSetupPlayers(playersWithObjectives);
+    setSetupStep('leader');
+  };
+
+  const handleLeaderSelectComplete = (finalPlayers) => {
+    startGame({}, finalPlayers);
   };
 
   // Called from FactionSelect — actually start the game
