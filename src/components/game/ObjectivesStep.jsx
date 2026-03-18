@@ -132,9 +132,9 @@ export default function ObjectivesStep({ players, onNext, onBack }) {
                  </div>
                  <div className="p-4">
                    {!player.isAI ? (
-                     <div className="space-y-3">
+                     <div className="flex gap-3">
                        {player.objectives?.map(obj => (
-                         <div key={obj.id} className="rounded-sm overflow-hidden border-2" style={{ 
+                         <div key={obj.id} className="flex-1 rounded-sm overflow-hidden border-2" style={{ 
                            borderColor: 'hsl(43,80%,50%)',
                            boxShadow: '0 0 15px rgba(255,200,50,0.2), inset 0 0 10px rgba(255,200,50,0.05)'
                          }}>
