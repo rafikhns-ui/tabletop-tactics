@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BUILDING_DEFS, UNIT_DEFS } from './ardoniaData';
 
-const BUILDABLE = ['imperial_stronghold', 'omitoji_dojo', 'spirit_gate', 'tower_of_intrigues', 'siege_engine_workshop', 'fighting_pit'];
+const BUILDABLE = ['imperial_stronghold', 'omitoji_dojo', 'spirit_gate', 'tower_of_intrigues', 'siege_engine_workshop', 'fighting_pit', 'grand_market', 'crimson_port'];
 
 // Units unlocked by building
 const UNIT_UNLOCK = {
