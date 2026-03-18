@@ -199,8 +199,8 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             const neighbor = Object.entries(hexes).find(([, h]) => h.q === nq && h.r === nr);
             if (!neighbor || hexId > neighbor[0]) return null;
             
-            const [x1, y1] = [hexToPixel(hex.q, hex.r, hexSize).x + canvasWidth / 2, hexToPixel(hex.q, hex.r, hexSize).y + canvasHeight / 2];
-            const [x2, y2] = [hexToPixel(nq, nr, hexSize).x + canvasWidth / 2, hexToPixel(nq, nr, hexSize).y + canvasHeight / 2];
+            const [x1, y1] = [hexToPixel(hex.q, hex.r, hexSize).x + offsetX, hexToPixel(hex.q, hex.r, hexSize).y + offsetY];
+            const [x2, y2] = [hexToPixel(nq, nr, hexSize).x + offsetX, hexToPixel(nq, nr, hexSize).y + offsetY];
             
             return (
               <line
