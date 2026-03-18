@@ -241,8 +241,8 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
              )}
 
              {/* Hex number label */}
-             <text x={px} y={py - 6} textAnchor="middle" fontSize="7" fill="rgba(255,230,150,0.7)" fontFamily="'Cinzel',serif">
-               {hexId}
+             <text x={px} y={py + 4} textAnchor="middle" fontSize="8" fill="black" fontFamily="'Cinzel',serif" fontWeight="bold">
+               {Object.keys(hexes).indexOf(hexId) + 1}
              </text>
 
              {/* Unit icons + count */}
