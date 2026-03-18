@@ -73,7 +73,7 @@ export default function Game() {
   };
 
   const handleLeaderSelectComplete = (finalPlayers) => {
-    startGame({}, finalPlayers);
+    startGame(pendingMode, finalPlayers);
   };
 
   // Called from FactionSelect — actually start the game
