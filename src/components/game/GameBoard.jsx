@@ -53,6 +53,23 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
       }}
     >
 
+      {/* Territory control layer */}
+      <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%', zIndex: 0 }}>
+        {Object.values(territories).map((territory) => {
+          const pColor = getPlayerColor(territory.owner);
+          return (
+            <circle
+              key={`control-${territory.id}`}
+              cx={`${(territory.x / 720) * 100}%`}
+              cy={`${(territory.y / 510) * 100}%`}
+              r="45"
+              fill={pColor}
+              opacity="0.15"
+            />
+          );
+        })}
+      </svg>
+
       {/* Adjacency lines */}
       <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%', zIndex: 1 }}>
         {Object.entries(ADJACENCY).flatMap(([fromId, neighbors]) =>
