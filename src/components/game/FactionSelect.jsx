@@ -12,7 +12,7 @@ const shuffle = (arr) => {
 };
 
 const drawObjectives = (factionId) => {
-  let pool = [...OBJECTIVES];
+  let pool = [...OBJECTIVES].filter(o => o.image); // Only objectives with uploaded images
   if (factionId === 'sultanate') pool = pool.filter(o => o.category !== 'Military');
   const shuffled = shuffle(pool);
   if (factionId === 'kadjimaran' || factionId === 'inuvak') {
