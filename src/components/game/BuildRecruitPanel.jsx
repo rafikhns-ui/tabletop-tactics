@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { BUILDING_DEFS, UNIT_DEFS } from './ardoniaData';
 
-const BUILDABLE = ['barracks', 'stables', 'archerytower', 'temple', 'market', 'shipyard', 'siegeworks'];
+const BUILDABLE = ['imperial_stronghold', 'omitoji_dojo', 'spirit_gate', 'tower_of_intrigues', 'siege_engine_workshop', 'fighting_pit'];
 
 // Units unlocked by building
 const UNIT_UNLOCK = {
-  barracks:     ['infantry', 'elite'],
-  stables:      ['cavalry'],
-  archerytower: ['ranged'],
-  siegeworks:   ['siege'],
-  shipyard:     ['naval'],
+  fighting_pit: ['infantry', 'elite'],
+  siege_engine_workshop: ['ranged'],
 };
 
 function canAfford(resources, cost) {
