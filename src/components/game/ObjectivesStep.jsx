@@ -127,15 +127,18 @@ export default function ObjectivesStep({ players, onNext, onBack }) {
                     {!player.isAI ? (
                       <div className="space-y-3">
                         {player.objectives?.map(obj => (
-                          <div key={obj.id} className="rounded-lg overflow-hidden border" style={{ borderColor: 'hsl(35,20%,30%)' }}>
+                          <div key={obj.id} className="rounded-sm overflow-hidden border-2" style={{ 
+                            borderColor: 'hsl(43,80%,50%)',
+                            boxShadow: '0 0 15px rgba(255,200,50,0.2), inset 0 0 10px rgba(255,200,50,0.05)'
+                          }}>
                             {obj.image && (
-                              <img src={obj.image} alt={obj.text} className="w-full h-auto" />
+                              <img src={obj.image} alt={obj.text} className="w-full h-auto" style={{ boxShadow: 'inset 0 0 20px rgba(0,0,0,0.3)' }} />
                             )}
-                            <div className="p-2 bg-black/30" style={{ color: 'hsl(40,20%,70%)' }}>
-                              <div className="text-xs font-bold" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,80%,65%)' }}>
-                                [{obj.category}]
+                            <div className="p-3 bg-gradient-to-b from-black/60 to-black/80" style={{ color: 'hsl(40,20%,75%)' }}>
+                              <div className="text-xs font-black tracking-widest" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,70%)', textTransform: 'uppercase' }}>
+                                ⚔️ {obj.category}
                               </div>
-                              <p className="text-xs leading-relaxed mt-1">{obj.text}</p>
+                              <p className="text-xs leading-relaxed mt-2">{obj.text}</p>
                             </div>
                           </div>
                         ))}
