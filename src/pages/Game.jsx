@@ -769,6 +769,7 @@ export default function Game() {
                 onDrawCard={handleDrawCard}
                 onUpgrade={handleUpgrade}
                 onBuildFortress={handleBuildFortress}
+                onSelectDeployUnit={handleSelectDeployUnit}
               />
                 <UnitBreakdown currentPlayer={currentPlayer} gameState={gameState} />
               </>
