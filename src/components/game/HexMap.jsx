@@ -292,14 +292,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                stroke={isWater ? "rgba(50,100,255,0.5)" : "rgba(120,90,40,0.45)"}
                strokeWidth="0.8"
              />
-             {/* Ownership fill */}
-             {hex.owner && !isSelected && !canAttack && !canFortify && !canMove && !canDeploy && (
-               <polygon
-                 points={hexPoints}
-                 fill={playerColor}
-                 opacity="0.4"
-               />
-             )}
+
 
              {/* Hex state highlight */}
              {(isSelected || canAttack || canFortify || canMove || canDeploy || isOwned) && (
