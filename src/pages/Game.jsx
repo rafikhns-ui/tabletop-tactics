@@ -961,6 +961,21 @@ export default function Game() {
             {bottomTab === 'log' && (
               <BattleLog entries={battleLog} />
             )}
+            {bottomTab === 'advisor' && gameState && currentPlayer && !currentPlayer.isAI && (
+              <AdvisorPanel
+                gameState={gameState}
+                currentPlayer={currentPlayer}
+                onAction={(action) => {
+                  if (action.type === 'advance_phase') advancePhase();
+                  else if (action.type === 'end_turn') endTurn();
+                  else if (action.type === 'recruit' && action.unit) handleRecruit(action.unit);
+                  else if (action.type === 'build' && action.building) handleBuild(action.building);
+                  else if (action.type === 'attack' && action.from && action.to) {
+                    setBattle({ attackerId: action.from, defenderId: action.to });
+                  }
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
