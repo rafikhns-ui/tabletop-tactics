@@ -40,7 +40,7 @@ const colRowToPixel = (col, row, size) => {
   return { x, y };
 };
 
-export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick }) {
+export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick, movementState }) {
   const hexSize = 28;
   const canvasWidth = 3600;
   const canvasHeight = 1400;
