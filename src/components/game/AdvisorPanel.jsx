@@ -61,16 +61,23 @@ export default function AdvisorPanel({ gameState, currentPlayer, onAction }) {
   const [initializing, setInitializing] = useState(true);
   const bottomRef = useRef(null);
 
-  // Init conversation
+  // Init conversation — persist conversation ID across tab switches
   useEffect(() => {
     let unsubscribe;
     (async () => {
       setInitializing(true);
       try {
-        const conv = await base44.agents.createConversation({
-          agent_name: 'game_advisor',
-          metadata: { game: 'rulers_of_ardonia' },
-        });
+        const existingId = window.__advisorConversationId;
+        let conv;
+        if (existingId) {
+          conv = await base44.agents.getConversation(existingId);
+        } else {
+          conv = await base44.agents.createConversation({
+            agent_name: 'game_advisor',
+            metadata: { game: 'rulers_of_ardonia' },
+          });
+          window.__advisorConversationId = conv.id;
+        }
         setConversation(conv);
         setMessages(conv.messages || []);
         unsubscribe = base44.agents.subscribeToConversation(conv.id, (updated) => {
