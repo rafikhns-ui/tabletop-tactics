@@ -306,6 +306,9 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             }
           };
 
+          const moveCost = reachableHexes.get(hexId);
+          const showMoveCost = phase === 'move' && moveCost !== undefined;
+
           return (
            <g key={`hex-${hexId}`} onClick={handleClick} style={{ cursor: 'pointer' }}>
              {/* Hex border outline — always visible */}
