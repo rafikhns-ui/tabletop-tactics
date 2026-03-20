@@ -82,8 +82,8 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   useEffect(() => () => { if (animRef.current) cancelAnimationFrame(animRef.current); }, []);
 
   const zoomToHex = useCallback((px, py) => {
-    const zoomW = canvasWidth * 0.35;
-    const zoomH = canvasHeight * 0.35;
+    const zoomW = canvasWidth * 0.2;
+    const zoomH = canvasHeight * 0.4;
     animateTo({ x: px - zoomW / 2, y: py - zoomH / 2, w: zoomW, h: zoomH });
   }, [canvasWidth, canvasHeight, animateTo]);
 
