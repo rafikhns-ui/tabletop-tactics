@@ -675,6 +675,7 @@ export default function Game() {
 
   const advancePhase = () => {
     setSelectedTerritory(null);
+    setMovementState(null);
     if (phase === 'deploy') {
       setPhase('move');
       addMessage('🚶 Move phase — move units across the map');
