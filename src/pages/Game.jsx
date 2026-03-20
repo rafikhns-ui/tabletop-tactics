@@ -862,6 +862,7 @@ export default function Game() {
                { id: 'avatars', icon: '👹', label: 'Avatars' },
                { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
                { id: 'log', icon: '📜', label: 'Battle Log' },
+               { id: 'advisor', icon: '⚜️', label: 'Advisor' },
             ].map(t => (
               <button key={t.id} onClick={() => setBottomTab(t.id)}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold transition-all"
