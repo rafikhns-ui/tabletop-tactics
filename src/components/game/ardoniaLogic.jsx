@@ -316,47 +316,105 @@ export const checkObjective = (obj, player, gameState) => {
 export const doAiTurn = (gameState) => {
   let state = { ...gameState };
   state.territories = { ...state.territories };
-  // Use the CURRENT player (who must be AI)
   const ai = state.players[state.currentPlayerIndex];
   if (!ai || !ai.isAI) return state;
 
+  const difficulty = ai.difficulty || 'normal';
   const logs = [];
 
-  // 1. Collect income (already done in main flow)
-  // 2. Deploy troops to best border territory
+  // Difficulty parameters
+  // easy:   won't attack unless very safe, skips sometimes, no bonus
+  // normal: standard aggression
+  // hard:   attacks more, gets attack/defense bonus, smarter targeting
+  const skipChance = difficulty === 'easy' ? 0.35 : 0;
+  const minAdvantage = difficulty === 'easy' ? 3 : difficulty === 'hard' ? 1.3 : 2;
+  const attackBonus = difficulty === 'hard' ? 1 : 0;
+  const maxAttacks = difficulty === 'hard' ? 3 : 1;
+
+  // 1. Deploy troops
   let bestDeploy = null, bestScore = -1;
   Object.values(state.territories).forEach(t => {
     if (t.owner !== ai.id) return;
-    const enemies = (ADJACENCY[t.id] || []).filter(n => state.territories[n].owner !== ai.id).length;
-    if (enemies > bestScore) { bestScore = enemies; bestDeploy = t.id; }
+    const enemies = (ADJACENCY[t.id] || []).filter(n => state.territories[n]?.owner !== ai.id).length;
+    // Hard: also value territories near enemy capitals
+    let score = enemies;
+    if (difficulty === 'hard') {
+      const nearCapital = (ADJACENCY[t.id] || []).some(n => state.territories[n]?.isCapital && state.territories[n]?.owner !== ai.id);
+      if (nearCapital) score += 3;
+    }
+    if (score > bestScore) { bestScore = score; bestDeploy = t.id; }
   });
   if (bestDeploy && ai.troopsToDeploy > 0) {
     state.territories[bestDeploy] = { ...state.territories[bestDeploy], troops: state.territories[bestDeploy].troops + ai.troopsToDeploy };
     state.players = state.players.map(p => p.id === ai.id ? { ...p, troopsToDeploy: 0 } : p);
-    logs.push(`🤖 AI deployed ${ai.troopsToDeploy} troops to ${state.territories[bestDeploy].name}`);
+    logs.push(`🤖 AI deployed ${ai.troopsToDeploy} troops`);
   }
 
-  // 3. Attack best target
-  const myTerrs = Object.values(state.territories).filter(t => t.owner === ai.id).sort((a, b) => b.troops - a.troops);
-  for (const from of myTerrs) {
-    const fromTroops = from.units.reduce((s, u) => s + u.count, 0);
-    if (fromTroops < 3) continue;
-    const targets = (ADJACENCY[from.id] || []).map(id => state.territories[id]).filter(t => {
-      const targetTroops = t.units.reduce((s, u) => s + u.count, 0);
-      return t.owner !== ai.id && fromTroops > targetTroops + 1;
-    });
-    if (targets.length > 0) {
-      const target = targets.sort((a, b) => a.units.reduce((s, u) => s + u.count, 0) - b.units.reduce((s, u) => s + u.count, 0))[0];
-      const result = resolveBattle(from.units, target.units, target.hasFortress);
-      state = executeAttack(state, from.id, target.id, result);
-      logs.push(`🤖 AI attacked ${target.name} from ${from.name}!`);
-      break;
+  // 2. Attack (difficulty-gated)
+  if (Math.random() >= skipChance) {
+    const myTerrs = Object.values(state.territories)
+      .filter(t => t.owner === ai.id)
+      .sort((a, b) => b.troops - a.troops);
+
+    let attacksDone = 0;
+    for (const from of myTerrs) {
+      if (attacksDone >= maxAttacks) break;
+      const fromTroops = from.units?.reduce((s, u) => s + u.count, 0) || from.troops || 0;
+      if (fromTroops < 2) continue;
+
+      let targets = (ADJACENCY[from.id] || [])
+        .map(id => state.territories[id])
+        .filter(t => {
+          if (!t || t.owner === ai.id) return false;
+          const targetTroops = t.units?.reduce((s, u) => s + u.count, 0) || t.troops || 0;
+          return fromTroops >= targetTroops * minAdvantage;
+        });
+
+      if (difficulty === 'hard') {
+        // Prioritize capitals and weakest enemies
+        targets.sort((a, b) => {
+          const aScore = (a.isCapital ? -100 : 0) + (a.units?.reduce((s, u) => s + u.count, 0) || a.troops || 0);
+          const bScore = (b.isCapital ? -100 : 0) + (b.units?.reduce((s, u) => s + u.count, 0) || b.troops || 0);
+          return aScore - bScore;
+        });
+      } else {
+        targets.sort((a, b) => (a.units?.reduce((s, u) => s + u.count, 0) || 0) - (b.units?.reduce((s, u) => s + u.count, 0) || 0));
+      }
+
+      if (targets.length > 0) {
+        const target = targets[0];
+        const result = resolveBattle(
+          from.units?.length > 0 ? from.units : [{ type: 'infantry', count: fromTroops }],
+          target.units?.length > 0 ? target.units : [{ type: 'infantry', count: target.troops || 1 }],
+          target.hasFortress,
+          { attackBonus }
+        );
+        state = executeAttack(state, from.id, target.id, result);
+        logs.push(`🤖 AI attacked from ${from.name || from.id}!`);
+        attacksDone++;
+      }
     }
   }
 
-  // 4. Gather SP passively
+  // 3. Hard AI: spend resources on buildings
+  if (difficulty === 'hard') {
+    state.players = state.players.map(p => {
+      if (p.id !== ai.id) return p;
+      const resources = { ...p.resources };
+      const buildings = { ...p.buildings };
+      // Upgrade mine if affordable
+      if ((resources.gold || 0) >= 4 && buildings.mine && buildings.mine.level < 3) {
+        resources.gold -= 4;
+        buildings.mine = { ...buildings.mine, level: buildings.mine.level + 1 };
+      }
+      return { ...p, resources, buildings };
+    });
+  }
+
+  // 4. SP gain
   if (ai.sp < 10) {
-    state.players = state.players.map(p => p.id === ai.id ? { ...p, sp: Math.min(10, p.sp + 1) } : p);
+    const spGain = difficulty === 'hard' ? 2 : 1;
+    state.players = state.players.map(p => p.id === ai.id ? { ...p, sp: Math.min(10, p.sp + spGain) } : p);
   }
 
   state.log = [...(state.log || []).slice(-10), ...logs];
