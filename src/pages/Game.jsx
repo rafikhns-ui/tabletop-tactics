@@ -836,17 +836,7 @@ export default function Game() {
         </div>
       </div>
 
-      <div className="p-2" style={{ background: 'hsl(35,22%,12%)' }}>
-        {gameState && (
-          <HexMap
-            gameState={gameState}
-            selectedHex={selectedTerritory}
-            phase={phase}
-            currentPlayer={currentPlayer}
-            onHexClick={handleTerritoryClick}
-          />
-        )}
-      </div>
+
 
       {/* Bottom panels */}
       <div className="flex border-t border-border overflow-hidden" style={{ minHeight: '140px', maxHeight: '50vh', resize: 'vertical', background: 'hsl(35,22%,12%)' }}>
