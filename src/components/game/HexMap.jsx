@@ -129,20 +129,31 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
     return targetHex?.owner !== currentPlayer?.id && hexNeighbors.includes(hexId);
   };
 
+  // Reachable hexes computed from movement system
+  const reachableHexes = useMemo(() => {
+    if (phase !== 'move' || !movementState?.selectedUnit || !movementState?.fromHexId) return new Map();
+    return getReachableHexes(
+      movementState.fromHexId,
+      movementState.selectedUnit,
+      movementState.speed,
+      hexes
+    );
+  }, [phase, movementState, hexes]);
+
   const isMovable = (hexId) => {
-    if (phase !== 'move' || !selectedHex || hexId === selectedHex) return false;
-    
+    if (phase !== 'move') return false;
+    if (movementState?.fromHexId) {
+      // Show reachable hexes from the selected unit's position
+      return reachableHexes.has(hexId) && hexId !== movementState.fromHexId;
+    }
+    // Before a unit is selected: highlight own hexes with units
+    if (!selectedHex || hexId === selectedHex) return false;
     const selectedHexData = hexes[selectedHex];
     const targetHex = hexes[hexId];
-    
     if (!selectedHexData || !targetHex) return false;
-    
-    // Check if target is owned by current player
     if (targetHex.owner !== currentPlayer?.id) return false;
-    
-    // Check adjacency
     const neighbors = HexUtils.getNeighbors(selectedHexData.q, selectedHexData.r);
-    return neighbors.some(([q, r]) => 
+    return neighbors.some(([q, r]) =>
       Object.entries(hexes).find(([id, h]) => h.q === q && h.r === r)?.[0] === hexId
     );
   };
