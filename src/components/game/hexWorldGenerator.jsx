@@ -31,7 +31,8 @@ const FACTION_TERRAIN_MAP = {
 };
 
 // Paste new map data here
-const MAP_DATA = [];
+const MAP_DATA = [
+];
 
 // ---- CONVERT JSON MAP TO HEX OBJECTS ----
 export const generateWorldMap = () => {
