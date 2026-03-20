@@ -348,3 +348,113 @@ export const canUnitEnter = (hexId, unitType) => {
     return !isOcean;
   }
 };
+
+// ---- TURN-BASED MOVEMENT PATHFINDING ----
+// Unit speed defaults per type (in movement points)
+export const UNIT_SPEED = {
+  infantry: 2,
+  cavalry: 4,
+  ranged: 2,
+  siege: 1,
+  elite: 3,
+  naval: 4,
+  flying: 5,
+};
+
+// Movement cost for a unit entering a hex (returns Infinity if impassable)
+export const getTerrainMoveCost = (terrain, unitType) => {
+  const isNaval = unitType === 'naval';
+  const isFlying = unitType === 'flying';
+
+  if (isFlying) return 1; // flying ignores terrain
+  if (terrain === 'ocean') return isNaval ? 1 : Infinity; // land units can't enter ocean
+  if (isNaval) return Infinity; // naval can't enter land
+
+  return TERRAIN_PROPS[terrain]?.movementCost ?? 1;
+};
+
+/**
+ * BFS/Dijkstra: Returns a Set of hexId strings reachable within `speed` movement points.
+ * hexes: the game's hexes object (gameState.hexes)
+ */
+export const getReachableHexes = (startId, unitType, speed, hexes) => {
+  const reachable = new Map(); // hexId -> cost spent
+  const queue = [{ id: startId, cost: 0 }];
+  reachable.set(startId, 0);
+
+  while (queue.length > 0) {
+    // Sort by cost (simple priority queue)
+    queue.sort((a, b) => a.cost - b.cost);
+    const { id, cost } = queue.shift();
+    const hex = hexes[id];
+    if (!hex) continue;
+
+    const neighbors = HexUtils.getNeighbors(hex.q, hex.r);
+    for (const [nq, nr] of neighbors) {
+      const neighborId = `hex_${nq}_${nr}`;
+      const neighborHex = hexes[neighborId];
+      if (!neighborHex) continue;
+
+      const moveCost = getTerrainMoveCost(neighborHex.terrain, unitType);
+      if (moveCost === Infinity) continue;
+
+      const newCost = cost + moveCost;
+      if (newCost <= speed && (!reachable.has(neighborId) || reachable.get(neighborId) > newCost)) {
+        reachable.set(neighborId, newCost);
+        queue.push({ id: neighborId, cost: newCost });
+      }
+    }
+  }
+
+  reachable.delete(startId); // exclude the origin
+  return reachable; // Map of hexId -> movementCost
+};
+
+/**
+ * Find shortest path (cost-aware) from startId to targetId.
+ * Returns array of hexIds representing the path, or null if unreachable.
+ */
+export const findMovementPath = (startId, targetId, unitType, speed, hexes) => {
+  const dist = new Map();
+  const prev = new Map();
+  const queue = [{ id: startId, cost: 0 }];
+  dist.set(startId, 0);
+
+  while (queue.length > 0) {
+    queue.sort((a, b) => a.cost - b.cost);
+    const { id, cost } = queue.shift();
+
+    if (id === targetId) break;
+
+    const hex = hexes[id];
+    if (!hex) continue;
+
+    const neighbors = HexUtils.getNeighbors(hex.q, hex.r);
+    for (const [nq, nr] of neighbors) {
+      const neighborId = `hex_${nq}_${nr}`;
+      const neighborHex = hexes[neighborId];
+      if (!neighborHex) continue;
+
+      const moveCost = getTerrainMoveCost(neighborHex.terrain, unitType);
+      if (moveCost === Infinity) continue;
+
+      const newCost = cost + moveCost;
+      if (newCost <= speed && (!dist.has(neighborId) || dist.get(neighborId) > newCost)) {
+        dist.set(neighborId, newCost);
+        prev.set(neighborId, id);
+        queue.push({ id: neighborId, cost: newCost });
+      }
+    }
+  }
+
+  if (!dist.has(targetId)) return null;
+
+  // Reconstruct path
+  const path = [];
+  let cur = targetId;
+  while (cur) {
+    path.unshift(cur);
+    cur = prev.get(cur);
+  }
+  return path;
+};
