@@ -5,25 +5,33 @@ const FACTION_LIST = Object.entries(FACTIONS)
   .filter(([_, f]) => f.name !== 'Neutral')
   .map(([id, f]) => ({ id, name: f.name, color: f.color }));
 
+const DIFFICULTIES = [
+  { id: 'easy', label: 'Easy', icon: '🌿', color: 'hsl(130,50%,40%)', desc: 'Passive & cautious' },
+  { id: 'normal', label: 'Normal', icon: '⚔️', color: 'hsl(43,80%,50%)', desc: 'Balanced strategy' },
+  { id: 'hard', label: 'Hard', icon: '💀', color: 'hsl(0,70%,45%)', desc: 'Aggressive & smart' },
+];
+
 export default function AiSetupModal({ onStart, onBack }) {
   const [aiCount, setAiCount] = useState(2);
   const [aiFactions, setAiFactions] = useState(['sultanate', 'kadjimaran']);
+  const [aiDifficulties, setAiDifficulties] = useState(['normal', 'normal']);
   const [randomMode, setRandomMode] = useState(false);
 
   const handleAiCountChange = (count) => {
     setAiCount(count);
-    // Adjust factions array if needed
     if (count < aiFactions.length) {
       setAiFactions(aiFactions.slice(0, count));
+      setAiDifficulties(aiDifficulties.slice(0, count));
     } else {
-      // Add random factions to fill
       const toAdd = count - aiFactions.length;
       const newFactions = [...aiFactions];
+      const newDiffs = [...aiDifficulties];
       for (let i = 0; i < toAdd; i++) {
-        const randomFaction = FACTION_LIST[Math.floor(Math.random() * FACTION_LIST.length)].id;
-        newFactions.push(randomFaction);
+        newFactions.push(FACTION_LIST[Math.floor(Math.random() * FACTION_LIST.length)].id);
+        newDiffs.push('normal');
       }
       setAiFactions(newFactions);
+      setAiDifficulties(newDiffs);
     }
   };
 
@@ -31,6 +39,12 @@ export default function AiSetupModal({ onStart, onBack }) {
     const newFactions = [...aiFactions];
     newFactions[index] = factionId;
     setAiFactions(newFactions);
+  };
+
+  const handleDifficultyChange = (index, difficulty) => {
+    const newDiffs = [...aiDifficulties];
+    newDiffs[index] = difficulty;
+    setAiDifficulties(newDiffs);
   };
 
   const handleStart = () => {
@@ -45,6 +59,7 @@ export default function AiSetupModal({ onStart, onBack }) {
       isAI: true,
       leaderIndex: 0,
       objectives: null,
+      difficulty: aiDifficulties[i] || 'normal',
     }));
 
     onStart(players);
