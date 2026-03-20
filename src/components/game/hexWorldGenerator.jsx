@@ -31,8 +31,7 @@ const FACTION_TERRAIN_MAP = {
 };
 
 // The full map data from the JSON provided
-const MAP_DATA = [
-  {"col":1,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+const MAP_DATA = [];
   {"col":2,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
   {"col":3,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
   {"col":4,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
