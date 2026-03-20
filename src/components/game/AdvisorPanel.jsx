@@ -104,8 +104,23 @@ export default function AdvisorPanel({ gameState, currentPlayer, onAction }) {
   const buildContext = () => {
     if (!gameState || !currentPlayer) return '';
     const owned = Object.values(gameState.hexes || {}).filter(h => h.owner === currentPlayer.id).length;
-    const enemies = gameState.players.filter(p => p.id !== currentPlayer.id).map(p => `${p.name} (${p.factionId})`).join(', ');
-    return `\n\n[GAME STATE] Turn: ${gameState.turn}, Phase: ${gameState.phase || 'N/A'}, Player: ${currentPlayer.name} (${currentPlayer.factionId}), Hexes owned: ${owned}, Resources: Gold=${currentPlayer.resources?.gold}, Wood=${currentPlayer.resources?.wood}, Wheat=${currentPlayer.resources?.wheat}, IP=${currentPlayer.ip}, SP=${currentPlayer.sp}, Enemies: ${enemies}`;
+    const enemies = gameState.players
+      .filter(p => p.id !== currentPlayer.id)
+      .map(p => {
+        const theirHexes = Object.values(gameState.hexes || {}).filter(h => h.owner === p.id).length;
+        return `${p.name} (${p.factionId}, hexes: ${theirHexes}, gold: ${p.resources?.gold ?? '?'})`;
+      }).join('; ');
+    const buildings = Object.entries(currentPlayer.buildings || {})
+      .map(([id, b]) => `${id} lv${b.level}`).join(', ');
+    const heroes = (currentPlayer.heroes || []).join(', ') || 'none';
+    const objectives = (currentPlayer.objectives || []).map(o => o.id).join(', ');
+    const completedObjectives = (currentPlayer.completedObjectives || []).join(', ') || 'none';
+    const leader = currentPlayer.leader ? `${currentPlayer.leader.name} (${currentPlayer.leader.passive})` : 'none';
+    const faction = currentPlayer.faction;
+    const factionSpecial = faction?.specialRule || '';
+    const pendingUnits = (currentPlayer.pendingUnits || []).join(', ') || 'none';
+
+    return `\n\n[GAME STATE] Turn: ${gameState.turn}, Phase: ${gameState.phase || 'N/A'} | Player: ${currentPlayer.name}, Faction: ${currentPlayer.factionId} (Special: ${factionSpecial}), Leader: ${leader} | Hexes owned: ${owned} | Resources: Gold=${currentPlayer.resources?.gold}, Wood=${currentPlayer.resources?.wood}, Wheat=${currentPlayer.resources?.wheat}, IP=${currentPlayer.ip}, SP=${currentPlayer.sp} | Buildings: ${buildings} | Heroes: ${heroes} | Pending units to deploy: ${pendingUnits} | Objectives: ${objectives} | Completed: ${completedObjectives} | Enemies: ${enemies}`;
   };
 
   const sendMessage = async () => {
