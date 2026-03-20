@@ -31,12 +31,21 @@ const canUnitEnterWater = (units) => {
   return units.some(u => u.type === 'naval' || u.type === 'flying');
 };
 
+// Convert col/row offset coords to flat-top pixel position
+const colRowToPixel = (col, row, size) => {
+  const w = size * 2;
+  const h = Math.sqrt(3) * size;
+  const x = col * w * 0.75;
+  const y = row * h + (col % 2 === 1 ? h / 2 : 0);
+  return { x, y };
+};
+
 export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick }) {
-  const hexSize = 36;
-  const canvasWidth = 1800;
-  const canvasHeight = 1200;
-  const offsetX = 900; // Center hex grid horizontally
-  const offsetY = 600;  // Center hex grid vertically
+  const hexSize = 28;
+  const canvasWidth = 3600;
+  const canvasHeight = 1400;
+  const offsetX = 0;
+  const offsetY = 20;
 
   const [focusedHex, setFocusedHex] = useState(null);
   const defaultVB = { x: 0, y: 0, w: canvasWidth, h: canvasHeight };
