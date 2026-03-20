@@ -268,12 +268,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           const playerColor = getPlayerColor(hex.owner);
            const tileColor = hex.owner ? `${playerColor}25` : 'transparent';
           
-          const { x, y } = hexToPixel(hex.q, hex.r, hexSize);
-          const px = x + offsetX;
-          const py = y + offsetY;
-
-          // Skip rendering if off-screen
-          if (px + hexSize < 0 || px - hexSize > canvasWidth || py + hexSize < 0 || py - hexSize > canvasHeight) return null;
+          const { x: px, y: py } = hexPixel(hex);
 
           let ringColor = 'transparent';
           let glow = '';
