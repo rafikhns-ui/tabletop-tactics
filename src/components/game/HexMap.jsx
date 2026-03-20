@@ -49,6 +49,10 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
   const [focusedHex, setFocusedHex] = useState(null);
   const defaultVB = { x: 0, y: 0, w: canvasWidth, h: canvasHeight };
+  const hexPixel = (hex) => {
+    const { x, y } = colRowToPixel(hex.col ?? 0, hex.row ?? 0, hexSize);
+    return { x: x + offsetX, y: y + offsetY };
+  };
   const [viewBox, setViewBox] = useState(defaultVB);
   const animRef = useRef(null);
   const currentVB = useRef(defaultVB);
