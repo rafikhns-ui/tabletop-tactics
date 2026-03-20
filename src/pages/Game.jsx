@@ -8,7 +8,7 @@ import HeroPanel from '../components/game/HeroPanel';
 import DeployableTroopsPanel from '../components/game/DeployableTroopsPanel';
 import { HEROES, LEADERS } from '../components/game/ardoniaData';
 import { getHeroCombatBonus } from '../components/game/ardoniaLogic';
-import { HexUtils, canUnitEnter } from '../components/game/hexGridSystem';
+import { HexUtils, canUnitEnter, getReachableHexes, findMovementPath, UNIT_SPEED } from '../components/game/hexGridSystem';
 import FactionSelectStep from '../components/game/FactionSelectStep';
 import ObjectivesStep from '../components/game/ObjectivesStep';
 import LeaderSelectStep from '../components/game/LeaderSelectStep';
