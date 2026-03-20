@@ -111,34 +111,61 @@ export default function AiSetupModal({ onStart, onBack }) {
           </label>
         </div>
 
-        {/* Faction selection (manual mode) */}
-        {!randomMode && (
-          <div className="mb-6 space-y-2">
-            <label className="text-xs font-bold mb-3 block opacity-60" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,80%,60%)' }}>
-              AI FACTION CHOICES
-            </label>
-            {aiFactions.map((faction, i) => (
-              <select
-                key={i}
-                value={faction}
-                onChange={(e) => handleFactionChange(i, e.target.value)}
-                className="w-full px-3 py-2 rounded text-xs"
-                style={{
-                  fontFamily: "'Cinzel',serif",
-                  background: 'hsl(35,20%,22%)',
-                  border: '1px solid hsl(35,20%,30%)',
-                  color: 'hsl(40,20%,65%)',
-                }}
-              >
-                {FACTION_LIST.map(f => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
-            ))}
-          </div>
-        )}
+        {/* Per-AI configuration */}
+        <div className="mb-6 space-y-4">
+          <label className="text-xs font-bold mb-1 block opacity-60" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,80%,60%)' }}>
+            AI CONFIGURATION
+          </label>
+          {Array.from({ length: aiCount }).map((_, i) => {
+            const diff = DIFFICULTIES.find(d => d.id === (aiDifficulties[i] || 'normal'));
+            return (
+              <div key={i} className="rounded-lg p-3 space-y-2" style={{ background: 'hsl(35,20%,19%)', border: '1px solid hsl(35,20%,28%)' }}>
+                <div className="text-xs font-bold" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,80%,65%)' }}>
+                  🤖 AI Opponent {i + 1}
+                </div>
+
+                {/* Difficulty */}
+                <div className="flex gap-1.5">
+                  {DIFFICULTIES.map(d => (
+                    <button
+                      key={d.id}
+                      onClick={() => handleDifficultyChange(i, d.id)}
+                      className="flex-1 py-1.5 rounded text-xs font-bold transition-all"
+                      style={{
+                        fontFamily: "'Cinzel',serif",
+                        background: aiDifficulties[i] === d.id ? `${d.color}33` : 'hsl(35,20%,22%)',
+                        border: aiDifficulties[i] === d.id ? `1px solid ${d.color}` : '1px solid hsl(35,20%,30%)',
+                        color: aiDifficulties[i] === d.id ? d.color : 'hsl(40,20%,55%)',
+                      }}
+                    >
+                      {d.icon} {d.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="text-xs opacity-50" style={{ color: diff?.color }}>{diff?.desc}</div>
+
+                {/* Faction */}
+                {!randomMode && (
+                  <select
+                    value={aiFactions[i] || ''}
+                    onChange={(e) => handleFactionChange(i, e.target.value)}
+                    className="w-full px-3 py-1.5 rounded text-xs"
+                    style={{
+                      fontFamily: "'Cinzel',serif",
+                      background: 'hsl(35,20%,22%)',
+                      border: '1px solid hsl(35,20%,30%)',
+                      color: 'hsl(40,20%,65%)',
+                    }}
+                  >
+                    {FACTION_LIST.map(f => (
+                      <option key={f.id} value={f.id}>{f.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
         {/* Summary */}
         <div className="mb-6 p-3 rounded text-xs" style={{ background: 'hsl(35,20%,22%)', border: '1px solid hsl(35,20%,30%)', color: 'hsl(40,20%,70%)' }}>
