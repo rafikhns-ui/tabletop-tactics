@@ -210,51 +210,54 @@ export default function Game() {
         }
       }
     } else if (phase === 'move') {
-      if (!selectedTerritory) {
+      if (!movementState) {
+        // Step 1: select a hex with your units
         const units = hex.units?.reduce((s, u) => s + u.count, 0) || 0;
         if (hex.owner === currentPlayer.id && units > 0) {
+          const unitType = hex.units[0]?.type || 'infantry';
+          const speed = UNIT_SPEED[unitType] ?? 2;
           setSelectedTerritory(hexId);
-          addMessage(`🚶 Moving from hex — pick destination`);
+          setMovementState({ fromHexId: hexId, selectedUnit: unitType, speed });
+          addMessage(`🚶 ${unitType} selected (speed ${speed}) — pick a destination`);
         }
-      } else if (hexId === selectedTerritory) {
+      } else if (hexId === movementState.fromHexId) {
+        // Deselect
         setSelectedTerritory(null);
+        setMovementState(null);
       } else {
-        const fromHex = gameState.hexes[selectedTerritory];
-        const toHex = gameState.hexes[hexId];
-        if (toHex.owner === currentPlayer.id) {
-          // Move all units from source to destination
-          setGameState(prev => {
-            const neighbors = HexUtils.getNeighbors(fromHex.q, fromHex.r);
-            const isAdjacent = neighbors.some(([q, r]) => 
-              toHex.q === q && toHex.r === r
-            );
-            
-            if (!isAdjacent) {
-              addMessage('⛔ Target not adjacent');
-              return prev;
-            }
-            
-            // Check if units can enter destination terrain
-            const unitType = fromHex.units?.[0]?.type || 'infantry';
-            if (!canUnitEnter(hexId, unitType)) {
-              addMessage(`⛔ Unit type cannot enter that terrain`);
-              return prev;
-            }
-            
-            return {
-              ...prev,
-              hexes: {
-                ...prev.hexes,
-                [selectedTerritory]: { ...fromHex, units: [] },
-                [hexId]: { ...toHex, units: [...(toHex.units || []), ...(fromHex.units || [])] },
-              },
-            };
-          });
-          setSelectedTerritory(null);
-          addMessage(`🚶 Moved units to hex`);
-        } else {
-          addMessage('⛔ Target must be owned by you');
+        // Step 2: move to target if reachable
+        const fromHexId = movementState.fromHexId;
+        const unitType = movementState.selectedUnit;
+        const speed = movementState.speed;
+        const reachable = getReachableHexes(fromHexId, unitType, speed, gameState.hexes);
+
+        if (!reachable.has(hexId)) {
+          addMessage('⛔ Hex out of movement range');
+          return;
         }
+
+        const path = findMovementPath(fromHexId, hexId, unitType, speed, gameState.hexes);
+        if (!path) {
+          addMessage('⛔ No valid path to target');
+          return;
+        }
+
+        setGameState(prev => {
+          const fromHex = prev.hexes[fromHexId];
+          const toHex = prev.hexes[hexId];
+          return {
+            ...prev,
+            hexes: {
+              ...prev.hexes,
+              [fromHexId]: { ...fromHex, units: [] },
+              [hexId]: { ...toHex, units: [...(toHex.units || []), ...(fromHex.units || [])] },
+            },
+          };
+        });
+
+        setSelectedTerritory(null);
+        setMovementState(null);
+        addMessage(`🚶 Moved ${unitType} to hex (${path.length - 1} steps)`);
       }
     } else if (phase === 'fortify') {
       if (!selectedTerritory) {
