@@ -43,6 +43,8 @@ export default function Game() {
   const [messages, setMessages] = useState([]);
   const [winner, setWinner] = useState(null);
   const [battleLog, setBattleLog] = useState([]);
+  // Movement state: { fromHexId, selectedUnit (type string), speed }
+  const [movementState, setMovementState] = useState(null);
   const [tradeOffers, setTradeOffers] = useState([]);
   const [bottomTab, setBottomTab] = useState('action'); // 'action' | 'diplomacy' | 'log'
 
