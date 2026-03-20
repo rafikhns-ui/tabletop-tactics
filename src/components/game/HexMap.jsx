@@ -213,18 +213,18 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
         {phase === 'move' && selectedHex && gameState?.hexes[selectedHex] && (
           (() => {
             const selectedHexData = gameState.hexes[selectedHex];
-            const selectedPos = hexToPixel(selectedHexData.q, selectedHexData.r, hexSize);
-            const selectedPx = selectedPos.x + offsetX;
-            const selectedPy = selectedPos.y + offsetY;
+            const selP = hexPixel(selectedHexData);
+            const selectedPx = selP.x;
+            const selectedPy = selP.y;
             
             const neighbors = HexUtils.getNeighbors(selectedHexData.q, selectedHexData.r);
             return neighbors.map(([nq, nr], i) => {
               const neighbor = Object.values(hexes).find(h => h.q === nq && h.r === nr);
               if (!neighbor || neighbor.owner !== currentPlayer?.id) return null;
               
-              const neighborPos = hexToPixel(nq, nr, hexSize);
-              const neighborPx = neighborPos.x + offsetX;
-              const neighborPy = neighborPos.y + offsetY;
+              const nP = hexPixel(neighbor);
+              const neighborPx = nP.x;
+              const neighborPy = nP.y;
               
               const dx = neighborPx - selectedPx;
               const dy = neighborPy - selectedPy;
