@@ -1,312 +1,991 @@
 // ============================================================
-// HEX WORLD GENERATOR - Procedural Map Generation
+// HEX WORLD GENERATOR - JSON Map Data
 // ============================================================
-// Generates a hex-based world map with specified water bodies,
-// coastlines, and land formations for strategy gameplay.
+// Uses a fixed map definition from JSON (col/row grid)
+// converted to axial (q, r) hex coordinates.
 
 import { HexUtils } from './hexGridSystem';
 
-// ---- GRID DIMENSIONS ----
-const GRID_WIDTH = 40;
-const GRID_HEIGHT = 30;
-
-// ---- HEX COORDINATE CONVERSION ----
-// Convert axial (q, r) to 2D array indices for easier access
-const toIndex = (q, r) => {
-  const col = q + GRID_WIDTH / 2;
-  const row = r + GRID_HEIGHT / 2;
-  if (col < 0 || col >= GRID_WIDTH || row < 0 || row >= GRID_HEIGHT) return -1;
-  return row * GRID_WIDTH + col;
+// Offset hex: col/row -> axial q/r
+// Using "odd-r" offset: q = col - (row - (row & 1)) / 2, r = row
+const offsetToAxial = (col, row) => {
+  const q = col - Math.floor((row - (row & 1)) / 2);
+  const r = row;
+  return { q, r };
 };
 
-const toCoords = (index) => {
-  const row = Math.floor(index / GRID_WIDTH);
-  const col = index % GRID_WIDTH;
-  return [col - GRID_WIDTH / 2, row - GRID_HEIGHT / 2]; // q, r
+const FACTION_TERRAIN_MAP = {
+  ocean: 'ocean',
+  water: 'ocean',
+  '': 'plains',
+  gejeon: 'forest',
+  inuvak: 'tundra',
+  ruskel: 'plains',
+  shadefell: 'wasteland',
+  onishiman: 'plains',
+  kadjimaran: 'desert',
+  silverunion: 'plains',
+  greenheart: 'forest',
+  shadowsfall: 'wasteland',
+  nimrudan: 'mountain',
 };
 
-// ---- TERRAIN TYPES ----
-const TERRAIN_TYPES = {
-  LAND: 'land',
-  WATER: 'water',
-};
+// The full map data from the JSON provided
+const MAP_DATA = [
+  {"col":1,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":0,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":6,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":7,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":8,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":9,"row":0,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":10,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":11,"row":0,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":12,"row":0,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":13,"row":0,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":14,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":15,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":16,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":17,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":18,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":19,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":20,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":21,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":22,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":23,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":24,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":25,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":26,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":27,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":28,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":31,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":33,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":34,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":35,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":36,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":37,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":38,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":39,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":40,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":41,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":42,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":43,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":44,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":45,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":46,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":47,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":48,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":49,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":50,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":51,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":52,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":53,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":54,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":55,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":56,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":1,"faction":"","is_coastal":true,"terrain":""},
+  {"col":7,"row":1,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":8,"row":1,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":9,"row":1,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":1,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":11,"row":1,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":1,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":13,"row":1,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":1,"faction":"","is_coastal":true,"terrain":""},
+  {"col":15,"row":1,"faction":"","is_coastal":true,"terrain":""},
+  {"col":17,"row":1,"faction":"","is_coastal":true,"terrain":""},
+  {"col":19,"row":1,"faction":"","is_coastal":true,"terrain":""},
+  {"col":20,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":21,"row":1,"faction":"","is_coastal":true,"terrain":""},
+  {"col":22,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":23,"row":1,"faction":"","is_coastal":true,"terrain":""},
+  {"col":24,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":25,"row":1,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":26,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":27,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":28,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":30,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":31,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":33,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":34,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":35,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":36,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":37,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":38,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":39,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":40,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":42,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":43,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":44,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":46,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":48,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":49,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":50,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":51,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":52,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":53,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":54,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":55,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":1,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":2,"faction":"","is_coastal":true,"terrain":""},
+  {"col":5,"row":2,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":6,"row":2,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":7,"row":2,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":8,"row":2,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":2,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":2,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":2,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":2,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":2,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":2,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":2,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":16,"row":2,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":17,"row":2,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":18,"row":2,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":19,"row":2,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":20,"row":2,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":21,"row":2,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":22,"row":2,"faction":"","is_coastal":true,"terrain":""},
+  {"col":23,"row":2,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":2,"faction":"","is_coastal":true,"terrain":""},
+  {"col":26,"row":2,"faction":"","is_coastal":true,"terrain":""},
+  {"col":27,"row":2,"faction":"","is_coastal":true,"terrain":""},
+  {"col":28,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":31,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":34,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":36,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":38,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":39,"row":2,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":40,"row":2,"faction":"","is_coastal":true,"terrain":""},
+  {"col":41,"row":2,"faction":"shadefell","is_coastal":true,"terrain":"land"},
+  {"col":42,"row":2,"faction":"","is_coastal":true,"terrain":""},
+  {"col":43,"row":2,"faction":"","is_coastal":true,"terrain":""},
+  {"col":44,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":45,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":46,"row":2,"faction":"","is_coastal":true,"terrain":""},
+  {"col":47,"row":2,"faction":"shadefell","is_coastal":true,"terrain":"land"},
+  {"col":48,"row":2,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":49,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":50,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":51,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":52,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":53,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":54,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":55,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":56,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":2,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":3,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":4,"row":3,"faction":"","is_coastal":true,"terrain":""},
+  {"col":5,"row":3,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":6,"row":3,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":7,"row":3,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":8,"row":3,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":3,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":3,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":3,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":3,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":3,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":16,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":17,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":18,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":19,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":20,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":22,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":23,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":25,"row":3,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":26,"row":3,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":27,"row":3,"faction":"","is_coastal":true,"terrain":""},
+  {"col":28,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":30,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":37,"row":3,"faction":"","is_coastal":true,"terrain":""},
+  {"col":38,"row":3,"faction":"","is_coastal":true,"terrain":""},
+  {"col":39,"row":3,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":3,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":3,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":3,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":3,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":3,"faction":"","is_coastal":true,"terrain":""},
+  {"col":45,"row":3,"faction":"","is_coastal":true,"terrain":""},
+  {"col":46,"row":3,"faction":"","is_coastal":true,"terrain":""},
+  {"col":47,"row":3,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":3,"faction":"shadefell","is_coastal":true,"terrain":"land"},
+  {"col":49,"row":3,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":50,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":51,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":52,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":53,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":54,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":55,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":56,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":3,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":4,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":4,"row":4,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":5,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":6,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":7,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":8,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":4,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":16,"row":4,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":17,"row":4,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":18,"row":4,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":19,"row":4,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":20,"row":4,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":23,"row":4,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":4,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":25,"row":4,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":26,"row":4,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":27,"row":4,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":28,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":4,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":30,"row":4,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":31,"row":4,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":32,"row":4,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":33,"row":4,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":34,"row":4,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":35,"row":4,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":36,"row":4,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":37,"row":4,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":4,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":4,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":4,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":4,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":4,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":4,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":4,"faction":"","is_coastal":true,"terrain":""},
+  {"col":46,"row":4,"faction":"","is_coastal":true,"terrain":""},
+  {"col":47,"row":4,"faction":"shadefell","is_coastal":true,"terrain":"land"},
+  {"col":49,"row":4,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":50,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":51,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":52,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":53,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":54,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":55,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":56,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":4,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":5,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":5,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":6,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":7,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":8,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":5,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":16,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":17,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":18,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":19,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":20,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":21,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":22,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":23,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":25,"row":5,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":26,"row":5,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":27,"row":5,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":28,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":5,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":30,"row":5,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":31,"row":5,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":32,"row":5,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":33,"row":5,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":34,"row":5,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":5,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":5,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":5,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":5,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":5,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":5,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":5,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":5,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":5,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":5,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":5,"faction":"","is_coastal":true,"terrain":""},
+  {"col":47,"row":5,"faction":"shadefell","is_coastal":true,"terrain":"land"},
+  {"col":48,"row":5,"faction":"","is_coastal":true,"terrain":""},
+  {"col":49,"row":5,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":50,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":51,"row":5,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":52,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":53,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":54,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":55,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":56,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":5,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":6,"faction":"","is_coastal":true,"terrain":""},
+  {"col":5,"row":6,"faction":"","is_coastal":true,"terrain":""},
+  {"col":6,"row":6,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":8,"row":6,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":6,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":6,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":6,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":6,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":6,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":17,"row":6,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":18,"row":6,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":19,"row":6,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":20,"row":6,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":21,"row":6,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":22,"row":6,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":23,"row":6,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":6,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":25,"row":6,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":26,"row":6,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":27,"row":6,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":28,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":6,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":30,"row":6,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":31,"row":6,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":32,"row":6,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":33,"row":6,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":6,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":6,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":6,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":38,"row":6,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":6,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":6,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":6,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":6,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":6,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":6,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":6,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":47,"row":6,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":6,"faction":"","is_coastal":true,"terrain":""},
+  {"col":50,"row":6,"faction":"","is_coastal":true,"terrain":""},
+  {"col":51,"row":6,"faction":"","is_coastal":true,"terrain":""},
+  {"col":52,"row":6,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":53,"row":6,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":54,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":55,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":56,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":6,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":6,"row":7,"faction":"","is_coastal":true,"terrain":""},
+  {"col":7,"row":7,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":8,"row":7,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":7,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":7,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":7,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":7,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":7,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":7,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":20,"row":7,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":21,"row":7,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":22,"row":7,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":23,"row":7,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":7,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":25,"row":7,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":26,"row":7,"faction":"","is_coastal":true,"terrain":""},
+  {"col":27,"row":7,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":28,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":7,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":30,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":31,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":32,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":33,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":34,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":38,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":7,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":7,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":7,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":7,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":7,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":7,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":47,"row":7,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":7,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":49,"row":7,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":54,"row":7,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":55,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":56,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":7,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":6,"row":8,"faction":"","is_coastal":true,"terrain":""},
+  {"col":7,"row":8,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":8,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":16,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":17,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":18,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":19,"row":8,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":22,"row":8,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":23,"row":8,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":8,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":25,"row":8,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":26,"row":8,"faction":"","is_coastal":true,"terrain":""},
+  {"col":27,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":28,"row":8,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":29,"row":8,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":30,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":31,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":32,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":33,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":34,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":38,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":8,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":8,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":8,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":47,"row":8,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":8,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":49,"row":8,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":54,"row":8,"faction":"","is_coastal":true,"terrain":""},
+  {"col":55,"row":8,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":56,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":8,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":7,"row":9,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":8,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":16,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":17,"row":9,"faction":"gejeon","is_coastal":true,"terrain":"land"},
+  {"col":18,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":19,"row":9,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":21,"row":9,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":9,"faction":"inuvak","is_coastal":false,"terrain":"land"},
+  {"col":25,"row":9,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":26,"row":9,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":27,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":28,"row":9,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":29,"row":9,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":30,"row":9,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":31,"row":9,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":32,"row":9,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":33,"row":9,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":34,"row":9,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":9,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":9,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":9,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":38,"row":9,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":9,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":9,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":9,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":9,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":9,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":9,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":9,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":9,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":49,"row":9,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":51,"row":9,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":52,"row":9,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":53,"row":9,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":55,"row":9,"faction":"","is_coastal":true,"terrain":""},
+  {"col":56,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":9,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":7,"row":10,"faction":"","is_coastal":true,"terrain":""},
+  {"col":8,"row":10,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":10,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":10,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":10,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":10,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":10,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":10,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":16,"row":10,"faction":"","is_coastal":true,"terrain":""},
+  {"col":17,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":18,"row":10,"faction":"","is_coastal":true,"terrain":""},
+  {"col":19,"row":10,"faction":"","is_coastal":true,"terrain":""},
+  {"col":21,"row":10,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":22,"row":10,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":10,"faction":"inuvak","is_coastal":true,"terrain":"land"},
+  {"col":26,"row":10,"faction":"","is_coastal":true,"terrain":""},
+  {"col":27,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":28,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":30,"row":10,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":31,"row":10,"faction":"ruskel","is_coastal":true,"terrain":"land"},
+  {"col":32,"row":10,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":34,"row":10,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":10,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":10,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":10,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":38,"row":10,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":10,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":10,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":10,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":10,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":10,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":10,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":10,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":10,"faction":"shadefell","is_coastal":false,"terrain":"land"},
+  {"col":51,"row":10,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":52,"row":10,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":53,"row":10,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":54,"row":10,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":55,"row":10,"faction":"","is_coastal":true,"terrain":""},
+  {"col":57,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":10,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":6,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":7,"row":11,"faction":"","is_coastal":true,"terrain":""},
+  {"col":8,"row":11,"faction":"","is_coastal":true,"terrain":""},
+  {"col":9,"row":11,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":11,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":11,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":11,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":11,"faction":"gejeon","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":11,"faction":"","is_coastal":true,"terrain":""},
+  {"col":16,"row":11,"faction":"","is_coastal":true,"terrain":""},
+  {"col":17,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":18,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":19,"row":11,"faction":"","is_coastal":true,"terrain":""},
+  {"col":21,"row":11,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":22,"row":11,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":23,"row":11,"faction":"","is_coastal":true,"terrain":""},
+  {"col":24,"row":11,"faction":"","is_coastal":true,"terrain":""},
+  {"col":27,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":28,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":11,"faction":"kadjimaran","is_coastal":true,"terrain":"land"},
+  {"col":33,"row":11,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":34,"row":11,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":11,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":11,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":11,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":38,"row":11,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":11,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":11,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":11,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":11,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":11,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":11,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":11,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":11,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":47,"row":11,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":51,"row":11,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":52,"row":11,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":53,"row":11,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":54,"row":11,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":55,"row":11,"faction":"","is_coastal":true,"terrain":""},
+  {"col":57,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":11,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":6,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":7,"row":12,"faction":"","is_coastal":true,"terrain":""},
+  {"col":8,"row":12,"faction":"","is_coastal":true,"terrain":""},
+  {"col":15,"row":12,"faction":"","is_coastal":true,"terrain":""},
+  {"col":16,"row":12,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":17,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":18,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":19,"row":12,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":21,"row":12,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":22,"row":12,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":23,"row":12,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":24,"row":12,"faction":"","is_coastal":true,"terrain":""},
+  {"col":25,"row":12,"faction":"","is_coastal":true,"terrain":""},
+  {"col":26,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":27,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":28,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":12,"faction":"kadjimaran","is_coastal":true,"terrain":"land"},
+  {"col":33,"row":12,"faction":"kadjimaran","is_coastal":true,"terrain":"land"},
+  {"col":34,"row":12,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":12,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":12,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":38,"row":12,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":12,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":12,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":12,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":12,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":12,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":47,"row":12,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":49,"row":12,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":52,"row":12,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":53,"row":12,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":54,"row":12,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":55,"row":12,"faction":"","is_coastal":true,"terrain":""},
+  {"col":57,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":12,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":6,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":7,"row":13,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":8,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":9,"row":13,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":13,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":13,"faction":"","is_coastal":true,"terrain":""},
+  {"col":16,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":17,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":18,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":19,"row":13,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":20,"row":13,"faction":"","is_coastal":true,"terrain":""},
+  {"col":21,"row":13,"faction":"","is_coastal":true,"terrain":""},
+  {"col":22,"row":13,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":24,"row":13,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":25,"row":13,"faction":"","is_coastal":true,"terrain":""},
+  {"col":26,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":27,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":28,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":30,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":13,"faction":"","is_coastal":true,"terrain":""},
+  {"col":33,"row":13,"faction":"","is_coastal":true,"terrain":""},
+  {"col":34,"row":13,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":13,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":13,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":38,"row":13,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":47,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":49,"row":13,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":52,"row":13,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":53,"row":13,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":54,"row":13,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":55,"row":13,"faction":"","is_coastal":true,"terrain":""},
+  {"col":57,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":13,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":6,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":7,"row":14,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":8,"row":14,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":14,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":14,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":14,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":14,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":14,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":14,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":14,"faction":"onishiman","is_coastal":true,"terrain":"land"},
+  {"col":16,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":17,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":18,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":19,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":21,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":22,"row":14,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":23,"row":14,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":24,"row":14,"faction":"","is_coastal":true,"terrain":""},
+  {"col":25,"row":14,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":26,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":27,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":29,"row":14,"faction":"","is_coastal":true,"terrain":""},
+  {"col":30,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":31,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":14,"faction":"","is_coastal":true,"terrain":""},
+  {"col":34,"row":14,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":14,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":14,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":38,"row":14,"faction":"ruskel","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":47,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":49,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":50,"row":14,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":52,"row":14,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":53,"row":14,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":54,"row":14,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":55,"row":14,"faction":"","is_coastal":true,"terrain":""},
+  {"col":56,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":14,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":6,"row":15,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":8,"row":15,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":15,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":15,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":15,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":15,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":15,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":15,"faction":"onishiman","is_coastal":true,"terrain":"land"},
+  {"col":15,"row":15,"faction":"onishiman","is_coastal":true,"terrain":"land"},
+  {"col":16,"row":15,"faction":"","is_coastal":true,"terrain":""},
+  {"col":17,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":18,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":19,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":22,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":23,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":24,"row":15,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":25,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":26,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":27,"row":15,"faction":"","is_coastal":true,"terrain":""},
+  {"col":28,"row":15,"faction":"","is_coastal":true,"terrain":""},
+  {"col":29,"row":15,"faction":"","is_coastal":true,"terrain":""},
+  {"col":30,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":31,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":15,"faction":"","is_coastal":true,"terrain":""},
+  {"col":34,"row":15,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":15,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":15,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":15,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":15,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":15,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":15,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":15,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":15,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":15,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":15,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":49,"row":15,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":51,"row":15,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":52,"row":15,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":53,"row":15,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":54,"row":15,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":55,"row":15,"faction":"","is_coastal":true,"terrain":""},
+  {"col":57,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":15,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":5,"row":16,"faction":"","is_coastal":true,"terrain":""},
+  {"col":6,"row":16,"faction":"","is_coastal":true,"terrain":""},
+  {"col":7,"row":16,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":8,"row":16,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":16,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":16,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":16,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":16,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":16,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":16,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":16,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":16,"row":16,"faction":"","is_coastal":true,"terrain":""},
+  {"col":17,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":18,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":19,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":20,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":21,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":22,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":24,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":25,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":26,"row":16,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":27,"row":16,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":28,"row":16,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":29,"row":16,"faction":"","is_coastal":true,"terrain":""},
+  {"col":30,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":31,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":16,"faction":"","is_coastal":true,"terrain":""},
+  {"col":33,"row":16,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":34,"row":16,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":16,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":16,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":16,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":39,"row":16,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":40,"row":16,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":41,"row":16,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":42,"row":16,"faction":"greenheart","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":16,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":49,"row":16,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":50,"row":16,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":51,"row":16,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":55,"row":16,"faction":"","is_coastal":true,"terrain":""},
+  {"col":56,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":16,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":0,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":1,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":2,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":3,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":4,"row":17,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":5,"row":17,"faction":"","is_coastal":true,"terrain":""},
+  {"col":7,"row":17,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":8,"row":17,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":9,"row":17,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":10,"row":17,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":11,"row":17,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":12,"row":17,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":13,"row":17,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":14,"row":17,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":15,"row":17,"faction":"onishiman","is_coastal":false,"terrain":"land"},
+  {"col":16,"row":17,"faction":"","is_coastal":true,"terrain":""},
+  {"col":17,"row":17,"faction":"","is_coastal":true,"terrain":""},
+  {"col":18,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":19,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":20,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":21,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":22,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":23,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":24,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":25,"row":17,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":26,"row":17,"faction":"silverunion","is_coastal":true,"terrain":"land"},
+  {"col":27,"row":17,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":28,"row":17,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":29,"row":17,"faction":"silverunion","is_coastal":false,"terrain":"land"},
+  {"col":30,"row":17,"faction":"ocean","is_coastal":true,"terrain":"water"},
+  {"col":31,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":32,"row":17,"faction":"kadjimaran","is_coastal":true,"terrain":"land"},
+  {"col":33,"row":17,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":34,"row":17,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":35,"row":17,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":36,"row":17,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":37,"row":17,"faction":"kadjimaran","is_coastal":false,"terrain":"land"},
+  {"col":43,"row":17,"faction":"nimrudan","is_coastal":false,"terrain":"land"},
+  {"col":44,"row":17,"faction":"nimrudan","is_coastal":false,"terrain":"land"},
+  {"col":45,"row":17,"faction":"nimrudan","is_coastal":false,"terrain":"land"},
+  {"col":46,"row":17,"faction":"nimrudan","is_coastal":false,"terrain":"land"},
+  {"col":47,"row":17,"faction":"nimrudan","is_coastal":false,"terrain":"land"},
+  {"col":48,"row":17,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":49,"row":17,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":50,"row":17,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":51,"row":17,"faction":"shadowsfall","is_coastal":false,"terrain":"land"},
+  {"col":55,"row":17,"faction":"","is_coastal":true,"terrain":""},
+  {"col":56,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":57,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":58,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+  {"col":59,"row":17,"faction":"ocean","is_coastal":false,"terrain":"water"},
+];
 
-const LAND_TERRAINS = ['plains', 'forest', 'mountain', 'tundra', 'desert', 'wasteland'];
-
-// ---- WORLD MAP GENERATOR ----
+// ---- CONVERT JSON MAP TO HEX OBJECTS ----
 export const generateWorldMap = () => {
-  // Initialize grid (all water by default)
-  const grid = Array(GRID_WIDTH * GRID_HEIGHT).fill(TERRAIN_TYPES.WATER);
-
-  // ---- PLACE CONTINENTS ----
-  // Large mainland supercontinent
-  placeMainland(grid);
-  
-  // ---- CREATE WATER BODIES ----
-  // 1. Central Sea (lower-middle)
-  placeCentralSea(grid);
-  
-  // 2. Northern Fractured Sea (top region)
-  placeNorthernFragmentedSea(grid);
-  
-  // 3. Western Ocean (left edge)
-  placeWesternOcean(grid);
-  
-  // 4. Southeast Coastal Waters (bottom-right)
-  placeSeCoastalWaters(grid);
-  
-  // ---- CREATE CHOKEPOINTS (narrow land bridges) ----
-  createChokepoints(grid);
-  
-  // ---- SMOOTH COASTLINES ----
-  smoothCoastlines(grid);
-  
-  // ---- CONVERT TO HEX OBJECTS ----
-  return gridToHexObjects(grid);
-};
-
-// ---- MAINLAND GENERATION ----
-// Create a large, mostly continuous supercontinent
-const placeMainland = (grid) => {
-  // Use circular blob in center-to-upper area
-  const centerQ = 0;
-  const centerR = -5;
-  const radius = 12;
-
-  for (let q = -GRID_WIDTH / 2; q < GRID_WIDTH / 2; q++) {
-    for (let r = -GRID_HEIGHT / 2; r < GRID_HEIGHT / 2; r++) {
-      const distance = Math.sqrt(
-        Math.pow(q - centerQ, 2) + Math.pow(r - centerR, 2)
-      );
-      if (distance <= radius) {
-        const idx = toIndex(q, r);
-        if (idx >= 0) grid[idx] = TERRAIN_TYPES.LAND;
-      }
-    }
-  }
-
-  // Add eastern and western extensions
-  for (let r = -8; r <= 8; r++) {
-    // Western extension
-    const idx1 = toIndex(-15, r);
-    if (idx1 >= 0) grid[idx1] = TERRAIN_TYPES.LAND;
-    
-    // Eastern extension
-    const idx2 = toIndex(15, r);
-    if (idx2 >= 0) grid[idx2] = TERRAIN_TYPES.LAND;
-  }
-
-  // Southern landmass
-  const southCenterQ = 0;
-  const southCenterR = 8;
-  const southRadius = 8;
-  
-  for (let q = -GRID_WIDTH / 2; q < GRID_WIDTH / 2; q++) {
-    for (let r = -GRID_HEIGHT / 2; r < GRID_HEIGHT / 2; r++) {
-      const distance = Math.sqrt(
-        Math.pow(q - southCenterQ, 2) + Math.pow(r - southCenterR, 2)
-      );
-      if (distance <= southRadius) {
-        const idx = toIndex(q, r);
-        if (idx >= 0) grid[idx] = TERRAIN_TYPES.LAND;
-      }
-    }
-  }
-};
-
-// ---- CENTRAL SEA ----
-// Lower-middle cluster of water, surrounded by land
-const placeCentralSea = (grid) => {
-  const centerQ = 0;
-  const centerR = 6;
-  const seaRadius = 5;
-
-  // Create water cluster
-  for (let q = -GRID_WIDTH / 2; q < GRID_WIDTH / 2; q++) {
-    for (let r = -GRID_HEIGHT / 2; r < GRID_HEIGHT / 2; r++) {
-      const distance = Math.sqrt(
-        Math.pow(q - centerQ, 2) + Math.pow(r - centerR, 2)
-      );
-      if (distance <= seaRadius) {
-        const idx = toIndex(q, r);
-        if (idx >= 0) grid[idx] = TERRAIN_TYPES.WATER;
-      }
-    }
-  }
-};
-
-// ---- NORTHERN FRACTURED SEA ----
-// Mix of water and land, with narrow bridges
-const placeNorthernFragmentedSea = (grid) => {
-  const centerQ = 0;
-  const centerR = -14;
-  const fragmentRadius = 6;
-
-  // Create fragmented water pattern
-  for (let q = -GRID_WIDTH / 2; q < GRID_WIDTH / 2; q++) {
-    for (let r = -GRID_HEIGHT / 2; r < GRID_HEIGHT / 2; r++) {
-      const distance = Math.sqrt(
-        Math.pow(q - centerQ, 2) + Math.pow(r - centerR, 2)
-      );
-      if (distance <= fragmentRadius) {
-        // Checkerboard-like pattern for fragmentation
-        if ((q + r) % 3 === 0) {
-          const idx = toIndex(q, r);
-          if (idx >= 0) grid[idx] = TERRAIN_TYPES.WATER;
-        }
-      }
-    }
-  }
-};
-
-// ---- WESTERN OCEAN ----
-// Continuous water boundary along left edge
-const placeWesternOcean = (grid) => {
-  const oceanLeftBound = -18;
-  
-  for (let q = -GRID_WIDTH / 2; q <= oceanLeftBound; q++) {
-    for (let r = -GRID_HEIGHT / 2; r < GRID_HEIGHT / 2; r++) {
-      const idx = toIndex(q, r);
-      if (idx >= 0) grid[idx] = TERRAIN_TYPES.WATER;
-    }
-  }
-};
-
-// ---- SOUTHEAST COASTAL WATERS ----
-// Mix of land and water in bottom-right area
-const placeSeCoastalWaters = (grid) => {
-  const centerQ = 12;
-  const centerR = 10;
-  const radius = 6;
-
-  for (let q = -GRID_WIDTH / 2; q < GRID_WIDTH / 2; q++) {
-    for (let r = -GRID_HEIGHT / 2; r < GRID_HEIGHT / 2; r++) {
-      const distance = Math.sqrt(
-        Math.pow(q - centerQ, 2) + Math.pow(r - centerR, 2)
-      );
-      if (distance <= radius) {
-        // Create islands and water mix
-        if ((Math.floor(q / 2) + Math.floor(r / 2)) % 2 === 0) {
-          const idx = toIndex(q, r);
-          if (idx >= 0) grid[idx] = TERRAIN_TYPES.WATER;
-        }
-      }
-    }
-  }
-};
-
-// ---- CREATE CHOKEPOINTS ----
-// Add narrow 1-2 hex wide land bridges for strategic gameplay
-const createChokepoints = (grid) => {
-  // Bridge between northern and central areas
-  for (let q = -2; q <= 2; q++) {
-    const idx = toIndex(q, -2);
-    if (idx >= 0) grid[idx] = TERRAIN_TYPES.LAND;
-  }
-
-  // Bridge between western and central areas
-  for (let r = -1; r <= 1; r++) {
-    const idx = toIndex(-8, r);
-    if (idx >= 0) grid[idx] = TERRAIN_TYPES.LAND;
-  }
-
-  // Bridge between central and southeast
-  for (let q = 8; q <= 10; q++) {
-    const idx = toIndex(q, 3);
-    if (idx >= 0) grid[idx] = TERRAIN_TYPES.LAND;
-  }
-};
-
-// ---- SMOOTH COASTLINES ----
-// Create irregular coastlines by adjusting water/land borders
-const smoothCoastlines = (grid) => {
-  let smoothed = [...grid];
-  const iterations = 2;
-
-  for (let iter = 0; iter < iterations; iter++) {
-    const temp = [...smoothed];
-    for (let idx = 0; idx < smoothed.length; idx++) {
-      const [q, r] = toCoords(idx);
-      const neighbors = HexUtils.getNeighbors(q, r);
-      
-      let waterNeighbors = 0;
-      let landNeighbors = 0;
-
-      for (const [nq, nr] of neighbors) {
-        const nIdx = toIndex(nq, nr);
-        if (nIdx >= 0) {
-          if (smoothed[nIdx] === TERRAIN_TYPES.WATER) waterNeighbors++;
-          else landNeighbors++;
-        }
-      }
-
-      // Smooth edges: if surrounded mostly by one type, become that type
-      if (waterNeighbors >= 4 && smoothed[idx] === TERRAIN_TYPES.LAND) {
-        temp[idx] = TERRAIN_TYPES.WATER;
-      }
-      if (landNeighbors >= 4 && smoothed[idx] === TERRAIN_TYPES.WATER) {
-        temp[idx] = TERRAIN_TYPES.LAND;
-      }
-    }
-    smoothed = temp;
-  }
-
-  return smoothed;
-};
-
-// ---- ASSIGN TERRAIN TYPES TO LAND ----
-const getTerrainForLand = (q, r) => {
-  // Assign terrain based on position
-  const noise = Math.abs(q * 17 + r * 23) % LAND_TERRAINS.length;
-  
-  // Cold terrain in north
-  if (r < -8) return ['tundra', 'mountain'][Math.abs(q + r) % 2];
-  
-  // Mountains in center-east
-  if (q > 8 && Math.abs(r) < 5) return ['mountain', 'plains'][Math.abs(q) % 2];
-  
-  // Forests in west
-  if (q < -5) return ['forest', 'plains'][Math.abs(r) % 2];
-  
-  // Desert in southeast
-  if (q > 5 && r > 5) return ['desert', 'wasteland'][Math.abs(q - r) % 2];
-  
-  // Default: varied
-  return LAND_TERRAINS[noise];
-};
-
-// ---- CONVERT GRID TO HEX OBJECTS ----
-const gridToHexObjects = (grid) => {
   const hexes = {};
 
-  for (let idx = 0; idx < grid.length; idx++) {
-    const [q, r] = toCoords(idx);
-    const type = grid[idx];
+  MAP_DATA.forEach((cell, idx) => {
+    const { col, row, faction, is_coastal, terrain } = cell;
+    const { q, r } = offsetToAxial(col, row);
     const hexId = `hex_${q}_${r}`;
-
-    // Get neighbor IDs
-    const neighbors = HexUtils.getNeighbors(q, r)
-      .map(([nq, nr]) => {
-        const nIdx = toIndex(nq, nr);
-        return nIdx >= 0 ? `hex_${nq}_${nr}` : null;
-      })
-      .filter(Boolean);
+    const isWater = terrain === 'water' || faction === 'ocean';
+    const resolvedTerrain = isWater
+      ? 'ocean'
+      : (FACTION_TERRAIN_MAP[faction] || 'plains');
 
     hexes[hexId] = {
       id: hexId,
       q,
       r,
-      type: type,
-      terrain: type === TERRAIN_TYPES.LAND ? getTerrainForLand(q, r) : 'ocean',
-      region: null, // Can be assigned later
-      faction: null,
+      col,
+      row,
+      type: isWater ? 'water' : 'land',
+      terrain: resolvedTerrain,
+      is_coastal,
+      sourceFaction: faction || null,
+      region: faction || null,
       owner: null,
       units: [],
       hasFortress: false,
       isCapital: false,
-      neighbors: neighbors,
     };
-  }
+  });
 
   return hexes;
 };
