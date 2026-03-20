@@ -106,28 +106,35 @@ export const createGameState = (mode, choices = {}, playersArr = null) => {
       : [createPlayer('p1', 'Player 1', p1f, false, 0), createPlayer('p2', 'Player 2', p2f, false, 0)];
   }
 
-  // Initialize hexes with ownership using procedural generation
+  // Initialize hexes from the JSON map, assigning ownership by sourceFaction
     const generatedHexWorld = generateWorldMap();
-    const onishimanTerritories = new Set([505,545,586,605,645,526,567,588,607,608,628,668,708,727,747,726,786,806,825,807,826,765,785,764,784,745,705,684,664,704,546,585,604,625,525,506,527,507,548,568,589,587,606,566,626,627,648,687,707,680,685,706,805,804,744,824,746,766,767,680]);
-    const onishimanPlayerId = players.find(p => p.factionId === 'onishiman')?.id;
+    const hexAdjacency = buildHexAdjacency();
 
-    const hexIds = shuffle(Object.keys(generatedHexWorld));
+    // Build a map from factionId -> playerId
+    const factionToPlayer = {};
+    players.forEach(p => { if (p.factionId) factionToPlayer[p.factionId] = p.id; });
+
+    // Track which player has been assigned a capital hex
+    const capitalAssigned = new Set();
+
     const hexes = {};
-    hexIds.forEach((id, i) => {
-      let owner = players[i % players.length].id;
-      // Assign Onishiman territories to the Onishiman player if they exist
-      if (onishimanPlayerId && onishimanTerritories.has(parseInt(id))) {
-        owner = onishimanPlayerId;
+    Object.entries(generatedHexWorld).forEach(([id, hex]) => {
+      const sf = hex.sourceFaction;
+      const owner = factionToPlayer[sf] || null;
+      // Assign capital: first non-water hex per player
+      let isCapital = false;
+      if (owner && !capitalAssigned.has(owner) && hex.type !== 'water') {
+        isCapital = true;
+        capitalAssigned.add(owner);
       }
       hexes[id] = {
-        ...generatedHexWorld[id],
+        ...hex,
         owner,
         units: [],
         hasFortress: false,
-        isCapital: i % players.length === 0 && Math.floor(i / players.length) === 0,
+        isCapital,
       };
     });
-    const hexAdjacency = buildHexAdjacency();
 
   // Fallback: also distribute old territories
   const ids = shuffle(Object.keys(TERRITORIES));
