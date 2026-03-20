@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { HEXES, REGIONS, HexUtils, hexToPixel, TERRAIN_PROPS, buildHexAdjacency } from './hexGridSystem';
+import { HEXES, REGIONS, HexUtils, hexToPixel, TERRAIN_PROPS, buildHexAdjacency, getReachableHexes, findMovementPath, UNIT_SPEED } from './hexGridSystem';
 
 const TERRAIN_COLORS = {
   plains: '#7a9a3a',
