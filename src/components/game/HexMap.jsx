@@ -336,6 +336,14 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
 
 
+             {/* Movement cost label */}
+             {showMoveCost && (
+               <text x={px} y={py - hexSize * 0.55} textAnchor="middle" fontSize="9" fill="rgba(100,255,100,0.9)"
+                 style={{ pointerEvents: 'none', textShadow: '1px 1px 2px rgba(0,0,0,1)' }}>
+                 {moveCost}MP
+               </text>
+             )}
+
              {/* Unit icons + count */}
              {hex.units && hex.units.length > 0 && (() => {
                const UNIT_EMOJIS = { infantry: '⚔️', cavalry: '🐴', ranged: '🏹', siege: '💣', naval: '⚓', elite: '🛡️' };
