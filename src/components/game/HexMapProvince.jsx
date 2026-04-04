@@ -1,0 +1,215 @@
+import React, { useMemo, useState } from 'react';
+import mapData from './ardonia_game_map.json';
+import { buildHexToProvinceMap } from './provinceSystem';
+
+const TERRAIN_COLORS = {
+  water:    '#183a5c', coastal:  '#2a6080', plains:   '#5a7a30',
+  forest:   '#1e4a1e', hills:    '#6a6030', mountain: '#4a4a5a',
+  desert:   '#9a7a30', swamp:    '#3a4a2a', tundra:   '#7a8a9a',
+  scorched: '#4a1a0a',
+};
+
+const NATION_COLORS = {};
+mapData.nations.forEach(n => { NATION_COLORS[n.id] = n.color; });
+
+// Pre-compute hexLookup and borders
+const hexLookup = {};
+mapData.hex_grid.forEach(h => { hexLookup[`${h.col},${h.row}`] = h; });
+
+function flatHexCorners(cx, cy, size) {
+  return Array.from({ length: 6 }, (_, i) => {
+    const angle = (Math.PI / 3) * i;
+    return `${cx + size * Math.cos(angle)},${cy + size * Math.sin(angle)}`;
+  }).join(' ');
+}
+
+function hexNeighborKeys(gc, gr) {
+  const even = gc % 2 === 0;
+  return [
+    [gc + 1, even ? gr - 1 : gr], [gc + 1, even ? gr : gr + 1],
+    [gc - 1, even ? gr - 1 : gr], [gc - 1, even ? gr : gr + 1],
+    [gc, gr - 1], [gc, gr + 1],
+  ];
+}
+
+export default function HexMapProvince({ gameState, phase, currentPlayer, onProvinceClick, highlightPlayerId, provinces }) {
+  const hexGrid = mapData.hex_grid;
+  const nations = mapData.nations;
+  const [selected, setSelected] = useState(null);
+  const [panelTab, setPanelTab] = useState('selected');
+  const hexToProvinceMap = useMemo(() => buildHexToProvinceMap(), []);
+
+  const selectedProvince = useMemo(() => {
+    if (!selected) return null;
+    const hexId = `${selected.col},${selected.row}`;
+    const provId = hexToProvinceMap[hexId];
+    return provinces?.[provId];
+  }, [selected, provinces, hexToProvinceMap]);
+
+  const SVG_W = 1200;
+  const SVG_H = 900;
+  const HEX_SIZE = 2.5;
+  const HEX_PX = HEX_SIZE * (SVG_W / 100);
+  const [zoomTransform, setZoomTransform] = useState(null);
+
+  const toSVG = (px, py) => ({ cx: (px / 100) * SVG_W, cy: (py / 100) * SVG_H });
+
+  const handleHexClick = (hex) => {
+    const hexId = `${hex.col},${hex.row}`;
+    const provId = hexToProvinceMap[hexId];
+    setSelected(hex);
+    setPanelTab('selected');
+    if (onProvinceClick) onProvinceClick(provId);
+    const { cx, cy } = toSVG(hex.x, hex.y);
+    const scale = 4;
+    setZoomTransform({ tx: SVG_W / 2 - cx * scale, ty: SVG_H / 2 - cy * scale, scale });
+  };
+
+  const handleZoomOut = () => setZoomTransform(null);
+
+  // Pre-compute borders
+  const { provBorderEdges, natBorderEdges } = useMemo(() => {
+    const pEdges = [];
+    const nEdges = [];
+    hexGrid.forEach(h => {
+      if (!h.nation_id) return;
+      const { cx, cy } = toSVG(h.x, h.y);
+      const nbs = hexNeighborKeys(h.col, h.row);
+      for (let k = 0; k < 6; k++) {
+        const nb = hexLookup[`${nbs[k][0]},${nbs[k][1]}`];
+        const a1 = (Math.PI / 3) * k;
+        const a2 = (Math.PI / 3) * ((k + 1) % 6);
+        const x1 = cx + HEX_PX * Math.cos(a1);
+        const y1 = cy + HEX_PX * Math.sin(a1);
+        const x2 = cx + HEX_PX * Math.cos(a2);
+        const y2 = cy + HEX_PX * Math.sin(a2);
+
+        if (!nb || nb.nation_id !== h.nation_id) {
+          nEdges.push({ x1, y1, x2, y2, color: NATION_COLORS[h.nation_id] || '#333' });
+        } else if (nb.nation_id === h.nation_id && nb.province !== h.province) {
+          pEdges.push({ x1, y1, x2, y2 });
+        }
+      }
+    });
+    return { provBorderEdges: pEdges, natBorderEdges: nEdges };
+  }, [hexGrid]);
+
+  const getPlayerColor = (id) => gameState?.players?.find(p => p.id === id)?.color || null;
+
+  return (
+    <div style={{ display: 'flex', height: '62vh', background: '#0a0c12', overflow: 'hidden', border: '1px solid #2a2520' }}>
+      {/* SVG MAP */}
+      <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
+        {zoomTransform && (
+          <button onClick={handleZoomOut} style={{ position: 'absolute', top: 10, left: 10, zIndex: 10, background: '#1a1c22', border: '1px solid #d4a853', color: '#d4a853', fontFamily: "'Cinzel',serif", fontSize: 11, padding: '4px 12px', borderRadius: 4, cursor: 'pointer' }}>
+            ← Zoom Out
+          </button>
+        )}
+        <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ background: '#0a0c12', display: 'block' }}>
+          <defs>
+            <filter id="goldGlow">
+              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#d4a853" floodOpacity="0.8" />
+            </filter>
+          </defs>
+          {zoomTransform && <g><rect x={0} y={0} width={SVG_W} height={SVG_H} fill="transparent" onClick={handleZoomOut} style={{ cursor: 'zoom-out' }} /></g>}
+
+          {/* Hex fills */}
+          <g transform={zoomTransform ? `translate(${zoomTransform.tx},${zoomTransform.ty}) scale(${zoomTransform.scale})` : undefined} style={{ transition: 'transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94)' }}>
+            {hexGrid.map(hex => {
+              const hexId = `${hex.col},${hex.row}`;
+              const { cx, cy } = toSVG(hex.x, hex.y);
+              const terrain = hex.terrain || 'water';
+              const isWater = !hex.nation_id;
+              const isSelected = selected?.col === hex.col && selected?.row === hex.row;
+              const provId = hexToProvinceMap[hexId];
+              const province = provinces?.[provId];
+              const owner = province?.owner;
+              const playerColor = getPlayerColor(owner);
+              const fillColor = TERRAIN_COLORS[terrain] || '#444';
+              const nationColor = hex.nation_id ? (NATION_COLORS[hex.nation_id] || '#666') : null;
+              const isMyHighlighted = highlightPlayerId && owner === highlightPlayerId;
+
+              const highlightMode = !!highlightPlayerId;
+              const dimmed = highlightMode && !isMyHighlighted;
+
+              return (
+                <g key={hexId} onClick={() => !isWater && handleHexClick(hex)} style={{ cursor: isWater ? 'default' : 'pointer' }}>
+                  <polygon points={flatHexCorners(cx, cy, HEX_PX)} fill={isSelected ? '#d4a853' : isMyHighlighted ? playerColor : fillColor} fillOpacity={isSelected ? 0.85 : dimmed ? 0.15 : isWater ? 0.5 : 0.8} stroke={isMyHighlighted ? playerColor : (isWater ? '#0a0c12' : '#00000020')} strokeWidth={isMyHighlighted ? 3 : 0.5} />
+                  {owner && playerColor && !highlightMode && <polygon points={flatHexCorners(cx, cy, HEX_PX * 0.92)} fill={playerColor} fillOpacity={0.45} stroke={playerColor} strokeWidth={1.5} strokeOpacity={0.9} style={{ pointerEvents: 'none' }} />}
+                  {!owner && nationColor && !highlightMode && <polygon points={flatHexCorners(cx, cy, HEX_PX * 0.92)} fill={nationColor} fillOpacity={0.3} style={{ pointerEvents: 'none' }} />}
+                </g>
+              );
+            })}
+
+            {/* Borders */}
+            {provBorderEdges.map((e, i) => <line key={`pb${i}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="#d4a853" strokeWidth={1.5} strokeOpacity={0.5} strokeDasharray="4,2" style={{ pointerEvents: 'none' }} />)}
+            {natBorderEdges.map((e, i) => <line key={`nb${i}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="#0a0806" strokeWidth={2.5} strokeOpacity={0.9} style={{ pointerEvents: 'none' }} />)}
+
+            {/* Selected glow */}
+            {selected && (
+              <g style={{ pointerEvents: 'none' }}>
+                <polygon points={flatHexCorners(toSVG(selected.x, selected.y).cx, toSVG(selected.x, selected.y).cy, HEX_PX * 1.05)} fill="none" stroke="#d4a853" strokeWidth={1.5} strokeOpacity={0.4} filter="url(#goldGlow)" />
+                <polygon points={flatHexCorners(toSVG(selected.x, selected.y).cx, toSVG(selected.x, selected.y).cy, HEX_PX)} fill="none" stroke="#d4a853" strokeWidth={2.5} />
+              </g>
+            )}
+          </g>
+        </svg>
+      </div>
+
+      {/* SIDE PANEL */}
+      <div style={{ width: 260, background: 'linear-gradient(135deg, #1a1c22, #14161c)', borderLeft: '1px solid #2a2520', display: 'flex', flexDirection: 'column', fontFamily: "'Cormorant Garamond', serif", color: '#c8c0b0' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid #2a2520' }}>
+          {['selected', 'nation'].map(t => (
+            <button key={t} onClick={() => setPanelTab(t)} style={{ flex: 1, padding: '10px 0', fontSize: 11, fontFamily: "'Cinzel', serif", background: panelTab === t ? '#1e1a12' : 'transparent', color: panelTab === t ? '#d4a853' : '#666', border: 'none', borderBottom: panelTab === t ? '2px solid #d4a853' : '2px solid transparent', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 1 }}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
+          {panelTab === 'selected' && (
+            selected && selectedProvince ? (
+              <div>
+                <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 15, fontWeight: 700, marginBottom: 6, letterSpacing: 0.5 }}>
+                  {selectedProvince.name}
+                </div>
+                {selectedProvince.is_national_capital && <div style={{ fontSize: 10, color: '#d4a853', marginBottom: 8 }}>★ NATIONAL CAPITAL</div>}
+                <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>
+                  <div>Hexes: {selectedProvince.hex_count}</div>
+                  <div>Defense: <span style={{ color: '#d4a853' }}>+3</span></div>
+                  <div>Income: <span style={{ color: '#d4a853' }}>+{selectedProvince.base_income} gold</span></div>
+                </div>
+                {selectedProvince.owner && <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: getPlayerColor(selectedProvince.owner), border: '1px solid #ffffff30' }} />
+                  <span style={{ fontSize: 13, fontFamily: "'Cinzel', serif", fontWeight: 600, color: getPlayerColor(selectedProvince.owner) }}>Owned by {gameState?.players?.find(p => p.id === selectedProvince.owner)?.name}</span>
+                </div>}
+                {!selectedProvince.owner && <div style={{ fontSize: 12, color: '#555', fontStyle: 'italic', marginBottom: 12 }}>Uncontrolled territory</div>}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', color: '#444', marginTop: 40, fontStyle: 'italic' }}>
+                Select a province on the map
+              </div>
+            )
+          )}
+
+          {panelTab === 'nation' && currentPlayer && (
+            <div>
+              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
+                {currentPlayer.name}
+              </div>
+              <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
+                <span style={{ color: '#d4a853' }}>Gold:</span> {currentPlayer.resources?.gold ?? 0}
+              </div>
+              <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
+                <span style={{ color: '#7a6aed' }}>Influence:</span> {currentPlayer.ip ?? 0}
+              </div>
+              <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
+                <span style={{ color: '#2e9e9e' }}>Faith:</span> {currentPlayer.sp ?? 0}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
