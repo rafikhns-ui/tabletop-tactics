@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { resolveBattle, getHeroCombatBonus } from './ardoniaLogic';
 import { HEROES } from './ardoniaData';
+import mapData from './ardonia_game_map.json';
+
+// Build hexId -> terrain lookup
+const HEX_TERRAIN = {};
+mapData.hex_grid.forEach(h => { HEX_TERRAIN[`${h.col},${h.row}`] = h.terrain; });
 
 const DIE_FACES = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
@@ -19,6 +24,9 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
   const attackerHero = attacker.heroId ? HEROES[attacker.heroId] : null;
   const defenderHero = defender.heroId ? HEROES[defender.heroId] : null;
 
+  // Resolve terrain from hex ID (battle.defenderId may be a hex col,row key)
+  const defenderTerrain = HEX_TERRAIN[battle.defenderId] || defender.biome || null;
+
   const roll = () => {
     setRolling(true);
     setTimeout(() => {
@@ -27,7 +35,7 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
       const r = resolveBattle(attackerUnits, defenderUnits, defender.hasFortress, {
         attackBonus: attackerHeroBonus.attackBonus,
         defenseBonus: defenderHeroBonus.defenseBonus,
-      });
+      }, defenderTerrain);
       setResult(r);
       setRolling(false);
     }, 600);
@@ -45,6 +53,9 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
           <h2 className="text-xl font-bold" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,90%,58%)' }}>
             Battle!
           </h2>
+          {defenderTerrain && (
+            <div className="text-xs mt-1" style={{ color: 'hsl(200,60%,65%)' }}>🗺️ Terrain: <span className="capitalize">{defenderTerrain}</span></div>
+          )}
           {defender.hasFortress && (
             <div className="text-xs mt-1" style={{ color: 'hsl(43,70%,65%)' }}>🏰 Fortress — Defender +3 defense</div>
           )}
@@ -68,6 +79,16 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
               <DiceResults label="Attacker" rolls={result.aRolls} losses={result.attackerLosses} bonus={result.aBonus} />
               <DiceResults label="Defender" rolls={result.dRolls} losses={result.defenderLosses} bonus={result.dBonus} />
             </div>
+            {result.terrainNotes?.length > 0 && (
+              <div className="px-2 pb-2 flex flex-wrap gap-1">
+                {result.terrainNotes.map((note, i) => (
+                  <span key={i} className="text-xs px-2 py-0.5 rounded"
+                    style={{ background: 'hsl(200,30%,20%)', border: '1px solid hsl(200,30%,35%)', color: 'hsl(200,60%,70%)' }}>
+                    🗺️ {note}
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="text-center p-3 rounded-lg"
               style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,30%)' }}>
               {conquered ? (

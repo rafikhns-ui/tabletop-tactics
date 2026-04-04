@@ -237,6 +237,60 @@ export const collectIncome = (gameState) => {
   return newState;
 };
 
+// ---- Terrain combat modifiers ----
+// Returns attack/defense bonus based on terrain and unit composition
+export const getTerrainCombatModifiers = (terrain, attackerUnits = [], defenderUnits = []) => {
+  let attackBonus = 0;
+  let defenseBonus = 0;
+  const notes = [];
+
+  const hasType = (units, type) => units.some(u => u.type === type);
+
+  switch (terrain) {
+    case 'forest':
+      defenseBonus += 1; // forest provides natural cover
+      if (hasType(attackerUnits, 'cavalry')) { attackBonus -= 1; notes.push('Cavalry -1 in forest'); }
+      if (hasType(defenderUnits, 'ranged'))  { defenseBonus += 1; notes.push('Ranged +1 in forest'); }
+      notes.push('Forest: Defender +1');
+      break;
+    case 'mountain':
+    case 'hills':
+      defenseBonus += 2; // high ground advantage
+      if (hasType(attackerUnits, 'cavalry')) { attackBonus -= 1; notes.push('Cavalry -1 on mountains'); }
+      if (hasType(attackerUnits, 'siege'))   { attackBonus += 1; notes.push('Siege +1 vs fortified hills'); }
+      notes.push('High ground: Defender +2');
+      break;
+    case 'plains':
+      if (hasType(attackerUnits, 'cavalry')) { attackBonus += 1; notes.push('Cavalry +1 on plains'); }
+      break;
+    case 'desert':
+      attackBonus -= 1; // harsh climate impedes attackers
+      notes.push('Desert: Attacker -1');
+      break;
+    case 'swamp':
+      attackBonus -= 1;
+      if (hasType(attackerUnits, 'cavalry')) { attackBonus -= 1; notes.push('Cavalry -2 in swamp'); }
+      else notes.push('Swamp: Attacker -1');
+      break;
+    case 'coastal':
+    case 'water':
+      if (hasType(attackerUnits, 'naval'))   { attackBonus += 1; notes.push('Naval +1 on water'); }
+      if (hasType(attackerUnits, 'ranged'))  { attackBonus += 1; notes.push('Ranged +1 at coast'); }
+      break;
+    case 'tundra':
+      if (hasType(attackerUnits, 'cavalry')) { attackBonus -= 1; notes.push('Cavalry -1 in tundra'); }
+      break;
+    case 'scorched':
+      attackBonus += 1; // open, easy terrain
+      notes.push('Scorched: Attacker +1');
+      break;
+    default:
+      break;
+  }
+
+  return { attackBonus, defenseBonus, notes };
+};
+
 // ---- Combat resolution ----
 export const calculateUnitBonuses = (units) => {
   // Units boost attack/defense based on type
@@ -250,7 +304,11 @@ export const calculateUnitBonuses = (units) => {
   return { attackBonus, defenseBonus };
 };
 
-export const resolveBattle = (attackerUnits, defenderUnits, hasDefenderFortress, bonuses = {}) => {
+export const resolveBattle = (attackerUnits, defenderUnits, hasDefenderFortress, bonuses = {}, defenderTerrain = null) => {
+  const terrainMods = defenderTerrain
+    ? getTerrainCombatModifiers(defenderTerrain, attackerUnits, defenderUnits)
+    : { attackBonus: 0, defenseBonus: 0, notes: [] };
+
   // Count total troops
   const attackerTroops = attackerUnits.reduce((s, u) => s + u.count, 0);
   const defenderTroops = defenderUnits.reduce((s, u) => s + u.count, 0);
@@ -260,13 +318,11 @@ export const resolveBattle = (attackerUnits, defenderUnits, hasDefenderFortress,
   const aRolls = rollDice(attackDice);
   const dRolls = rollDice(defendDice);
 
-  // Calculate bonuses from unit composition
   const unitAttackBonus = calculateUnitBonuses(attackerUnits);
   const unitDefenseBonus = calculateUnitBonuses(defenderUnits);
 
-  // Apply all bonuses
-  const aBonus = (bonuses.attackBonus || 0) + unitAttackBonus.attackBonus;
-  const dBonus = (bonuses.defenseBonus || 0) + unitDefenseBonus.defenseBonus + (hasDefenderFortress ? 3 : 0);
+  const aBonus = (bonuses.attackBonus || 0) + unitAttackBonus.attackBonus + terrainMods.attackBonus;
+  const dBonus = (bonuses.defenseBonus || 0) + unitDefenseBonus.defenseBonus + (hasDefenderFortress ? 3 : 0) + terrainMods.defenseBonus;
 
   let attackerLosses = 0;
   let defenderLosses = 0;
@@ -276,7 +332,7 @@ export const resolveBattle = (attackerUnits, defenderUnits, hasDefenderFortress,
     else attackerLosses++;
   }
 
-  return { aRolls, dRolls, attackerLosses, defenderLosses, attackDice, aBonus, dBonus };
+  return { aRolls, dRolls, attackerLosses, defenderLosses, attackDice, aBonus, dBonus, terrainNotes: terrainMods.notes, terrain: defenderTerrain };
 };
 
 export const executeAttack = (gameState, attackerId, defenderId, result) => {
