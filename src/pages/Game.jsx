@@ -22,9 +22,20 @@ import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn,
 import mapData from '../components/game/ardonia_game_map.json';
 import { FACTION_TO_NATION_ID } from '../components/game/ardoniaData';
 
-// Build a lookup: hexId ("col,row") -> nation_id from map data
+// Build a lookup: hexId ("col,row") -> nation_id and terrain from map data
 const HEX_NATION_LOOKUP = {};
-mapData.hex_grid.forEach(h => { HEX_NATION_LOOKUP[`${h.col},${h.row}`] = h.nation_id; });
+const HEX_TERRAIN_LOOKUP = {};
+mapData.hex_grid.forEach(h => {
+  HEX_NATION_LOOKUP[`${h.col},${h.row}`] = h.nation_id;
+  HEX_TERRAIN_LOOKUP[`${h.col},${h.row}`] = h.terrain;
+});
+
+function canDeployUnit(hexId, unitType) {
+  const terrain = HEX_TERRAIN_LOOKUP[hexId];
+  if (!terrain) return false;
+  if (unitType === 'naval') return terrain === 'water' || terrain === 'coastal';
+  return terrain !== 'water';
+}
 import BuildRecruitPanel from '../components/game/BuildRecruitPanel';
 import RecruitPanel from '../components/game/RecruitPanel';
 import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, AVATARS } from '../components/game/ardoniaData';
@@ -179,7 +190,7 @@ export default function Game() {
       const hexOwner = resolveHexOwner(hexId);
       if (hexOwner === currentPlayer.id && pending.length > 0) {
         const unitType = pending[0]; // deploy the first queued unit
-        if (!canUnitEnter(hexId, unitType)) {
+        if (!canDeployUnit(hexId, unitType)) {
           addMessage(`⛔ ${unitType} cannot enter that terrain`);
           return;
         }
