@@ -300,7 +300,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 if (!isWater) {
                   handleHexClick(hex);
                   if (hex.nation_id && hex.province && onProvincClick) {
-                    onProvincClick({ nation_id: hex.nation_id, province: hex.province });
+                    onProvincClick({ nation_id: hex.nation_id, province_id: hex.province });
                   }
                 }
               }} style={{ cursor: isWater ? 'default' : 'pointer' }}>
