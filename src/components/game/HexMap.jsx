@@ -88,7 +88,7 @@ function hexNeighborKeys(gc, gr) {
 }
 
 // ══════ COMPONENT ══════
-export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick, movementState }) {
+export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick, movementState, highlightPlayerId }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -193,12 +193,24 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                     style={{ pointerEvents: 'none' }}
                   />
                 )}
+                {/* Highlight pulse for "My Territories" mode */}
+                {highlightPlayerId && owner === highlightPlayerId && (
+                  <polygon
+                    points={flatHexCorners(cx, cy, HEX_PX * 1.02)}
+                    fill={playerColor || '#fff'}
+                    fillOpacity={0.35}
+                    stroke={playerColor || '#fff'}
+                    strokeWidth={3}
+                    strokeOpacity={1}
+                    style={{ pointerEvents: 'none', filter: `drop-shadow(0 0 6px ${playerColor || '#fff'})` }}
+                  />
+                )}
                 {/* Player ownership overlay */}
                 {owner && playerColor && (
                   <polygon
                     points={flatHexCorners(cx, cy, HEX_PX * 0.92)}
                     fill={playerColor}
-                    fillOpacity={0.45}
+                    fillOpacity={highlightPlayerId && owner === highlightPlayerId ? 0.6 : 0.45}
                     stroke={playerColor}
                     strokeWidth={1.5}
                     strokeOpacity={0.8}

@@ -47,6 +47,7 @@ export default function Game() {
   const [movementState, setMovementState] = useState(null);
   const [tradeOffers, setTradeOffers] = useState([]);
   const [bottomTab, setBottomTab] = useState('action'); // 'action' | 'diplomacy' | 'log'
+  const [highlightMyTerritories, setHighlightMyTerritories] = useState(false);
 
   // Reorder pendingUnits so the selected type comes first
   const handleSelectDeployUnit = (unitType) => {
@@ -846,14 +847,34 @@ export default function Game() {
       {/* Map */}
       <div className="p-2" style={{ background: 'hsl(35,22%,12%)' }}>
         {gameState && (
-          <HexMap
-            gameState={gameState}
-            selectedHex={selectedTerritory}
-            phase={phase}
-            currentPlayer={currentPlayer}
-            onHexClick={handleTerritoryClick}
-            movementState={movementState}
-          />
+          <>
+            <div className="flex items-center gap-2 mb-1">
+              <button
+                onClick={() => setHighlightMyTerritories(h => !h)}
+                className="text-xs px-3 py-1 rounded font-bold transition-all"
+                style={{
+                  fontFamily: "'Cinzel',serif",
+                  background: highlightMyTerritories ? `${currentPlayer?.color}33` : 'hsl(35,20%,22%)',
+                  border: `1px solid ${highlightMyTerritories ? currentPlayer?.color : 'hsl(35,20%,35%)'}`,
+                  color: highlightMyTerritories ? currentPlayer?.color : 'hsl(40,20%,65%)',
+                }}>
+                {highlightMyTerritories ? '✦ My Territories (ON)' : '◇ My Territories'}
+              </button>
+              <span className="text-xs" style={{ color: 'hsl(40,20%,50%)' }}>
+                {gameState.territories && currentPlayer ? 
+                  `${Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id).length} territories owned` : ''}
+              </span>
+            </div>
+            <HexMap
+              gameState={gameState}
+              selectedHex={selectedTerritory}
+              phase={phase}
+              currentPlayer={currentPlayer}
+              onHexClick={handleTerritoryClick}
+              movementState={movementState}
+              highlightPlayerId={highlightMyTerritories ? currentPlayer?.id : null}
+            />
+          </>
         )}
       </div>
 
