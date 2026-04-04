@@ -95,6 +95,8 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
   const [panelTab, setPanelTab] = useState('selected');
+  const [hoveredBorder, setHoveredBorder] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState(null);
 
   const SVG_W = 1200;
   const SVG_H = 900;
@@ -144,6 +146,63 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   };
 
   const handleZoomOut = () => setZoomTransform(null);
+
+  // Helper: get diplomatic status between two players
+  const getDiplomaticStatus = (player1Id, player2Id) => {
+    if (!player1Id || !player2Id || player1Id === player2Id) return null;
+    // Simple logic: if trade offers exist between them, they're allied
+    // Otherwise neutral (can add more complex logic later)
+    const hasTradeOffer = gameState?.tradeOffers?.some(
+      t => (t.fromId === player1Id && t.toId === player2Id) || (t.fromId === player2Id && t.toId === player1Id)
+    );
+    return hasTradeOffer ? 'alliance' : 'neutral';
+  };
+
+  // ── Pre-compute diplomatic borders ──
+  const diplomacyBorders = useMemo(() => {
+    const borders = [];
+    const processed = new Set();
+    
+    hexGrid.forEach(h => {
+      if (!h.nation_id) return;
+      const { cx, cy } = toSVG(h.x, h.y);
+      const nbs = hexNeighborKeys(h.col, h.row);
+      
+      for (let k = 0; k < 6; k++) {
+        const nb = hexLookup[`${nbs[k][0]},${nbs[k][1]}`];
+        if (!nb || !nb.nation_id) continue;
+        
+        const h1Owner = getOwner(`${h.col},${h.row}`, h.nation_id);
+        const h2Owner = getOwner(`${nbs[k][0]},${nbs[k][1]}`, nb.nation_id);
+        
+        // Border between different players
+        if (h1Owner && h2Owner && h1Owner !== h2Owner) {
+          const borderKey = [h1Owner, h2Owner].sort().join('-');
+          if (processed.has(borderKey)) continue;
+          
+          const a1 = (Math.PI / 3) * k;
+          const a2 = (Math.PI / 3) * ((k + 1) % 6);
+          const x1 = cx + HEX_PX * Math.cos(a1);
+          const y1 = cy + HEX_PX * Math.sin(a1);
+          const x2 = cx + HEX_PX * Math.cos(a2);
+          const y2 = cy + HEX_PX * Math.sin(a2);
+          
+          const status = getDiplomaticStatus(h1Owner, h2Owner);
+          const color = status === 'alliance' ? '#27ae60' : '#e74c3c';
+          
+          borders.push({
+            x1, y1, x2, y2,
+            player1Id: h1Owner,
+            player2Id: h2Owner,
+            status,
+            color,
+          });
+        }
+      }
+    });
+    
+    return borders;
+  }, [hexGrid, gameState?.tradeOffers]);
 
   // ── Pre-compute border edges (province + nation) ──
   const { provBorderEdges, natBorderEdges } = useMemo(() => {
@@ -278,6 +337,26 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             );
           })}
 
+          {/* ── Diplomacy borders (thick, colored) ── */}
+          {diplomacyBorders.map((b, i) => (
+            <line
+              key={`db${i}`}
+              x1={b.x1} y1={b.y1} x2={b.x2} y2={b.y2}
+              stroke={b.color}
+              strokeWidth={3}
+              strokeOpacity={hoveredBorder === i ? 0.9 : 0.6}
+              style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+              onMouseEnter={(e) => {
+                setHoveredBorder(i);
+                setTooltipPos({ x: (b.x1 + b.x2) / 2, y: (b.y1 + b.y2) / 2, status: b.status });
+              }}
+              onMouseLeave={() => {
+                setHoveredBorder(null);
+                setTooltipPos(null);
+              }}
+            />
+          ))}
+
           {/* ── Province borders (golden dashed) ── */}
           {provBorderEdges.map((e, i) => (
             <line key={`pb${i}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
@@ -332,6 +411,16 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
               </g>
             );
           })}
+
+          {/* ── Diplomacy border tooltip ── */}
+          {tooltipPos && (
+            <g style={{ pointerEvents: 'none' }}>
+              <circle cx={tooltipPos.x} cy={tooltipPos.y} r={8} fill="#1a1c22" stroke={tooltipPos.status === 'alliance' ? '#27ae60' : '#e74c3c'} strokeWidth={2} />
+              <text x={tooltipPos.x} y={tooltipPos.y + 14} textAnchor="middle" fontSize={11} fill="#fff" fontFamily="'Cinzel',serif" fontWeight="bold">
+                {tooltipPos.status === 'alliance' ? '⚔️ Alliance' : '⚠️ Tension'}
+              </text>
+            </g>
+          )}
 
           {/* ── Faction labels ── */}
           {FACTION_CENTROIDS.map(fc => {
