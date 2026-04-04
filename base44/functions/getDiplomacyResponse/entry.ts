@@ -51,11 +51,11 @@ or ACTION: {"type": "none"} if no action.
     let aiText = response;
     let suggestedAction = null;
 
-    const actionMatch = aiText.match(/ACTION:\s*({.*?})/s);
+    const actionMatch = aiText.match(/ACTION:\s*({[^}]*})/s);
     if (actionMatch) {
       try {
         suggestedAction = JSON.parse(actionMatch[1]);
-        aiText = aiText.replace(/ACTION:.*?}/s, '').trim();
+        aiText = aiText.substring(0, actionMatch.index).trim();
       } catch (e) {
         // Ignore parse errors
       }
