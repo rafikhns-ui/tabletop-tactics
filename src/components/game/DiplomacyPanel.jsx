@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DiplomacyDiscussion from './DiplomacyDiscussion';
 
 const RELATION_STYLES = {
   neutral:  { label: 'Neutral',  icon: '🤝', bg: 'hsl(35,20%,20%)',  border: 'hsl(35,20%,32%)',  text: 'hsl(40,20%,65%)' },
@@ -84,6 +85,7 @@ export default function DiplomacyPanel({
   gameState, currentPlayer, onDiplomacyAction, tradeOffers, onAcceptTrade, onDeclineTrade
 }) {
   const [tab, setTab] = useState('relations'); // 'relations' | 'propose' | 'trade'
+  const [discussionTarget, setDiscussionTarget] = useState(null);
   const [proposeTo, setProposeTo] = useState(null);
   const [tradeTarget, setTradeTarget] = useState(null);
   const [offerRes, setOfferRes] = useState({ gold: 0, wood: 0, wheat: 0 });
@@ -148,6 +150,11 @@ export default function DiplomacyPanel({
                   <span className="flex-1 font-semibold truncate" style={{ color: 'hsl(40,25%,80%)' }}>
                     {p.name} {p.isAI && <span className="opacity-40">🤖</span>}
                   </span>
+                  <button onClick={() => setDiscussionTarget(p)}
+                    className="text-xs px-2 py-0.5 rounded"
+                    style={{ background: 'hsl(200,40%,30%)', border: '1px solid hsl(200,50%,45%)', color: 'hsl(200,70%,75%)' }}>
+                    💬
+                  </button>
                   <span style={{ color: style.text }}>{style.icon} {style.label}</span>
                 </div>
               );
@@ -262,6 +269,7 @@ export default function DiplomacyPanel({
           </>
         )}
       </div>
+      {discussionTarget && <DiplomacyDiscussion gameState={gameState} currentPlayer={currentPlayer} targetPlayer={discussionTarget} onClose={() => setDiscussionTarget(null)} />}
     </div>
   );
 }
