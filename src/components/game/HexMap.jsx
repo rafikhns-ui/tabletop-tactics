@@ -365,9 +365,27 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                   </div>
                 )}
 
+                {/* Controller info */}
+                {(() => {
+                  const hexId = selected ? `${selected.col},${selected.row}` : null;
+                  const owner = hexId ? getOwner(hexId) : null;
+                  const ownerPlayer = owner ? gameState?.players?.find(p => p.id === owner) : null;
+                  if (!ownerPlayer) return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
+                      <span style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>Uncontrolled territory</span>
+                    </div>
+                  );
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
+                      <div style={{ width: 12, height: 12, borderRadius: '50%', background: ownerPlayer.color, border: '1px solid #ffffff30', flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, fontFamily: "'Cinzel', serif", fontWeight: 600, color: ownerPlayer.color }}>Controlled by {ownerPlayer.name}</span>
+                    </div>
+                  );
+                })()}
+
                 {/* Nation info */}
                 {selectedNation && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <div style={{ width: 14, height: 14, borderRadius: 3, background: NATION_COLORS[selectedNation.id], border: '1px solid #ffffff20' }} />
                     <span style={{ fontSize: 14, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{selectedNation.name}</span>
                   </div>
