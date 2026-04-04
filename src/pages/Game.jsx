@@ -315,7 +315,7 @@ export default function Game() {
           };
         });
 
-        setMovedHexes(prev => new Set([...prev, fromHexId]));
+        setMovedHexes(prev => new Set([...prev, fromHexId, hexId]));
         setSelectedTerritory(null);
         setMovementState(null);
         addMessage(`🚶 Moved ${unitType} to hex`);
