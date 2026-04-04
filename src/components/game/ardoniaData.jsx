@@ -511,7 +511,192 @@ export const BUILDING_DEFS = {
   siegeworks: { id: 'siegeworks', name: 'Siege Works', emoji: '🏗️', starting: false, cost: { gold: 7, wood: 5 }, maxLevel: 2, upgradeBase: { gold: 4, wood: 3 }, description: 'Siege engine construction', unlocks: { 1: 'siege_recruit', 2: 'advanced_siege' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/fa337750f_30.png' },
   shipyard: { id: 'shipyard', name: 'Shipyard', emoji: '⛵', starting: false, cost: { gold: 8, wood: 6 }, maxLevel: 2, upgradeBase: { gold: 4, wood: 4 }, description: 'Naval unit construction', unlocks: { 1: 'naval_recruit', 2: 'elite_naval' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/fa337750f_30.png' },
 };
+// ═══════════════════════════════════════════════
+// FACTION-UNIQUE DATA: Buildings, Heroes, Units
+// ═══════════════════════════════════════════════
 
+export const FACTION_DATA = {
+
+  gejeon: {
+    color: "#7B3DBE",
+    displayName: "Celestial Gojeon Kingdom",
+    lore: "An ancient empire of mystic philosophers and warrior-monks.",
+    buildings: [
+      { id: "lotus_shrine",    name: "Lotus Shrine",       cost: 50,  effect: "+2 Faith/turn, unlocks monks",       icon: "🏯" },
+      { id: "jade_barracks",   name: "Jade Barracks",      cost: 80,  effect: "+1 unit slot, trains elite infantry", icon: "⚔️" },
+      { id: "silk_market",     name: "Silk Market",        cost: 60,  effect: "+3 Gold/turn, trade route bonus",     icon: "🏮" },
+      { id: "dragon_tower",    name: "Dragon Tower",       cost: 120, effect: "+5 defense, reveals fog of war",      icon: "🐉" },
+      { id: "celestial_forge", name: "Celestial Forge",    cost: 100, effect: "Upgrades units to celestial tier",    icon: "🔱" },
+    ],
+    heroes: [
+      { id: "empress_yue",   name: "Empress Yue Xialan",  attack: 7, defense: 5, ability: "Lotus Veil — immune to first strike each battle", icon: "👸" },
+      { id: "general_zhao",  name: "General Zhao Kenmei", attack: 9, defense: 4, ability: "Dragon Charge — +3 attack when outnumbered",       icon: "🗡️" },
+      { id: "monk_shiori",   name: "Monk Shiori",         attack: 4, defense: 8, ability: "Iron Bell — heals adjacent allies each turn",       icon: "🧘" },
+    ],
+    units: [
+      { id: "jade_spearman",   name: "Jade Spearman",   attack: 4, defense: 3, cost: 30, icon: "🪖" },
+      { id: "silk_archer",     name: "Silk Road Archer", attack: 5, defense: 2, cost: 35, icon: "🏹" },
+      { id: "celestial_monk",  name: "Celestial Monk",   attack: 3, defense: 6, cost: 50, icon: "☯️" },
+      { id: "dragon_cavalry",  name: "Dragon Cavalry",   attack: 7, defense: 4, cost: 70, icon: "🐉" },
+    ],
+  },
+
+  inuvak: {
+    color: "#2E9E9E",
+    displayName: "Inuvak Polar Confederacy",
+    lore: "Hardy northern tribes bound by ice-oaths and ancestral spirits.",
+    buildings: [
+      { id: "spirit_totem",    name: "Spirit Totem",       cost: 50,  effect: "+2 Morale/turn, fear aura on enemies",   icon: "🪆" },
+      { id: "ice_lodge",       name: "Ice War Lodge",      cost: 80,  effect: "Trains frost warriors, cold resistance",  icon: "🧊" },
+      { id: "whale_market",    name: "Whale Market",       cost: 60,  effect: "+3 Food/turn, naval trade bonus",         icon: "🐋" },
+      { id: "frost_watchtower",name: "Frost Watchtower",   cost: 90,  effect: "+4 defense, +2 hex vision",              icon: "🗼" },
+      { id: "shaman_circle",   name: "Shaman Circle",      cost: 110, effect: "Summons Ice Elementals once per battle",  icon: "❄️" },
+    ],
+    heroes: [
+      { id: "chieftain_noli",  name: "Chieftain Nolitres", attack: 8, defense: 6, ability: "Blizzard Roar — reduces all enemies -2 attack this turn", icon: "🧊" },
+      { id: "huntress_tuva",   name: "Huntress Tuvakke",   attack: 7, defense: 4, ability: "Arctic Strike — ignores 2 points of defense",              icon: "🏹" },
+      { id: "shaman_kalvik",   name: "Shaman Kalvik",      attack: 3, defense: 7, ability: "Ice Barrier — grants +4 defense to adjacent unit",          icon: "🔮" },
+    ],
+    units: [
+      { id: "frost_warrior",   name: "Frost Warrior",    attack: 5, defense: 4, cost: 35, icon: "🪓" },
+      { id: "tundra_archer",   name: "Tundra Archer",    attack: 5, defense: 2, cost: 30, icon: "🏹" },
+      { id: "mammoth_rider",   name: "Mammoth Rider",    attack: 7, defense: 5, cost: 75, icon: "🦣" },
+      { id: "ice_shaman",      name: "Ice Shaman",       attack: 3, defense: 5, cost: 55, icon: "❄️" },
+    ],
+  },
+
+  ruskel: {
+    color: "#C43030",
+    displayName: "Ruskel Iron Federation",
+    lore: "An iron-fisted federation of forge-lords and bear-warriors.",
+    buildings: [
+      { id: "iron_citadel",    name: "Iron Citadel",       cost: 90,  effect: "+6 defense, siege resistance",           icon: "🏰" },
+      { id: "bear_barracks",   name: "Bear Barracks",      cost: 80,  effect: "Trains bear cavalry and heavy infantry",  icon: "🐻" },
+      { id: "forge_district",  name: "Forge District",     cost: 70,  effect: "+4 Production/turn, weapon upgrades",    icon: "⚒️" },
+      { id: "boyar_hall",      name: "Boyar Hall",         cost: 60,  effect: "+3 Gold/turn, recruit mercenaries",      icon: "🏛️" },
+      { id: "siege_workshop",  name: "Siege Workshop",     cost: 100, effect: "Builds catapults and battering rams",    icon: "💣" },
+    ],
+    heroes: [
+      { id: "warlord_kazagrad",name: "Warlord Kazagrad",   attack: 10, defense: 5, ability: "Iron Charge — deals double damage to buildings", icon: "🗡️" },
+      { id: "boyar_escennor",  name: "Boyar Escennor",     attack: 6,  defense: 8, ability: "Shield Wall — +3 defense to all adjacent units",   icon: "🛡️" },
+      { id: "huntsman_volkov", name: "Huntsman Volkov",    attack: 8,  defense: 3, ability: "Bear Ambush — attacks first, ignores terrain",      icon: "🐻" },
+    ],
+    units: [
+      { id: "iron_soldier",    name: "Iron Soldier",     attack: 5, defense: 5, cost: 40, icon: "⚔️" },
+      { id: "bear_cavalry",    name: "Bear Cavalry",     attack: 8, defense: 4, cost: 80, icon: "🐻" },
+      { id: "siege_engine",    name: "Siege Engine",     attack: 10, defense: 2, cost: 100, icon: "💣" },
+      { id: "iron_archer",     name: "Iron Crossbow",    attack: 6, defense: 3, cost: 45, icon: "🏹" },
+    ],
+  },
+
+  shadefell: {
+    color: "#3C3C3C",
+    displayName: "Order of Shadowsfall",
+    lore: "A sinister theocracy of shadow-priests and undying warriors.",
+    buildings: [
+      { id: "black_sanctum",   name: "Black Sanctum",      cost: 80,  effect: "+3 Shadow Power/turn, unlocks undead",   icon: "🕍" },
+      { id: "blight_forge",    name: "Blight Forge",       cost: 90,  effect: "Poisons enemy units in adjacent hexes",  icon: "☠️" },
+      { id: "dark_vault",      name: "Dark Vault",         cost: 60,  effect: "+4 Gold/turn via dark tribute",          icon: "💀" },
+      { id: "veil_gate",       name: "Veil Gate",          cost: 100, effect: "Teleports units between Veil Gates",     icon: "🌑" },
+      { id: "death_tower",     name: "Death Tower",        cost: 110, effect: "+5 defense, raises slain as undead",     icon: "🗼" },
+    ],
+    heroes: [
+      { id: "lycus_the_eternal",name: "Lycus the Eternal", attack: 8, defense: 7, ability: "Soul Drain — heals self equal to damage dealt",      icon: "💀" },
+      { id: "lady_ashveil",    name: "Lady Ashveil",       attack: 6, defense: 6, ability: "Shadow Step — teleports to any friendly Veil Gate",   icon: "🌑" },
+      { id: "darkspire_priest",name: "Darkspire Priest",   attack: 4, defense: 5, ability: "Raise Dead — revives 1 defeated unit per battle",     icon: "☠️" },
+    ],
+    units: [
+      { id: "shadow_blade",    name: "Shadow Blade",     attack: 6, defense: 3, cost: 40, icon: "🗡️" },
+      { id: "undead_warrior",  name: "Undead Warrior",   attack: 4, defense: 6, cost: 35, icon: "💀" },
+      { id: "blight_archer",   name: "Blight Archer",    attack: 5, defense: 2, cost: 35, icon: "🏹" },
+      { id: "wraith_rider",    name: "Wraith Rider",     attack: 7, defense: 4, cost: 70, icon: "👻" },
+    ],
+  },
+
+  greenheart: {
+    color: "#2E8D32",
+    displayName: "Greenheart Republic",
+    lore: "A druidic republic governed by elder councils and forest spirits.",
+    buildings: [
+      { id: "elder_tree",      name: "Elder Tree Shrine",  cost: 60,  effect: "+3 Nature/turn, regenerates 1HP to units", icon: "🌳" },
+      { id: "ranger_post",     name: "Ranger Post",        cost: 80,  effect: "Trains rangers, +1 hex vision in forest",  icon: "🌲" },
+      { id: "grove_market",    name: "Grove Market",       cost: 50,  effect: "+2 Food, +2 Gold/turn",                    icon: "🌿" },
+      { id: "vine_wall",       name: "Vine Wall",          cost: 90,  effect: "+5 defense, slows attackers",              icon: "🪴" },
+      { id: "druid_circle",    name: "Druid Circle",       cost: 110, effect: "Entangles enemies in adjacent hexes",      icon: "🍃" },
+    ],
+    heroes: [
+      { id: "elderroot",       name: "Elderroot",          attack: 6, defense: 8, ability: "Forest Meld — invisible in forest hexes",            icon: "🌳" },
+      { id: "ranger_nendon",   name: "Ranger Nendon",      attack: 8, defense: 4, ability: "Pin Shot — target loses next attack action",          icon: "🏹" },
+      { id: "druidess_misth",  name: "Druidess Misthaven", attack: 4, defense: 6, ability: "Grove Heal — restores 3HP to all allies each turn",   icon: "🍃" },
+    ],
+    units: [
+      { id: "forest_ranger",   name: "Forest Ranger",    attack: 5, defense: 4, cost: 35, icon: "🌲" },
+      { id: "vine_warrior",    name: "Vine Warrior",     attack: 4, defense: 6, cost: 35, icon: "🪴" },
+      { id: "giant_bear",      name: "Giant Bear",       attack: 8, defense: 5, cost: 75, icon: "🐻" },
+      { id: "grove_archer",    name: "Grove Archer",     attack: 6, defense: 3, cost: 40, icon: "🏹" },
+    ],
+  },
+
+  silverunion: {
+    color: "#B0B0B0",
+    displayName: "Silver Union",
+    lore: "A mercantile republic that buys allies and sells armies.",
+    buildings: [
+      { id: "grand_exchange",  name: "Grand Exchange",     cost: 70,  effect: "+5 Gold/turn, buy any unit for gold",    icon: "🏦" },
+      { id: "vault_of_nations",name: "Vault of Nations",   cost: 100, effect: "Stores 200 bonus Gold, anti-theft",     icon: "💰" },
+      { id: "mercenary_guild", name: "Mercenary Guild",    cost: 80,  effect: "Hire any faction's unit for 1.5x cost",  icon: "⚔️" },
+      { id: "coinspire_tower", name: "Coinspire Tower",    cost: 90,  effect: "+3 Gold, diplomacy bonus vs neighbors",  icon: "🗼" },
+      { id: "trade_embassy",   name: "Trade Embassy",      cost: 60,  effect: "Prevents war with one faction per turn", icon: "🤝" },
+    ],
+    heroes: [
+      { id: "guildmaster_aurion", name: "Guildmaster Aurion", attack: 5, defense: 5, ability: "Golden Bribe — convert 1 enemy unit to your side", icon: "💰" },
+      { id: "sellsword_vance",    name: "Sellsword Vance",    attack: 9, defense: 3, ability: "Mercenary Rush — attacks twice if paid double",     icon: "⚔️" },
+      { id: "spymistress_lyra",   name: "Spymistress Lyra",   attack: 4, defense: 6, ability: "Sabotage — disables 1 enemy building for 2 turns",  icon: "🕵️" },
+    ],
+    units: [
+      { id: "silver_guard",    name: "Silver Guard",     attack: 5, defense: 5, cost: 45, icon: "🛡️" },
+      { id: "mercenary",       name: "Hired Mercenary",  attack: 7, defense: 3, cost: 55, icon: "⚔️" },
+      { id: "trade_galley",    name: "Trade Galley",     attack: 4, defense: 4, cost: 60, icon: "⛵" },
+      { id: "coin_archer",     name: "Crossbow Guard",   attack: 6, defense: 3, cost: 40, icon: "🏹" },
+    ],
+  },
+
+  shadowsfall: {
+    color: "#3C3C3C",
+    displayName: "Order of Shadowsfall (Eastern)",
+    lore: "The eastern branch of the Order, corrupted beyond redemption.",
+    buildings: [
+      { id: "forsaken_citadel",name: "Forsaken Citadel",   cost: 90,  effect: "+5 defense, fear aura prevents routing", icon: "🏚️" },
+      { id: "withered_grove",  name: "Withered Grove",     cost: 70,  effect: "Poisons adjacent land tiles permanently", icon: "☠️" },
+      { id: "ash_market",      name: "Ash Market",         cost: 60,  effect: "+3 Gold via death tribute",               icon: "💀" },
+      { id: "veil_rift",       name: "Veil Rift",          cost: 110, effect: "Spawns 1 wraith per turn automatically",  icon: "🌀" },
+      { id: "bone_tower",      name: "Bone Tower",         cost: 100, effect: "+4 defense, raises 1 skeleton on death",  icon: "🦴" },
+    ],
+    heroes: [
+      { id: "lycus_shadow",    name: "Lycus' Shadow",      attack: 9, defense: 6, ability: "Eternal Blight — reduces max HP of target by 2",    icon: "👁️" },
+      { id: "ashveil_wraith",  name: "Ashveil Wraith",     attack: 7, defense: 5, ability: "Phase Walk — cannot be targeted for 1 round",       icon: "👻" },
+      { id: "bone_prophet",    name: "Bone Prophet",       attack: 3, defense: 7, ability: "Death Mark — next unit killed becomes your undead",  icon: "🦴" },
+    ],
+    units: [
+      { id: "wraith_soldier",  name: "Wraith Soldier",   attack: 6, defense: 4, cost: 45, icon: "👻" },
+      { id: "skeleton",        name: "Skeleton",          attack: 3, defense: 3, cost: 20, icon: "🦴" },
+      { id: "dark_rider",      name: "Dark Rider",        attack: 7, defense: 4, cost: 65, icon: "🐴" },
+      { id: "plague_archer",   name: "Plague Archer",     attack: 5, defense: 2, cost: 35, icon: "🏹" },
+    ],
+  },
+};
+
+// Helper: get faction buildings
+export const getFactionBuildings = (factionId) =>
+  FACTION_DATA[factionId]?.buildings ?? [];
+
+// Helper: get faction heroes
+export const getFactionHeroes = (factionId) =>
+  FACTION_DATA[factionId]?.heroes ?? [];
+
+// Helper: get faction units
+export const getFactionUnits = (factionId) =>
+  FACTION_DATA[factionId]?.units ?? [];
 // ---- Unit Definitions ----
 export const UNIT_DEFS = {
   infantry:   { id: 'infantry',   name: 'Infantry',     emoji: '🗡️',  dice: 6,  cost: { gold: 2, wheat: 1 }, canCapture: true,  requires: 'barracks',  movementRange: 1, description: 'Basic melee unit, moves 1 tile/turn' },
