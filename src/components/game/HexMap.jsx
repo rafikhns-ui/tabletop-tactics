@@ -1,6 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import mapData from './ardonia_game_map.json';
 
+const TERRAIN_COLORS = {
+  water: '#0a4d68',
+  plains: '#8b7355',
+  forest: '#2d5016',
+  mountain: '#5a5a5a',
+  desert: '#d4a574',
+  swamp: '#3d4a2c',
+  tundra: '#c4d4db'
+};
+
 function flatHexCorners(cx, cy, size) {
   return Array.from({ length: 6 }, (_, i) => {
     const angle = (Math.PI / 180) * (60 * i);
