@@ -90,7 +90,7 @@ function hexNeighborKeys(gc, gr) {
 }
 
 // ══════ COMPONENT ══════
-export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick, movementState, highlightPlayerId }) {
+export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick, movementState, highlightPlayerId, reachableHexes }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -230,6 +230,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             const fillColor = TERRAIN_COLORS[terrain] || '#444';
             const nationColor = hex.nation_id ? (NATION_COLORS[hex.nation_id] || '#666') : null;
             const isMyHighlighted = highlightPlayerId && owner === highlightPlayerId;
+            const isReachable = reachableHexes && reachableHexes.has(hexId);
 
             const highlightMode = !!highlightPlayerId;
             const dimmed = highlightMode && !isMyHighlighted;
@@ -239,10 +240,10 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                 {/* Base terrain hex */}
                 <polygon
                   points={flatHexCorners(cx, cy, HEX_PX)}
-                  fill={isSelected ? '#d4a853' : isMyHighlighted ? playerColor : fillColor}
-                  fillOpacity={isSelected ? 0.85 : dimmed ? 0.15 : isWater ? 0.5 : 0.8}
-                  stroke={isMyHighlighted ? playerColor : (isWater ? '#0a0c12' : '#00000020')}
-                  strokeWidth={isMyHighlighted ? 3 : 0.5}
+                  fill={isSelected ? '#d4a853' : isReachable ? '#4a9e6a' : isMyHighlighted ? playerColor : fillColor}
+                  fillOpacity={isSelected ? 0.85 : isReachable ? 0.55 : dimmed ? 0.15 : isWater ? 0.5 : 0.8}
+                  stroke={isReachable ? '#6dffaa' : isMyHighlighted ? playerColor : (isWater ? '#0a0c12' : '#00000020')}
+                  strokeWidth={isReachable ? 2 : isMyHighlighted ? 3 : 0.5}
                 />
 
                 {/* Player ownership overlay — skip in highlight mode, already shown via base fill */}

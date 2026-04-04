@@ -36,6 +36,34 @@ function canDeployUnit(hexId, unitType) {
   if (unitType === 'naval') return terrain === 'water' || terrain === 'coastal';
   return terrain !== 'water';
 }
+
+// BFS reachable hexes from a col,row hex given movement speed
+function computeReachableHexes(fromHexId, speed) {
+  const [col0, row0] = fromHexId.split(',').map(Number);
+  const visited = new Map([[fromHexId, 0]]);
+  const queue = [{ col: col0, row: row0, cost: 0 }];
+  while (queue.length > 0) {
+    const { col: gc, row: gr, cost } = queue.shift();
+    const even = gc % 2 === 0;
+    const neighbors = [
+      [gc+1, even ? gr-1 : gr], [gc+1, even ? gr : gr+1],
+      [gc-1, even ? gr-1 : gr], [gc-1, even ? gr : gr+1],
+      [gc, gr-1], [gc, gr+1],
+    ];
+    for (const [nc, nr] of neighbors) {
+      const nId = `${nc},${nr}`;
+      const terrain = HEX_TERRAIN_LOOKUP[nId];
+      if (!terrain || terrain === 'water') continue;
+      const newCost = cost + 1;
+      if (newCost <= speed && !visited.has(nId)) {
+        visited.set(nId, newCost);
+        queue.push({ col: nc, row: nr, cost: newCost });
+      }
+    }
+  }
+  visited.delete(fromHexId);
+  return visited; // Map of hexId -> cost
+}
 import BuildRecruitPanel from '../components/game/BuildRecruitPanel';
 import RecruitPanel from '../components/game/RecruitPanel';
 import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, AVATARS } from '../components/game/ardoniaData';
@@ -206,7 +234,8 @@ export default function Game() {
             ...prev,
             hexes: {
               ...prev.hexes,
-              [hexId]: { ...prev.hexes[hexId], units: hexUnits },
+              // also set owner so move phase can find it
+              [hexId]: { ...prev.hexes[hexId], units: hexUnits, owner: currentPlayer.id },
             },
             players: prev.players.map(p =>
               p.id === currentPlayer.id ? { ...p, pendingUnits: newPending } : p
@@ -241,9 +270,12 @@ export default function Game() {
       if (!movementState) {
         // Step 1: select a hex with your units
         const units = hex.units?.reduce((s, u) => s + u.count, 0) || 0;
-        if (hex.owner === currentPlayer.id && units > 0) {
+        const moveOwner = resolveHexOwner(hexId);
+        if (moveOwner === currentPlayer.id && units > 0) {
           const unitType = hex.units[0]?.type || 'infantry';
-          const speed = UNIT_SPEED[unitType] ?? 2;
+          // Use movementRange from UNIT_DEFS if available, else fallback
+          const def = UNIT_DEFS[unitType];
+          const speed = def?.movementRange ?? UNIT_SPEED[unitType] ?? 2;
           setSelectedTerritory(hexId);
           setMovementState({ fromHexId: hexId, selectedUnit: unitType, speed });
           addMessage(`🚶 ${unitType} selected (speed ${speed}) — pick a destination`);
@@ -257,35 +289,30 @@ export default function Game() {
         const fromHexId = movementState.fromHexId;
         const unitType = movementState.selectedUnit;
         const speed = movementState.speed;
-        const reachable = getReachableHexes(fromHexId, unitType, speed, gameState.hexes);
+        const reachable = computeReachableHexes(fromHexId, speed);
 
         if (!reachable.has(hexId)) {
           addMessage('⛔ Hex out of movement range');
           return;
         }
 
-        const path = findMovementPath(fromHexId, hexId, unitType, speed, gameState.hexes);
-        if (!path) {
-          addMessage('⛔ No valid path to target');
-          return;
-        }
-
+        const targetOwner = resolveHexOwner(hexId);
         setGameState(prev => {
-          const fromHex = prev.hexes[fromHexId];
-          const toHex = prev.hexes[hexId];
+          const fromHex = prev.hexes[fromHexId] || {};
+          const toHex = prev.hexes[hexId] || {};
           return {
             ...prev,
             hexes: {
               ...prev.hexes,
               [fromHexId]: { ...fromHex, units: [] },
-              [hexId]: { ...toHex, units: [...(toHex.units || []), ...(fromHex.units || [])] },
+              [hexId]: { ...toHex, units: [...(toHex.units || []), ...(fromHex.units || [])], owner: currentPlayer.id },
             },
           };
         });
 
         setSelectedTerritory(null);
         setMovementState(null);
-        addMessage(`🚶 Moved ${unitType} to hex (${path.length - 1} steps)`);
+        addMessage(`🚶 Moved ${unitType} to hex`);
       }
     } else if (phase === 'fortify') {
       if (!selectedTerritory) {
@@ -900,6 +927,7 @@ export default function Game() {
               onHexClick={handleTerritoryClick}
               movementState={movementState}
               highlightPlayerId={highlightMyTerritories ? currentPlayer?.id : null}
+              reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
             />
           </>
         )}
