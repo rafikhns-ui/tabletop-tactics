@@ -102,7 +102,25 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   const toSVG = (px, py) => ({ cx: (px / 100) * SVG_W, cy: (py / 100) * SVG_H });
 
   // ── Game state helpers ──
-  const getOwner = (hexId) => gameState?.hexes?.[hexId]?.owner || null;
+  // Build a map from nation_id -> owner player id using territories
+  const nationOwnerMap = useMemo(() => {
+    const map = {};
+    if (gameState?.territories) {
+      Object.values(gameState.territories).forEach(t => {
+        if (t.faction && t.owner) map[t.faction] = t.owner;
+      });
+    }
+    return map;
+  }, [gameState?.territories]);
+
+  const getOwner = (hexId, hexNationId) => {
+    // First check hex-level ownership (deployed units)
+    const hexOwner = gameState?.hexes?.[hexId]?.owner;
+    if (hexOwner) return hexOwner;
+    // Fall back to territory/faction ownership
+    if (hexNationId && nationOwnerMap[hexNationId]) return nationOwnerMap[hexNationId];
+    return null;
+  };
   const getPlayerColor = (id) => gameState?.players?.find(p => p.id === id)?.color || null;
   const getUnits = (hexId) => gameState?.hexes?.[hexId]?.units || [];
 
@@ -166,19 +184,20 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             const terrain = hex.terrain || 'water';
             const isWater = !hex.nation_id;
             const isSelected = selectedHex === hexId || (selected?.col === hex.col && selected?.row === hex.row);
-            const owner = getOwner(hexId);
+            const owner = getOwner(hexId, hex.nation_id);
             const playerColor = getPlayerColor(owner);
             const units = getUnits(hexId);
             const unitCount = units.reduce((s, u) => s + (u.count || 0), 0);
             const fillColor = TERRAIN_COLORS[terrain] || '#444';
             const nationColor = hex.nation_id ? (NATION_COLORS[hex.nation_id] || '#666') : null;
+            const isMyHighlighted = highlightPlayerId && owner === highlightPlayerId;
 
             return (
               <g key={hexId} onClick={() => !isWater && handleHexClick(hex)} style={{ cursor: isWater ? 'default' : 'pointer' }}>
                 {/* Base terrain hex */}
                 <polygon
                   points={flatHexCorners(cx, cy, HEX_PX)}
-                  fill={isSelected ? '#d4a853' : fillColor}
+                  fill={isSelected ? '#d4a853' : isMyHighlighted ? (playerColor || fillColor) : fillColor}
                   fillOpacity={isSelected ? 0.85 : isWater ? 0.5 : 0.8}
                   stroke={isWater ? '#0a0c12' : '#00000020'}
                   strokeWidth={0.5}
@@ -193,16 +212,16 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                     style={{ pointerEvents: 'none' }}
                   />
                 )}
-                {/* Highlight pulse for "My Territories" mode */}
-                {highlightPlayerId && owner === highlightPlayerId && (
+                {/* Highlight for "My Territories" mode */}
+                {isMyHighlighted && (
                   <polygon
-                    points={flatHexCorners(cx, cy, HEX_PX * 1.02)}
+                    points={flatHexCorners(cx, cy, HEX_PX * 1.08)}
                     fill={playerColor || '#fff'}
-                    fillOpacity={0.35}
+                    fillOpacity={0.5}
                     stroke={playerColor || '#fff'}
-                    strokeWidth={3}
+                    strokeWidth={4}
                     strokeOpacity={1}
-                    style={{ pointerEvents: 'none', filter: `drop-shadow(0 0 6px ${playerColor || '#fff'})` }}
+                    style={{ pointerEvents: 'none' }}
                   />
                 )}
                 {/* Player ownership overlay */}
@@ -210,10 +229,10 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                   <polygon
                     points={flatHexCorners(cx, cy, HEX_PX * 0.92)}
                     fill={playerColor}
-                    fillOpacity={highlightPlayerId && owner === highlightPlayerId ? 0.6 : 0.45}
+                    fillOpacity={isMyHighlighted ? 0.7 : 0.45}
                     stroke={playerColor}
-                    strokeWidth={1.5}
-                    strokeOpacity={0.8}
+                    strokeWidth={isMyHighlighted ? 3 : 1.5}
+                    strokeOpacity={0.9}
                     style={{ pointerEvents: 'none' }}
                   />
                 )}
