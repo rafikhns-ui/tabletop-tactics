@@ -19,6 +19,12 @@ import ActionBar from '../components/game/ActionBar';
 import BattleModal from '../components/game/BattleModal';
 import EventModal from '../components/game/EventModal';
 import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn, checkObjective, calculateUnitBonuses } from '../components/game/ardoniaLogic';
+import mapData from '../components/game/ardonia_game_map.json';
+import { FACTION_TO_NATION_ID } from '../components/game/ardoniaData';
+
+// Build a lookup: hexId ("col,row") -> nation_id from map data
+const HEX_NATION_LOOKUP = {};
+mapData.hex_grid.forEach(h => { HEX_NATION_LOOKUP[`${h.col},${h.row}`] = h.nation_id; });
 import BuildRecruitPanel from '../components/game/BuildRecruitPanel';
 import RecruitPanel from '../components/game/RecruitPanel';
 import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, AVATARS } from '../components/game/ardoniaData';
@@ -154,14 +160,24 @@ export default function Game() {
     return updated;
   }, [winner]);
 
+  // Resolve owner of a hex: explicit game state owner OR faction-based via nation
+  const resolveHexOwner = (hexId) => {
+    const explicit = gameState?.hexes?.[hexId]?.owner;
+    if (explicit) return explicit;
+    const nationId = HEX_NATION_LOOKUP[hexId];
+    if (!nationId) return null;
+    const player = gameState?.players?.find(p => FACTION_TO_NATION_ID[p.factionId] === nationId || p.factionId === nationId);
+    return player?.id || null;
+  };
+
   const handleTerritoryClick = (hexId) => {
     if (!gameState || winner) return;
-    const hex = gameState.hexes[hexId];
-    if (!hex) return;
+    const hex = gameState.hexes[hexId] || {}; // allow missing hex (no units yet)
 
     if (phase === 'deploy') {
       const pending = currentPlayer.pendingUnits || [];
-      if (hex.owner === currentPlayer.id && pending.length > 0) {
+      const hexOwner = resolveHexOwner(hexId);
+      if (hexOwner === currentPlayer.id && pending.length > 0) {
         const unitType = pending[0]; // deploy the first queued unit
         if (!canUnitEnter(hexId, unitType)) {
           addMessage(`⛔ ${unitType} cannot enter that terrain`);
