@@ -122,26 +122,22 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
   // ── Game state helpers ──
   // Build a map from nation_id -> owner player id using territories
+  // Maps nation_id -> owner player id (a player owns all hexes of their faction's nation)
   const nationOwnerMap = useMemo(() => {
     const map = {};
-    if (gameState?.territories) {
-      Object.values(gameState.territories).forEach(t => {
-        if (t.faction && t.owner) {
-          // Map both the raw faction id AND the corresponding map nation_id
-          map[t.faction] = t.owner;
-          const nationId = FACTION_TO_NATION_ID[t.faction];
-          if (nationId) map[nationId] = t.owner;
-        }
+    if (gameState?.players) {
+      gameState.players.forEach(p => {
+        if (!p.factionId) return;
+        const nationId = FACTION_TO_NATION_ID[p.factionId] || p.factionId;
+        map[nationId] = p.id;
       });
     }
     return map;
-  }, [gameState?.territories]);
+  }, [gameState?.players]);
 
   const getOwner = (hexId, hexNationId) => {
-    // First check hex-level ownership (deployed units)
     const hexOwner = gameState?.hexes?.[hexId]?.owner;
     if (hexOwner) return hexOwner;
-    // Fall back to territory/faction ownership
     if (hexNationId && nationOwnerMap[hexNationId]) return nationOwnerMap[hexNationId];
     return null;
   };
