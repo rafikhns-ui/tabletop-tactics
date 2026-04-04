@@ -1,41 +1,77 @@
 import React, { useMemo, useState } from 'react';
 import mapData from './ardonia_game_map.json';
 
-const TERRAIN_COLORS   = {
-  water: '#0a4d68',
-  plains: '#8b7355',
-  forest: '#2d5016',
-  mountain: '#5a5a5a',
-  desert: '#d4a574',
-  swamp: '#3d4a2c',
-  tundra: '#c4d4db'
+// ══════ TERRAIN COLORS (dark fantasy palette) ══════
+const TERRAIN_COLORS = {
+  water:    '#183a5c',
+  coastal:  '#2a6080',
+  plains:   '#5a7a30',
+  forest:   '#1e4a1e',
+  hills:    '#6a6030',
+  mountain: '#4a4a5a',
+  desert:   '#9a7a30',
+  swamp:    '#3a4a2a',
+  tundra:   '#7a8a9a',
+  scorched: '#4a1a0a',
 };
 
+// ══════ NATION COLORS (from game data) ══════
+const NATION_COLORS = {};
+mapData.nations.forEach(n => { NATION_COLORS[n.id] = n.color; });
+
+// ══════ HEX GEOMETRY ══════
 function flatHexCorners(cx, cy, size) {
   return Array.from({ length: 6 }, (_, i) => {
-    const angle = (Math.PI / 180) * (60 * i);
+    const angle = (Math.PI / 3) * i;
     return `${cx + size * Math.cos(angle)},${cy + size * Math.sin(angle)}`;
   }).join(' ');
 }
 
+// ══════ PRE-COMPUTE province centroids + neighbor lookup ══════
+const hexLookup = {};
+mapData.hex_grid.forEach(h => { hexLookup[`${h.col},${h.row}`] = h; });
+
+const provinceCentroids = {};
+mapData.hex_grid.forEach(h => {
+  if (!h.nation_id || !h.province) return;
+  const key = `${h.nation_id}-${h.province}`;
+  if (!provinceCentroids[key]) provinceCentroids[key] = { sx: 0, sy: 0, cnt: 0, nid: h.nation_id, prov: h.province };
+  provinceCentroids[key].sx += h.x;
+  provinceCentroids[key].sy += h.y;
+  provinceCentroids[key].cnt++;
+});
+const provCentroidList = Object.values(provinceCentroids).map(p => ({
+  x: p.sx / p.cnt,
+  y: p.sy / p.cnt,
+  nid: p.nid,
+  prov: p.prov,
+}));
+
+// Hex neighbor offsets (flat-top)
+function hexNeighborKeys(gc, gr) {
+  const even = gc % 2 === 0;
+  return [
+    [gc + 1, even ? gr - 1 : gr], [gc + 1, even ? gr : gr + 1],
+    [gc - 1, even ? gr - 1 : gr], [gc - 1, even ? gr : gr + 1],
+    [gc, gr - 1], [gc, gr + 1],
+  ];
+}
+
+// ══════ COMPONENT ══════
 export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick, movementState }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
   const [panelTab, setPanelTab] = useState('selected');
 
-  const allHexes = useMemo(() => hexGrid.flat(), [hexGrid]);
-
-  // Viewport setup: use 0-100 coordinates directly but scaled for SVG
   const SVG_W = 1200;
   const SVG_H = 900;
-  const HEX_R = 2.5; // Matching Claude's 2.5 hex_size (radius is half)
+  const HEX_SIZE = 2.5;
+  const HEX_PX = HEX_SIZE * (SVG_W / 100);
 
-  const toSVG = (px, py) => ({
-    cx: (px / 100) * SVG_W,
-    cy: (py / 100) * SVG_H,
-  });
+  const toSVG = (px, py) => ({ cx: (px / 100) * SVG_W, cy: (py / 100) * SVG_H });
 
+  // ── Game state helpers ──
   const getOwner = (hexId) => gameState?.hexes?.[hexId]?.owner || null;
   const getPlayerColor = (id) => gameState?.players?.find(p => p.id === id)?.color || null;
   const getUnits = (hexId) => gameState?.hexes?.[hexId]?.units || [];
@@ -47,71 +83,96 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
     if (onHexClick) onHexClick(hexId);
   };
 
-  const selectedNation = selected?.nationid ? nations.find(n => n.id === selected.nationid) : null;
+  // ── Pre-compute border edges (province + nation) ──
+  const { provBorderEdges, natBorderEdges } = useMemo(() => {
+    const pEdges = [];
+    const nEdges = [];
+    hexGrid.forEach(h => {
+      if (!h.nation_id) return;
+      const { cx, cy } = toSVG(h.x, h.y);
+      const nbs = hexNeighborKeys(h.col, h.row);
+      for (let k = 0; k < 6; k++) {
+        const nb = hexLookup[`${nbs[k][0]},${nbs[k][1]}`];
+        const a1 = (Math.PI / 3) * k;
+        const a2 = (Math.PI / 3) * ((k + 1) % 6);
+        const x1 = cx + HEX_PX * Math.cos(a1);
+        const y1 = cy + HEX_PX * Math.sin(a1);
+        const x2 = cx + HEX_PX * Math.cos(a2);
+        const y2 = cy + HEX_PX * Math.sin(a2);
+
+        if (!nb || nb.nation_id !== h.nation_id) {
+          nEdges.push({ x1, y1, x2, y2, color: NATION_COLORS[h.nation_id] || '#333' });
+        } else if (nb.nation_id === h.nation_id && nb.province !== h.province) {
+          pEdges.push({ x1, y1, x2, y2 });
+        }
+      }
+    });
+    return { provBorderEdges: pEdges, natBorderEdges: nEdges };
+  }, [hexGrid]);
+
+  const selectedNation = selected?.nation_id ? nations.find(n => n.id === selected.nation_id) : null;
+  const selectedProvince = selectedNation ? selectedNation.provinces.find(p => p.id === selected.province) : null;
 
   return (
     <div style={{ display: 'flex', height: '62vh', background: '#0a0c12', overflow: 'hidden', border: '1px solid #2a2520' }}>
-      {/* SVG MAP */}
+      {/* ══════ SVG MAP ══════ */}
       <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
         <svg
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          width="100%"
-          height="100%"
+          width="100%" height="100%"
           preserveAspectRatio="xMidYMid meet"
           style={{ background: '#0a0c12', display: 'block' }}
         >
           <defs>
             <filter id="goldGlow">
-              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#d4a853" />
+              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#d4a853" floodOpacity="0.8" />
             </filter>
           </defs>
 
-          {allHexes.map(hex => {
+          {/* ── Hex fills ── */}
+          {hexGrid.map(hex => {
             const hexId = `${hex.col},${hex.row}`;
             const { cx, cy } = toSVG(hex.x, hex.y);
             const terrain = hex.terrain || 'water';
-            const isWater = terrain === 'water';
+            const isWater = !hex.nation_id;
+            const isSelected = selectedHex === hexId || (selected?.col === hex.col && selected?.row === hex.row);
             const owner = getOwner(hexId);
             const playerColor = getPlayerColor(owner);
-            const nationColor = hex.nationid ? (NATION_COLORS[hex.nationid] || '#666') : null;
-            const isSelected = selectedHex === hexId || (selected?.col === hex.col && selected?.row === hex.row);
             const units = getUnits(hexId);
             const unitCount = units.reduce((s, u) => s + (u.count || 0), 0);
-
             const fillColor = TERRAIN_COLORS[terrain] || '#444';
+            const nationColor = hex.nation_id ? (NATION_COLORS[hex.nation_id] || '#666') : null;
 
             return (
-              <g key={hexId} onClick={() => handleHexClick(hex)} style={{ cursor: isWater ? 'default' : 'pointer' }}>
+              <g key={hexId} onClick={() => !isWater && handleHexClick(hex)} style={{ cursor: isWater ? 'default' : 'pointer' }}>
+                {/* Base terrain hex */}
                 <polygon
-                  points={flatHexCorners(cx, cy, HEX_R * (SVG_W/100))}
-                  fill={fillColor}
-                  fillOpacity={isWater ? 0.55 : 0.85}
-                  stroke={isSelected ? '#d4a853' : isWater ? '#0a0c12' : '#00000066'}
-                  strokeWidth={isSelected ? 3 : 0.5}
-                  filter={isSelected ? 'url(#goldGlow)' : undefined}
+                  points={flatHexCorners(cx, cy, HEX_PX)}
+                  fill={isSelected ? '#d4a853' : fillColor}
+                  fillOpacity={isSelected ? 0.85 : isWater ? 0.5 : 0.8}
+                  stroke={isWater ? '#0a0c12' : '#00000020'}
+                  strokeWidth={0.5}
                 />
+                {/* Inner bevel line for 3D effect */}
                 {!isWater && (
                   <polygon
-                    points={flatHexCorners(cx, cy, (HEX_R * 0.88) * (SVG_W/100))}
+                    points={flatHexCorners(cx, cy, HEX_PX * 0.88)}
                     fill="none"
-                    stroke="rgba(255,255,255,0.08)"
+                    stroke="rgba(255,255,255,0.06)"
                     strokeWidth={0.5}
                     style={{ pointerEvents: 'none' }}
                   />
-                          )}
-        {/* Nation color overlay */}
-        {hex.nationid && (
-          <polygon
-            points={flatHexCorners(cx, cy, (HEX_R * 0.92) * (SVG_W/100))}
-            fill={nationColor}
-            fillOpacity={0.4}
-            style={{ pointerEvents: 'none' }}
-          />
-        )}
                 )}
-                {hex.capitalname && (
-                  <text x={cx} y={cy - 2} textAnchor="middle" fontSize={8} style={{ pointerEvents: 'none' }}>★</text>
+                {/* Nation color tint overlay */}
+                {nationColor && (
+                  <polygon
+                    points={flatHexCorners(cx, cy, HEX_PX * 0.92)}
+                    fill={nationColor}
+                    fillOpacity={0.3}
+                    style={{ pointerEvents: 'none' }}
+                  />
                 )}
+                {/* Unit badge */}
                 {unitCount > 0 && (
                   <g style={{ pointerEvents: 'none' }}>
                     <circle cx={cx + 8} cy={cy - 8} r={6} fill={playerColor || '#d4a853'} stroke="#0a0c12" strokeWidth={1} />
@@ -122,64 +183,187 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             );
           })}
 
+          {/* ── Province borders (golden dashed) ── */}
+          {provBorderEdges.map((e, i) => (
+            <line key={`pb${i}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+              stroke="#d4a853" strokeWidth={1.5} strokeOpacity={0.5} strokeDasharray="4,2"
+              style={{ pointerEvents: 'none' }} />
+          ))}
+
+          {/* ── Nation borders (dark embossed) ── */}
+          {natBorderEdges.map((e, i) => (
+            <line key={`nb${i}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+              stroke="#0a0806" strokeWidth={2.5} strokeOpacity={0.9}
+              style={{ pointerEvents: 'none' }} />
+          ))}
+
+          {/* ── Selected hex glow ── */}
+          {selected && (
+            <g style={{ pointerEvents: 'none' }}>
+              <polygon
+                points={flatHexCorners(toSVG(selected.x, selected.y).cx, toSVG(selected.x, selected.y).cy, HEX_PX * 1.05)}
+                fill="none" stroke="#d4a853" strokeWidth={1.5} strokeOpacity={0.4}
+                filter="url(#goldGlow)"
+              />
+              <polygon
+                points={flatHexCorners(toSVG(selected.x, selected.y).cx, toSVG(selected.x, selected.y).cy, HEX_PX)}
+                fill="none" stroke="#d4a853" strokeWidth={2.5}
+              />
+            </g>
+          )}
+
+          {/* ── Province labels with capital icons ── */}
+          {provCentroidList.map((pc, i) => {
+            const { cx, cy } = toSVG(pc.x, pc.y);
+            const nation = nations.find(n => n.id === pc.nid);
+            if (!nation) return null;
+            const prov = nation.provinces.find(p => p.id === pc.prov);
+            if (!prov) return null;
+            const isNatCap = prov.is_national_capital;
+            const label = prov.capital.split(' ')[0];
+
+            return (
+              <g key={`pl${i}`} style={{ pointerEvents: 'none' }}>
+                <text x={cx} y={cy - 3} textAnchor="middle" fontSize={isNatCap ? 10 : 7}
+                  fill={isNatCap ? '#d4a853' : '#c8c0b0'}
+                  style={{ filter: isNatCap ? 'drop-shadow(0 0 2px #d4a853)' : 'none' }}>
+                  {isNatCap ? '★' : '◆'}
+                </text>
+                <text x={cx} y={cy + 6} textAnchor="middle" fontSize={6}
+                  fill="#fff" fontFamily="'Cinzel', serif" fontWeight="bold"
+                  stroke="#0a0806" strokeWidth={2} paintOrder="stroke" letterSpacing={0.5}>
+                  {label}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* ── Nation labels ── */}
           {nations.map(nation => {
             const { cx, cy } = toSVG(nation.centroid[0], nation.centroid[1]);
             return (
-              <g key={nation.id} style={{ pointerEvents: 'none' }}>
-                <text x={cx} y={cy} textAnchor="middle" fontSize={12}
-                  stroke="#0a0806" strokeWidth={4} paintOrder="stroke"
-                  fill="#fff" fontFamily="'Cinzel', serif" fontWeight="bold" letterSpacing={2}
-                  style={{ textTransform: 'uppercase', opacity: 0.9 }}
-                >{nation.name}</text>
+              <g key={`nl${nation.id}`} style={{ pointerEvents: 'none' }}>
+                {/* Color halo */}
+                <text x={cx} y={cy} textAnchor="middle" fontSize={16}
+                  fill="none" stroke={nation.color} strokeWidth={5} strokeOpacity={0.25}
+                  fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={2}
+                  style={{ textTransform: 'uppercase' }}>
+                  {nation.name.toUpperCase()}
+                </text>
+                {/* White text */}
+                <text x={cx} y={cy} textAnchor="middle" fontSize={14}
+                  fill="#fff" stroke="#0a0806" strokeWidth={3.5} paintOrder="stroke"
+                  fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={2}
+                  style={{ textTransform: 'uppercase', opacity: 0.95 }}>
+                  {nation.name.toUpperCase()}
+                </text>
               </g>
             );
           })}
         </svg>
       </div>
 
-      {/* SIDE PANEL */}
+      {/* ══════ SIDE PANEL ══════ */}
       <div style={{
-        width: 260, background: 'linear-gradient(135deg, #1a1c22, #14161c)',
-        borderLeft: '1px solid #2a2520', display: 'flex', flexDirection: 'column',
-        fontFamily: "'Cormorant Garamond', serif", color: '#c8c0b0'
+        width: 260,
+        background: 'linear-gradient(135deg, #1a1c22, #14161c)',
+        borderLeft: '1px solid #2a2520',
+        display: 'flex', flexDirection: 'column',
+        fontFamily: "'Cormorant Garamond', serif",
+        color: '#c8c0b0',
       }}>
+        {/* Tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid #2a2520' }}>
-          {['selected','nation','actions'].map(t => (
+          {['selected', 'nation', 'actions'].map(t => (
             <button key={t} onClick={() => setPanelTab(t)} style={{
-              flex: 1, padding: '10px 0', fontSize: 11, fontFamily: "'Cinzel', serif",
+              flex: 1, padding: '10px 0', fontSize: 11,
+              fontFamily: "'Cinzel', serif",
               background: panelTab === t ? '#1e1a12' : 'transparent',
               color: panelTab === t ? '#d4a853' : '#666',
-              border: 'none', borderBottom: panelTab === t ? '2px solid #d4a853' : '2px solid transparent',
-              cursor: 'pointer', textTransform: 'uppercase'
+              border: 'none',
+              borderBottom: panelTab === t ? '2px solid #d4a853' : '2px solid transparent',
+              cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 1,
             }}>{t}</button>
           ))}
         </div>
 
+        {/* Panel content */}
         <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
           {panelTab === 'selected' && (
             selected ? (
-              <>
-                <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, marginBottom: 8 }}>
-                  {selected.provincename || 'Wilderness'}
+              <div>
+                {/* Province name */}
+                <div style={{
+                  color: '#d4a853', fontFamily: "'Cinzel', serif",
+                  fontSize: 15, fontWeight: 700, marginBottom: 6, letterSpacing: 0.5,
+                }}>
+                  {selected.province_name || 'Uncharted Waters'}
                 </div>
-                {selected.capitalname && <div style={{ color: '#f0a030', fontSize: 13, marginBottom: 12 }}>★ {selected.capitalname}</div>}
-                {selectedNation && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: NATION_COLORS[selectedNation.id] }} />
-                    <span style={{ fontSize: 14 }}>{selectedNation.name}</span>
+
+                {/* Capital city */}
+                {selected.capital_name && (
+                  <div style={{ color: '#f0a030', fontSize: 13, marginBottom: 10, fontStyle: 'italic' }}>
+                    {selected.capital_name === selectedProvince?.capital && selectedProvince?.is_national_capital ? '★' : '◆'} {selected.capital_name}
                   </div>
                 )}
-                <div style={{ fontSize: 13, textTransform: 'capitalize', color: '#888' }}>Terrain: {selected.terrain}</div>
-                <div style={{ fontSize: 11, color: '#444', marginTop: 20 }}>Grid: {selected.col}, {selected.row}</div>
-              </>
-            ) : <div style={{ textAlign: 'center', color: '#444', marginTop: 40 }}>Select a territory</div>
+
+                {/* Nation info */}
+                {selectedNation && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
+                    <div style={{ width: 14, height: 14, borderRadius: 3, background: NATION_COLORS[selectedNation.id], border: '1px solid #ffffff20' }} />
+                    <span style={{ fontSize: 14, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{selectedNation.name}</span>
+                  </div>
+                )}
+
+                {/* Terrain */}
+                <div style={{ fontSize: 13, marginBottom: 6 }}>
+                  <span style={{ color: '#888' }}>Terrain: </span>
+                  <span style={{ textTransform: 'capitalize', color: '#c8c0b0' }}>{selected.terrain}</span>
+                  <span style={{ marginLeft: 6, display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: TERRAIN_COLORS[selected.terrain] || '#444', verticalAlign: 'middle' }} />
+                </div>
+
+                {/* Province stats */}
+                {selectedProvince && (
+                  <div style={{ fontSize: 12, color: '#888', marginTop: 8 }}>
+                    <div>Province hexes: <span style={{ color: '#c8c0b0' }}>{selectedProvince.hex_count}</span></div>
+                  </div>
+                )}
+
+                {/* Grid coords */}
+                <div style={{ fontSize: 11, color: '#444', marginTop: 16 }}>
+                  Grid: [{selected.col}, {selected.row}] · Pos: {Math.round(selected.x)}%, {Math.round(selected.y)}%
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', color: '#444', marginTop: 40, fontStyle: 'italic' }}>
+                Select a territory on the map
+              </div>
+            )
           )}
+
           {panelTab === 'nation' && currentPlayer && (
             <div>
-              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, marginBottom: 12 }}>{currentPlayer.name}</div>
-              <div style={{ fontSize: 14, marginBottom: 6 }}>Gold: {currentPlayer.resources?.gold ?? 0}</div>
-              <div style={{ fontSize: 14, marginBottom: 6 }}>Influence: {currentPlayer.ip ?? 0}</div>
-              <div style={{ fontSize: 14, marginBottom: 6 }}>Faith: {currentPlayer.sp ?? 0}</div>
+              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
+                {currentPlayer.name}
+              </div>
+              <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
+                <span style={{ color: '#d4a853' }}>Gold:</span> {currentPlayer.resources?.gold ?? 0}
+              </div>
+              <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
+                <span style={{ color: '#7a6aed' }}>Influence:</span> {currentPlayer.ip ?? 0}
+              </div>
+              <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
+                <span style={{ color: '#2e9e9e' }}>Faith:</span> {currentPlayer.sp ?? 0}
+              </div>
+            </div>
+          )}
+
+          {panelTab === 'actions' && (
+            <div style={{ textAlign: 'center', color: '#555', marginTop: 40, fontStyle: 'italic', fontSize: 12 }}>
+              {phase === 'planning' ? 'Select provinces to reinforce' :
+               phase === 'action' ? 'Move units between provinces' :
+               phase === 'combat' ? 'Resolve battles' :
+               'Waiting for next phase...'}
             </div>
           )}
         </div>
