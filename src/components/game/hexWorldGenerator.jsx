@@ -933,6 +933,19 @@ const MAP_DATA = [
   {"col":29,"row":18,"faction":"silverunion","is_coastal":false,"terrain":"land"},
 ];
 
+// Maps map faction names → playable faction IDs
+const remapFaction = (faction, row) => {
+  if (faction === 'ocean') return faction;
+  if (faction === 'gejeon') return 'gojeon';
+  if (faction === 'greenheart') return 'oakhaven';
+  if (faction === 'silverunion') return 'republic';
+  // shadefell split: upper rows → tlalocayotlan, lower → sultanate
+  if (faction === 'shadefell') return row <= 6 ? 'tlalocayotlan' : 'sultanate';
+  // shadowsfall split: upper rows → kintei, lower → icebound
+  if (faction === 'shadowsfall') return row <= 12 ? 'kintei' : 'icebound';
+  return faction;
+};
+
 // ---- CONVERT JSON MAP TO HEX OBJECTS ----
 export const generateWorldMap = () => {
   const hexes = {};
@@ -942,6 +955,7 @@ export const generateWorldMap = () => {
     const { q, r } = offsetToAxial(col, row);
     const hexId = `hex_${q}_${r}`;
     const isWater = terrain === 'water' || faction === 'ocean';
+    const playableFaction = remapFaction(faction, row);
     const resolvedTerrain = isWater
       ? 'ocean'
       : (FACTION_TERRAIN_MAP[faction] || 'plains');
@@ -955,8 +969,8 @@ export const generateWorldMap = () => {
       type: isWater ? 'water' : 'land',
       terrain: resolvedTerrain,
       is_coastal,
-      sourceFaction: faction || null,
-      region: faction || null,
+      sourceFaction: isWater ? null : playableFaction,
+      region: isWater ? null : playableFaction,
       owner: null,
       units: [],
       hasFortress: false,
