@@ -100,6 +100,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   const SVG_H = 900;
   const HEX_SIZE = 2.5;
   const HEX_PX = HEX_SIZE * (SVG_W / 100);
+  const [zoomTransform, setZoomTransform] = useState(null); // { tx, ty, scale }
 
   const toSVG = (px, py) => ({ cx: (px / 100) * SVG_W, cy: (py / 100) * SVG_H });
 
@@ -132,7 +133,17 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
     setSelected(hex);
     setPanelTab('selected');
     if (onHexClick) onHexClick(hexId);
+    // Zoom into clicked hex
+    const { cx, cy } = toSVG(hex.x, hex.y);
+    const scale = 4;
+    setZoomTransform({
+      tx: SVG_W / 2 - cx * scale,
+      ty: SVG_H / 2 - cy * scale,
+      scale,
+    });
   };
+
+  const handleZoomOut = () => setZoomTransform(null);
 
   // ── Pre-compute border edges (province + nation) ──
   const { provBorderEdges, natBorderEdges } = useMemo(() => {
@@ -179,8 +190,20 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
               <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#d4a853" floodOpacity="0.8" />
             </filter>
           </defs>
+          {zoomTransform && (
+            <g>
+              <rect x={0} y={0} width={SVG_W} height={SVG_H} fill="transparent"
+                onClick={handleZoomOut} style={{ cursor: 'zoom-out' }} />
+            </g>
+          )}
 
           {/* ── Hex fills ── */}
+          <g
+            transform={zoomTransform
+              ? `translate(${zoomTransform.tx},${zoomTransform.ty}) scale(${zoomTransform.scale})`
+              : undefined}
+            style={{ transition: 'transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94)' }}
+          >
           {hexGrid.map(hex => {
             const hexId = `${hex.col},${hex.row}`;
             const { cx, cy } = toSVG(hex.x, hex.y);
@@ -299,7 +322,6 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
           {/* ── Faction labels ── */}
           {FACTION_CENTROIDS.map(fc => {
             const { cx, cy } = toSVG(fc.x, fc.y);
-            // Split long names onto two lines
             const words = fc.name.split(' ');
             const line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ');
             const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
@@ -334,6 +356,18 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
               </g>
             );
           })}
+          </g>
+          {zoomTransform && (
+            <g style={{ pointerEvents: 'all' }}>
+              <rect x={8} y={8} width={80} height={24} rx={4}
+                fill="#1a1c22" stroke="#d4a853" strokeWidth={1} style={{ cursor: 'pointer' }}
+                onClick={handleZoomOut} />
+              <text x={48} y={24} textAnchor="middle" fontSize={11} fill="#d4a853"
+                fontFamily="'Cinzel',serif" style={{ cursor: 'pointer', pointerEvents: 'none' }}>
+                ← ZOOM OUT
+              </text>
+            </g>
+          )}
         </svg>
       </div>
 
