@@ -38,10 +38,10 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
   const allHexes = useMemo(() => hexGrid.flat(), [hexGrid]);
 
-  // Map viewport: x/y are 0-100 percent coords, we scale to SVG
-  const SVG_W = 1100;
-  const SVG_H = 700;
-  const HEX_R = 10; // display radius in SVG units
+  // Viewport setup: use 0-100 coordinates directly but scaled for SVG
+  const SVG_W = 1200;
+  const SVG_H = 900;
+  const HEX_R = 1.25; // Matching Claude's 2.5 hex_size (radius is half)
 
   const toSVG = (px, py) => ({
     cx: (px / 100) * SVG_W,
@@ -54,28 +54,27 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
   const handleHexClick = (hex) => {
     const hexId = `${hex.col},${hex.row}`;
-    if (hex.terrain === 'water') return;
     setSelected(hex);
     setPanelTab('selected');
     if (onHexClick) onHexClick(hexId);
   };
 
-  const selectedNation = selected ? nations.find(n => n.id === selected.nationid) : null;
+  const selectedNation = selected?.nationid ? nations.find(n => n.id === selected.nationid) : null;
 
   return (
-    <div style={{ display: 'flex', height: '58vh', background: '#0a0c12', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '62vh', background: '#0a0c12', overflow: 'hidden', border: '1px solid #2a2520' }}>
       {/* SVG MAP */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
         <svg
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          width={SVG_W}
-          height={SVG_H}
-          style={{ display: 'block', background: '#0a0c12' }}
+          width="100%"
+          height="100%"
+          preserveAspectRatio="xMidYMid meet"
+          style={{ background: '#0a0c12', display: 'block' }}
         >
           <defs>
             <filter id="goldGlow">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#d4a853" />
             </filter>
           </defs>
 
@@ -87,56 +86,53 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             const owner = getOwner(hexId);
             const playerColor = getPlayerColor(owner);
             const nationColor = hex.nationid ? (NATION_COLORS[hex.nationid] || '#666') : null;
-            const isSelected = selectedHex === hexId || selected?.col === hex.col && selected?.row === hex.row;
+            const isSelected = selectedHex === hexId || (selected?.col === hex.col && selected?.row === hex.row);
             const units = getUnits(hexId);
             const unitCount = units.reduce((s, u) => s + (u.count || 0), 0);
 
-            // Color priority: player ownership > nation color > terrain color
             const fillColor = playerColor || nationColor || TERRAIN_COLORS[terrain] || '#444';
 
             return (
               <g key={hexId} onClick={() => handleHexClick(hex)} style={{ cursor: isWater ? 'default' : 'pointer' }}>
-                {/* Main hex */}
                 <polygon
-                  points={flatHexCorners(cx, cy, HEX_R)}
+                  points={flatHexCorners(cx, cy, HEX_R * (SVG_W/100))}
                   fill={fillColor}
                   fillOpacity={isWater ? 0.55 : 0.85}
                   stroke={isSelected ? '#d4a853' : isWater ? '#0a0c12' : '#00000066'}
-                  strokeWidth={isSelected ? 2 : 0.5}
+                  strokeWidth={isSelected ? 3 : 0.5}
                   filter={isSelected ? 'url(#goldGlow)' : undefined}
                 />
-                {/* Inner depth hex */}
                 {!isWater && (
                   <polygon
-                    points={flatHexCorners(cx, cy, HEX_R * 0.78)}
+                    points={flatHexCorners(cx, cy, (HEX_R * 0.88) * (SVG_W/100))}
                     fill="none"
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke="rgba(255,255,255,0.08)"
                     strokeWidth={0.5}
                     style={{ pointerEvents: 'none' }}
                   />
                 )}
-                {/* Unit badge */}
+                {hex.capitalname && (
+                  <text x={cx} y={cy - 2} textAnchor="middle" fontSize={8} style={{ pointerEvents: 'none' }}>★</text>
+                )}
                 {unitCount > 0 && (
-                  <>
-                    <circle cx={cx + 5} cy={cy - 5} r={4.5} fill={playerColor || '#d4a853'} stroke="#0a0c12" strokeWidth={1} />
-                    <text x={cx + 5} y={cy - 2} textAnchor="middle" fontSize={5} fill="#0a0c12" fontWeight="bold" style={{ pointerEvents: 'none' }}>{unitCount}</text>
-                  </>
+                  <g style={{ pointerEvents: 'none' }}>
+                    <circle cx={cx + 8} cy={cy - 8} r={6} fill={playerColor || '#d4a853'} stroke="#0a0c12" strokeWidth={1} />
+                    <text x={cx + 8} y={cy - 4} textAnchor="middle" fontSize={7} fill="#0a0c12" fontWeight="bold">{unitCount}</text>
+                  </g>
                 )}
               </g>
             );
           })}
 
-          {/* Nation labels at centroids */}
           {nations.map(nation => {
             const { cx, cy } = toSVG(nation.centroid[0], nation.centroid[1]);
             return (
               <g key={nation.id} style={{ pointerEvents: 'none' }}>
-                <text x={cx} y={cy} textAnchor="middle" fontSize={7}
-                  stroke="#0a0806" strokeWidth={3} paintOrder="stroke"
-                  fill={NATION_COLORS[nation.id] || '#fff'}
-                  fontFamily="serif" fontWeight="bold" letterSpacing={1}
-                  style={{ textTransform: 'uppercase' }}
-                >{nation.name.split(' ').slice(0,2).join(' ')}</text>
+                <text x={cx} y={cy} textAnchor="middle" fontSize={12}
+                  stroke="#0a0806" strokeWidth={4} paintOrder="stroke"
+                  fill="#fff" fontFamily="'Cinzel', serif" fontWeight="bold" letterSpacing={2}
+                  style={{ textTransform: 'uppercase', opacity: 0.9 }}
+                >{nation.name}</text>
               </g>
             );
           })}
@@ -145,70 +141,50 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
 
       {/* SIDE PANEL */}
       <div style={{
-        width: 260, flexShrink: 0, background: 'linear-gradient(135deg,#1a1c22,#14161c)',
+        width: 260, background: 'linear-gradient(135deg, #1a1c22, #14161c)',
         borderLeft: '1px solid #2a2520', display: 'flex', flexDirection: 'column',
-        fontFamily: "'Crimson Text', serif", color: '#c8c0b0', overflowY: 'auto'
+        fontFamily: "'Cormorant Garamond', serif", color: '#c8c0b0'
       }}>
-        {/* Tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid #2a2520' }}>
-          {['selected','nation','actions'].map(tab => (
-            <button key={tab} onClick={() => setPanelTab(tab)} style={{
-              flex: 1, padding: '8px 0', fontSize: 10, textTransform: 'uppercase',
-              letterSpacing: 1, fontFamily: "'Cinzel', serif",
-              background: panelTab === tab ? '#1e1a12' : 'transparent',
-              color: panelTab === tab ? '#d4a853' : '#666',
-              border: 'none', borderBottom: panelTab === tab ? '2px solid #d4a853' : '2px solid transparent',
-              cursor: 'pointer'
-            }}>{tab}</button>
+          {['selected','nation','actions'].map(t => (
+            <button key={t} onClick={() => setPanelTab(t)} style={{
+              flex: 1, padding: '10px 0', fontSize: 11, fontFamily: "'Cinzel', serif",
+              background: panelTab === t ? '#1e1a12' : 'transparent',
+              color: panelTab === t ? '#d4a853' : '#666',
+              border: 'none', borderBottom: panelTab === t ? '2px solid #d4a853' : '2px solid transparent',
+              cursor: 'pointer', textTransform: 'uppercase'
+            }}>{t}</button>
           ))}
         </div>
 
-        {panelTab === 'selected' && (
-          <div style={{ padding: 12 }}>
-            {selected ? (
+        <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
+          {panelTab === 'selected' && (
+            selected ? (
               <>
-                <div style={{ color: '#d4a853', fontFamily: "'Cinzel',serif", fontSize: 13, marginBottom: 6 }}>
-                  {selected.provincename || 'Unknown Province'}
+                <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, marginBottom: 8 }}>
+                  {selected.provincename || 'Wilderness'}
                 </div>
-                {selected.capitalname && (
-                  <div style={{ fontSize: 11, color: '#f0a030', marginBottom: 4 }}>&#9733; {selected.capitalname}</div>
-                )}
+                {selected.capitalname && <div style={{ color: '#f0a030', fontSize: 13, marginBottom: 12 }}>★ {selected.capitalname}</div>}
                 {selectedNation && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: NATION_COLORS[selectedNation.id] }} />
-                    <span style={{ fontSize: 11 }}>{selectedNation.name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: NATION_COLORS[selectedNation.id] }} />
+                    <span style={{ fontSize: 14 }}>{selectedNation.name}</span>
                   </div>
                 )}
-                <div style={{ fontSize: 11, textTransform: 'capitalize', color: '#888', marginBottom: 4 }}>
-                  Terrain: {selected.terrain}
-                </div>
-                <div style={{ fontSize: 10, color: '#555', marginTop: 8 }}>Col {selected.col}, Row {selected.row}</div>
+                <div style={{ fontSize: 13, textTransform: 'capitalize', color: '#888' }}>Terrain: {selected.terrain}</div>
+                <div style={{ fontSize: 11, color: '#444', marginTop: 20 }}>Grid: {selected.col}, {selected.row}</div>
               </>
-            ) : (
-              <div style={{ color: '#555', fontSize: 11, marginTop: 20, textAlign: 'center' }}>
-                Click a hex to see details
-              </div>
-            )}
-          </div>
-        )}
-
-        {panelTab === 'nation' && currentPlayer && (
-          <div style={{ padding: 12 }}>
-            <div style={{ color: '#d4a853', fontFamily: "'Cinzel',serif", fontSize: 13, marginBottom: 8 }}>
-              {currentPlayer.name}
+            ) : <div style={{ textAlign: 'center', color: '#444', marginTop: 40 }}>Select a territory</div>
+          )}
+          {panelTab === 'nation' && currentPlayer && (
+            <div>
+              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, marginBottom: 12 }}>{currentPlayer.name}</div>
+              <div style={{ fontSize: 14, marginBottom: 6 }}>Gold: {currentPlayer.resources?.gold ?? 0}</div>
+              <div style={{ fontSize: 14, marginBottom: 6 }}>Influence: {currentPlayer.ip ?? 0}</div>
+              <div style={{ fontSize: 14, marginBottom: 6 }}>Faith: {currentPlayer.sp ?? 0}</div>
             </div>
-            <div style={{ fontSize: 11, marginBottom: 4 }}>Gold: {currentPlayer.resources?.gold ?? 0}</div>
-            <div style={{ fontSize: 11, marginBottom: 4 }}>IP: {currentPlayer.ip ?? 0}</div>
-            <div style={{ fontSize: 11, marginBottom: 4 }}>SP: {currentPlayer.sp ?? 0}</div>
-          </div>
-        )}
-
-        {panelTab === 'actions' && (
-          <div style={{ padding: 12 }}>
-            <div style={{ color: '#d4a853', fontFamily: "'Cinzel',serif", fontSize: 12, marginBottom: 8 }}>Phase: {phase}</div>
-            <div style={{ fontSize: 10, color: '#666' }}>Use the action bar below to take actions.</div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
