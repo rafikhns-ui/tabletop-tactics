@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
-import { HEROES, FACTION_TO_NATION_ID } from './ardoniaData';
-import mapData from './ardonia_game_map.json';
+import { HEROES } from './ardoniaData';
+import { getProvincesOwnedBy } from './provinceSystem';
 import PlayerDetailModal from './PlayerDetailModal';
-
-// Pre-compute total province count per nation from the map JSON
-const NATION_PROVINCE_COUNT = {};
-const TOTAL_PROVINCES = mapData.nations.reduce((sum, n) => {
-  NATION_PROVINCE_COUNT[n.id] = n.province_count;
-  return sum + n.province_count;
-}, 0);
 
 function ObjectivesModal({ player, onClose }) {
   const [hoveredObjId, setHoveredObjId] = React.useState(null);
@@ -68,17 +61,16 @@ function ObjectivesModal({ player, onClose }) {
   );
 }
 
-export default function PlayerPanel({ player, isActive, territories, isSelf }) {
+export default function PlayerPanel({ player, isActive, territories, isSelf, provinces }) {
   const [expanded, setExpanded] = useState(false);
   const [showObjectives, setShowObjectives] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [hoveredObjId, setHoveredObjId] = useState(null);
-  // Count provinces owned by this player via their faction's nation in the map JSON
-  const nationId = FACTION_TO_NATION_ID[player.factionId] || player.factionId;
-  const owned = NATION_PROVINCE_COUNT[nationId] || 0;
-  const total = TOTAL_PROVINCES;
-  const pct = Math.round((owned / total) * 100);
   const completedCount = player.completedObjectives?.length || 0;
+  
+  // Count provinces owned by this player
+  const ownedProvinces = provinces ? getProvincesOwnedBy(player.id, provinces) : [];
+  const totalProvinces = provinces ? Object.keys(provinces).length : 0;
 
   return (
     <div className="border-b border-border"
@@ -123,11 +115,11 @@ export default function PlayerPanel({ player, isActive, territories, isSelf }) {
 
       <div className="px-3 pb-2">
         <div className="flex justify-between text-xs mb-0.5" style={{ color: 'hsl(40,20%,55%)' }}>
-          <span>{owned}/{total} territories</span>
+          <span>{ownedProvinces.length}/{totalProvinces} provinces</span>
           <span>🎯 {completedCount}/2</span>
         </div>
         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'hsl(35,20%,25%)' }}>
-          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: player.color }} />
+          <div className="h-full rounded-full transition-all" style={{ width: `${totalProvinces > 0 ? (ownedProvinces.length / totalProvinces) * 100 : 0}%`, background: player.color }} />
         </div>
       </div>
 

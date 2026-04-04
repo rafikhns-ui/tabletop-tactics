@@ -6,6 +6,7 @@ import BattleLog from '../components/game/BattleLog';
 import DiplomacyPanel from '../components/game/DiplomacyPanel';
 import HeroPanel from '../components/game/HeroPanel';
 import DeployableTroopsPanel from '../components/game/DeployableTroopsPanel';
+import { createInitialProvinceState } from '../components/game/provinceSystem';
 import { HEROES, LEADERS } from '../components/game/ardoniaData';
 import { getHeroCombatBonus } from '../components/game/ardoniaLogic';
 import { HexUtils, canUnitEnter, getReachableHexes, findMovementPath, UNIT_SPEED } from '../components/game/hexGridSystem';
@@ -94,6 +95,15 @@ export default function Game() {
   const [tradeOffers, setTradeOffers] = useState([]);
   const [bottomTab, setBottomTab] = useState('action'); // 'action' | 'diplomacy' | 'log'
   const [highlightMyTerritories, setHighlightMyTerritories] = useState(false);
+  const [provinces, setProvinces] = useState(null);
+
+  // Initialize provinces on game start
+  useEffect(() => {
+    if (gameState && !provinces) {
+      const { provinces: initProvinces } = createInitialProvinceState(gameState);
+      setProvinces(initProvinces);
+    }
+  }, [gameState, provinces]);
 
   // Reorder pendingUnits so the selected type comes first
   const handleSelectDeployUnit = (unitType) => {
@@ -898,6 +908,7 @@ export default function Game() {
                 isActive={i === gameState.currentPlayerIndex}
                 territories={gameState.territories}
                 isSelf={!p.isAI}
+                provinces={provinces}
               />
             </div>
           ))}
