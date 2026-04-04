@@ -20,53 +20,34 @@ const TERRAIN_COLORS = {
 const NATION_COLORS = {};
 mapData.nations.forEach(n => { NATION_COLORS[n.id] = n.color; });
 
-// ══════ FACTION NAME MAPPING (JSON nation_id → playable faction id) ══════
-const remapFaction = (nationId) => {
-  const map = {
-    gojeon:        'gojeon',
-    inuvak:        'inuvak',
-    ruskel:        'ruskel',
-    icebound:      'icebound',
-    oakhaven:      'oakhaven',
-    onishiman:     'onishiman',
-    kadjimaran:    'kadjimaran',
-    nimrudan:      'nimrudan',
-    kinetic:       'kintei',        // "Greater Kinetic" → Greater Kintei
-    ilalocatotlan: 'tlalocayotlan', // Ilalocatotlan → Tlalocayotlan League
-    hestia:        'republic',      // Republic of Hestia
-    azure:         'sultanate',     // Azure Moon Sultanate → Blue Moon Sultanate
-    silver:        'silver_union',  // Silver Union
-    shadowsfall:   'shadowsfall',   // Order of Shadowsfall
-    scorched:      'scorched',      // The Scorched Lands
-  };
-  return map[nationId] ?? null;
+// ══════ FACTION LABEL DATA (from JSON nations centroids) ══════
+const NATION_LABEL_MAP = {
+  gojeon:        { name: 'Gojeon Kingdom',        color: '#7b5ea7' },
+  inuvak:        { name: 'Inuvak Confederacy',     color: '#5dade2' },
+  ruskel:        { name: 'Ruskel Federation',      color: '#7f8c8d' },
+  icebound:      { name: 'Icebound Horde',         color: '#aed6f1' },
+  oakhaven:      { name: 'Republic of Oakhaven',   color: '#27ae60' },
+  onishiman:     { name: 'Onishiman Empire',       color: '#8b1a1a' },
+  kadjimaran:    { name: 'Kadjimaran Kingdom',     color: '#8b6a1a' },
+  nimrudan:      { name: 'Nimrudan Empire',        color: '#e67e22' },
+  kinetic:       { name: 'Greater Kintei',         color: '#d35400' },
+  ilalocatotlan: { name: 'Tlalocayotlan League',   color: '#c0392b' },
+  hestia:        { name: 'Republic of Hestia',     color: '#1a7a5a' },
+  azure:         { name: 'Blue Moon Sultanate',    color: '#1a5a8b' },
+  silver:        { name: 'Silver Union',           color: '#bdc3c7' },
+  shadowsfall:   { name: 'Order of Shadowsfall',   color: '#3C3C3C' },
+  scorched:      { name: 'The Scorched Lands',     color: '#8B3A0F' },
 };
 
-// ══════ FACTION CENTROIDS (computed from hex_grid) ══════
-const factionCentroidMap = {};
-mapData.hex_grid.forEach(h => {
-  if (!h.nation_id) return;
-  const fid = remapFaction(h.nation_id);
-  if (!fid || !FACTIONS[fid]) return;
-  if (!factionCentroidMap[fid]) factionCentroidMap[fid] = { sx: 0, sy: 0, cnt: 0 };
-  factionCentroidMap[fid].sx += h.x;
-  factionCentroidMap[fid].sy += h.y;
-  factionCentroidMap[fid].cnt++;
-});
-// Fallback names/colors for non-playable factions from the JSON
-const EXTRA_FACTION_INFO = {
-  shadowsfall: { name: 'Order of Shadowsfall', color: '#3C3C3C' },
-  scorched:    { name: 'The Scorched Lands',    color: '#8B3A0F' },
-  silver_union:{ name: 'Silver Union',          color: '#B0B0B0' },
-};
-
-const FACTION_CENTROIDS = Object.entries(factionCentroidMap).map(([fid, v]) => ({
-  fid,
-  x: v.sx / v.cnt,
-  y: v.sy / v.cnt,
-  name: FACTIONS[fid]?.name || EXTRA_FACTION_INFO[fid]?.name || fid,
-  color: FACTIONS[fid]?.color || EXTRA_FACTION_INFO[fid]?.color || '#fff',
-}));
+const FACTION_CENTROIDS = mapData.nations
+  .filter(n => NATION_LABEL_MAP[n.id])
+  .map(n => ({
+    fid: n.id,
+    x: n.centroid[0],
+    y: n.centroid[1],
+    name: NATION_LABEL_MAP[n.id].name,
+    color: NATION_LABEL_MAP[n.id].color,
+  }));
 
 // ══════ HEX GEOMETRY ══════
 function flatHexCorners(cx, cy, size) {
