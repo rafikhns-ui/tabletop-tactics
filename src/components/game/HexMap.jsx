@@ -90,7 +90,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             const units = getUnits(hexId);
             const unitCount = units.reduce((s, u) => s + (u.count || 0), 0);
 
-            const fillColor = playerColor || nationColor || TERRAIN_COLORS[terrain] || '#444';
+            const fillColor = TERRAIN_COLORS[terrain] || '#444';
 
             return (
               <g key={hexId} onClick={() => handleHexClick(hex)} style={{ cursor: isWater ? 'default' : 'pointer' }}>
@@ -110,6 +110,16 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                     strokeWidth={0.5}
                     style={{ pointerEvents: 'none' }}
                   />
+                          )}
+        {/* Nation color overlay */}
+        {hex.nationid && (
+          <polygon
+            points={flatHexCorners(cx, cy, (HEX_R * 0.92) * (SVG_W/100))}
+            fill={nationColor}
+            fillOpacity={0.4}
+            style={{ pointerEvents: 'none' }}
+          />
+        )}
                 )}
                 {hex.capitalname && (
                   <text x={cx} y={cy - 2} textAnchor="middle" fontSize={8} style={{ pointerEvents: 'none' }}>★</text>
