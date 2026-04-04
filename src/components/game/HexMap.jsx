@@ -212,40 +212,34 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             const nationColor = hex.nation_id ? (NATION_COLORS[hex.nation_id] || '#666') : null;
             const isMyHighlighted = highlightPlayerId && owner === highlightPlayerId;
 
+            const highlightMode = !!highlightPlayerId;
+            const dimmed = highlightMode && !isMyHighlighted;
+
             return (
               <g key={hexId} onClick={() => !isWater && handleHexClick(hex)} style={{ cursor: isWater ? 'default' : 'pointer' }}>
                 {/* Base terrain hex */}
                 <polygon
                   points={flatHexCorners(cx, cy, HEX_PX)}
-                  fill={isSelected ? '#d4a853' : isMyHighlighted ? (playerColor || fillColor) : fillColor}
-                  fillOpacity={isSelected ? 0.85 : isWater ? 0.5 : isMyHighlighted ? 1 : 0.8}
+                  fill={isSelected ? '#d4a853' : isMyHighlighted ? playerColor : fillColor}
+                  fillOpacity={isSelected ? 0.85 : dimmed ? 0.15 : isWater ? 0.5 : 0.8}
                   stroke={isMyHighlighted ? playerColor : (isWater ? '#0a0c12' : '#00000020')}
                   strokeWidth={isMyHighlighted ? 3 : 0.5}
                 />
-                {/* Inner bevel line for 3D effect */}
-                {!isWater && (
-                  <polygon
-                    points={flatHexCorners(cx, cy, HEX_PX * 0.88)}
-                    fill="none"
-                    stroke="rgba(255,255,255,0.06)"
-                    strokeWidth={0.5}
-                    style={{ pointerEvents: 'none' }}
-                  />
-                )}
-                {/* Player ownership overlay */}
-                {owner && playerColor && (
+
+                {/* Player ownership overlay — skip in highlight mode, already shown via base fill */}
+                {owner && playerColor && !highlightMode && (
                   <polygon
                     points={flatHexCorners(cx, cy, HEX_PX * 0.92)}
                     fill={playerColor}
-                    fillOpacity={isMyHighlighted ? 0.7 : 0.45}
+                    fillOpacity={0.45}
                     stroke={playerColor}
-                    strokeWidth={isMyHighlighted ? 3 : 1.5}
+                    strokeWidth={1.5}
                     strokeOpacity={0.9}
                     style={{ pointerEvents: 'none' }}
                   />
                 )}
-                {/* Nation color tint overlay (only when no player owns it) */}
-                {!owner && nationColor && (
+                {/* Nation color tint overlay (only when no player owns it, and not in highlight mode) */}
+                {!owner && nationColor && !highlightMode && (
                   <polygon
                     points={flatHexCorners(cx, cy, HEX_PX * 0.92)}
                     fill={nationColor}
