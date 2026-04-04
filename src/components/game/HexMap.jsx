@@ -20,6 +20,25 @@ const TERRAIN_COLORS = {
 const NATION_COLORS = {};
 mapData.nations.forEach(n => { NATION_COLORS[n.id] = n.color; });
 
+// ══════ FACTION ID → MAP NATION ID mapping ══════
+// TERRITORIES use faction IDs; hex_grid uses nation_id from the JSON map
+const FACTION_TO_NATION_ID = {
+  gojeon:        'gojeon',
+  onishiman:     'onishiman',
+  inuvak:        'inuvak',
+  ruskel:        'ruskel',
+  icebound:      'icebound',
+  kadjimaran:    'kadjimaran',
+  oakhaven:      'oakhaven',
+  nimrudan:      'nimrudan',
+  kintei:        'kinetic',
+  republic:      'hestia',
+  sultanate:     'azure',
+  tlalocayotlan: 'ilalocatotlan',
+  silver_union:  'silver',
+  shadowfell:    'shadowsfall',
+};
+
 // ══════ FACTION LABEL DATA (from JSON nations centroids) ══════
 const NATION_LABEL_MAP = {
   gojeon:        { name: 'Gojeon Kingdom',        color: '#7b5ea7' },
@@ -107,7 +126,12 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
     const map = {};
     if (gameState?.territories) {
       Object.values(gameState.territories).forEach(t => {
-        if (t.faction && t.owner) map[t.faction] = t.owner;
+        if (t.faction && t.owner) {
+          // Map both the raw faction id AND the corresponding map nation_id
+          map[t.faction] = t.owner;
+          const nationId = FACTION_TO_NATION_ID[t.faction];
+          if (nationId) map[nationId] = t.owner;
+        }
       });
     }
     return map;
