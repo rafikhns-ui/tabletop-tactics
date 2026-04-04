@@ -61,15 +61,15 @@ function ObjectivesModal({ player, onClose }) {
   );
 }
 
-export default function PlayerPanel({ player, isActive, territories, isSelf, provinces }) {
+export default function PlayerPanel({ player, isActive, territories, isSelf, provinces, gameState }) {
   const [expanded, setExpanded] = useState(false);
   const [showObjectives, setShowObjectives] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [hoveredObjId, setHoveredObjId] = useState(null);
   const completedCount = player.completedObjectives?.length || 0;
   
-  // Count provinces owned by this player
-  const ownedProvinces = provinces ? getProvincesOwnedBy(player.id, provinces) : [];
+  // Count provinces owned by this player (dynamically computed from hex control)
+  const ownedProvinces = provinces && gameState ? getProvincesOwnedBy(player.id, provinces, gameState) : [];
   const totalProvinces = provinces ? Object.keys(provinces).length : 0;
 
   return (

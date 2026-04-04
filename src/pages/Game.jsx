@@ -909,6 +909,7 @@ export default function Game() {
                 territories={gameState.territories}
                 isSelf={!p.isAI}
                 provinces={provinces}
+                gameState={gameState}
               />
             </div>
           ))}

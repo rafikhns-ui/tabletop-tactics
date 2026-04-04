@@ -159,8 +159,21 @@ export const buildHexToProvinceMap = () => {
 };
 
 // ════ PROVINCE QUERIES ════
-export const getProvincesOwnedBy = (playerId, provinces) =>
-  Object.values(provinces).filter(p => p.owner === playerId);
+export const getProvincesOwnedBy = (playerId, provinces, gameState) => {
+  if (!gameState) return Object.values(provinces).filter(p => p.owner === playerId);
+  
+  // Compute ownership dynamically based on hex control
+  return Object.values(provinces).map(p => {
+    const hexesInProv = mapData.hex_grid.filter(h => h.nation_id === p.nation_id && h.province === p.province_id);
+    const playerControlledHexes = hexesInProv.filter(h => {
+      const hexId = `${h.col},${h.row}`;
+      return gameState.hexes?.[hexId]?.owner === playerId;
+    }).length;
+    
+    // Player owns province if they control majority of hexes
+    return playerControlledHexes > hexesInProv.length / 2 ? { ...p, owner: playerId } : p;
+  }).filter(p => p.owner === playerId);
+};
 
 export const getNationalCapital = (nationId, provinces) =>
   Object.values(provinces).find(p => p.nation_id === nationId && p.is_national_capital);
