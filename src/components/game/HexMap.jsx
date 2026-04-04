@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import mapData from './ardonia_game_map.json';
-import { FACTIONS } from './ardoniaData';
+import { FACTIONS, FACTION_TO_NATION_ID } from './ardoniaData';
 
 // ══════ TERRAIN COLORS (dark fantasy palette) ══════
 const TERRAIN_COLORS = {
@@ -20,24 +20,7 @@ const TERRAIN_COLORS = {
 const NATION_COLORS = {};
 mapData.nations.forEach(n => { NATION_COLORS[n.id] = n.color; });
 
-// ══════ FACTION ID → MAP NATION ID mapping ══════
-// TERRITORIES use faction IDs; hex_grid uses nation_id from the JSON map
-const FACTION_TO_NATION_ID = {
-  gojeon:        'gojeon',
-  onishiman:     'onishiman',
-  inuvak:        'inuvak',
-  ruskel:        'ruskel',
-  icebound:      'icebound',
-  kadjimaran:    'kadjimaran',
-  oakhaven:      'oakhaven',
-  nimrudan:      'nimrudan',
-  kintei:        'kinetic',
-  republic:      'hestia',
-  sultanate:     'azure',
-  tlalocayotlan: 'ilalocatotlan',
-  silver_union:  'silver',
-  shadowfell:    'shadowsfall',
-};
+
 
 // ══════ FACTION LABEL DATA (from JSON nations centroids) ══════
 const NATION_LABEL_MAP = {

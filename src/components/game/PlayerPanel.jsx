@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import { HEROES } from './ardoniaData';
+import { HEROES, FACTION_TO_NATION_ID } from './ardoniaData';
+import mapData from './ardonia_game_map.json';
 import PlayerDetailModal from './PlayerDetailModal';
+
+// Pre-compute total province count per nation from the map JSON
+const NATION_PROVINCE_COUNT = {};
+const TOTAL_PROVINCES = mapData.nations.reduce((sum, n) => {
+  NATION_PROVINCE_COUNT[n.id] = n.province_count;
+  return sum + n.province_count;
+}, 0);
 
 function ObjectivesModal({ player, onClose }) {
   const [hoveredObjId, setHoveredObjId] = React.useState(null);
@@ -65,8 +73,10 @@ export default function PlayerPanel({ player, isActive, territories, isSelf }) {
   const [showObjectives, setShowObjectives] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [hoveredObjId, setHoveredObjId] = useState(null);
-  const owned = Object.values(territories).filter(t => t.owner === player.id).length;
-  const total = Object.keys(territories).length;
+  // Count provinces owned by this player via their faction's nation in the map JSON
+  const nationId = FACTION_TO_NATION_ID[player.factionId] || player.factionId;
+  const owned = NATION_PROVINCE_COUNT[nationId] || 0;
+  const total = TOTAL_PROVINCES;
   const pct = Math.round((owned / total) * 100);
   const completedCount = player.completedObjectives?.length || 0;
 

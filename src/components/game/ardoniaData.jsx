@@ -166,6 +166,24 @@ export const TERRAIN_MOVEMENT_COSTS = {
 
 // ---- Factions ----
 // playable: true = selectable by human/AI players; false = neutral territory holder only
+// Maps faction IDs (game logic) → nation_id in the hex_grid JSON
+export const FACTION_TO_NATION_ID = {
+  gojeon:        'gojeon',
+  onishiman:     'onishiman',
+  inuvak:        'inuvak',
+  ruskel:        'ruskel',
+  icebound:      'icebound',
+  kadjimaran:    'kadjimaran',
+  oakhaven:      'oakhaven',
+  nimrudan:      'nimrudan',
+  kintei:        'kinetic',
+  republic:      'hestia',
+  sultanate:     'azure',
+  tlalocayotlan: 'ilalocatotlan',
+  silver_union:  'silver',
+  shadowfell:    'shadowsfall',
+};
+
 export const FACTIONS = {
   // ── Western Continent (Mangian) ──
   gojeon: {
