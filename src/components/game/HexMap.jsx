@@ -218,9 +218,9 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                 <polygon
                   points={flatHexCorners(cx, cy, HEX_PX)}
                   fill={isSelected ? '#d4a853' : isMyHighlighted ? (playerColor || fillColor) : fillColor}
-                  fillOpacity={isSelected ? 0.85 : isWater ? 0.5 : 0.8}
-                  stroke={isWater ? '#0a0c12' : '#00000020'}
-                  strokeWidth={0.5}
+                  fillOpacity={isSelected ? 0.85 : isWater ? 0.5 : isMyHighlighted ? 1 : 0.8}
+                  stroke={isMyHighlighted ? playerColor : (isWater ? '#0a0c12' : '#00000020')}
+                  strokeWidth={isMyHighlighted ? 3 : 0.5}
                 />
                 {/* Inner bevel line for 3D effect */}
                 {!isWater && (
@@ -229,18 +229,6 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                     fill="none"
                     stroke="rgba(255,255,255,0.06)"
                     strokeWidth={0.5}
-                    style={{ pointerEvents: 'none' }}
-                  />
-                )}
-                {/* Highlight for "My Territories" mode */}
-                {isMyHighlighted && (
-                  <polygon
-                    points={flatHexCorners(cx, cy, HEX_PX * 1.08)}
-                    fill={playerColor || '#fff'}
-                    fillOpacity={0.5}
-                    stroke={playerColor || '#fff'}
-                    strokeWidth={4}
-                    strokeOpacity={1}
                     style={{ pointerEvents: 'none' }}
                   />
                 )}
