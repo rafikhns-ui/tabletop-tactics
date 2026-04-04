@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { BUILDING_DEFS, UNIT_DEFS } from './ardoniaData';
+import { getFactionBuildings, getFactionHeroes, getFactionUnits } from './ardoniaData';
 
-const BUILDABLE = ['imperial_stronghold', 'omitoji_dojo', 'spirit_gate', 'tower_of_intrigues', 'siege_engine_workshop', 'fighting_pit', 'grand_market', 'crimson_port'];
-
-// Units unlocked by building
-const UNIT_UNLOCK = {
-  fighting_pit: ['infantry', 'elite'],
-  siege_engine_workshop: ['ranged'],
+// In your component:
+const buildings = getFactionBuildings(currentPlayer.faction);
+const heroes    = getFactionHeroes(currentPlayer.faction);
+const units     = getFactionUnits(currentPlayer.faction);
 };
 
 function canAfford(resources, cost) {
