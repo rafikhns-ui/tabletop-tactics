@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HEROES } from './ardoniaData';
+import { NATION_PERSONALITIES } from './aiPersonalities';
 import { getProvincesOwnedBy } from './provinceSystem';
 import PlayerDetailModal from './PlayerDetailModal';
 
@@ -138,6 +139,18 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
               <div className="opacity-70">{player.leader.passive}</div>
             </div>
           )}
+
+          {player.isAI && (() => {
+            const personality = NATION_PERSONALITIES[player.factionId];
+            return personality ? (
+              <div className="rounded p-2 text-xs" style={{ background: 'hsl(35,20%,20%)', border: '1px solid hsl(200,40%,35%)' }}>
+                <div className="font-semibold mb-0.5" style={{ color: 'hsl(200,60%,65%)', fontFamily: "'Cinzel',serif" }}>
+                  {personality.emoji} {personality.name}
+                </div>
+                <div className="opacity-70">AI Personality: {personality.type}</div>
+              </div>
+            ) : null;
+          })()}
 
           <div>
             <div className="text-xs font-semibold mb-1 opacity-50" style={{ fontFamily: "'Cinzel',serif" }}>BUILDINGS</div>

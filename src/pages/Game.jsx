@@ -72,6 +72,7 @@ import AvatarPanel from '../components/game/AvatarPanel';
 import AiSetupModal from '../components/game/AiSetupModal';
 import AdvisorPanel from '../components/game/AdvisorPanel';
 import DiplomacyLog from '../components/game/DiplomacyLog';
+import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar } from '../components/game/aiPersonalities';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
@@ -726,9 +727,20 @@ export default function Game() {
   };
 
   const handleAcceptTrade = (offer) => {
+    const fromPlayer = gameState?.players?.find(p => p.id === offer.fromId);
+    const toPlayer = gameState?.players?.find(p => p.id === offer.toId);
+    
+    // If accepting player is AI, use personality to decide
+    if (toPlayer?.isAI) {
+      const personality = NATION_PERSONALITIES[toPlayer.factionId];
+      const score = scoreTradeOffer(offer, toPlayer, fromPlayer, personality);
+      if (score < 50) {
+        handleDeclineTrade(offer);
+        return;
+      }
+    }
+    
     setGameState(prev => {
-      const fromPlayer = prev.players.find(p => p.id === offer.fromId);
-      const toPlayer = prev.players.find(p => p.id === offer.toId);
       if (!fromPlayer || !toPlayer) return prev;
       for (const [k, v] of Object.entries(offer.offer || {})) {
         if ((fromPlayer.resources?.[k] || 0) < v) return prev;
