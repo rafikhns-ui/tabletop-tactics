@@ -87,8 +87,7 @@ const createPlayer = (id, name, factionId, isAI = false, leaderIndex = 0, preset
 };
 
 // ---- Initial game state ----
-export const createGameState = (mode, choices = {}, playersArr = null) => {
-  let players;
+export const createGameState = (mode, playersArr = null) => {  let players;
 
   if (playersArr) {
     // Build from FactionSelect output
