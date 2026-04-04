@@ -1,28 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import mapData from './ardonia_game_map.json';
 
-const TERRAIN_COLORS = {
-  water: '#183a5c',
-  coastal: '#2a6080',
-  plains: '#5a7a30',
-  forest: '#1e4a1e',
-  hills: '#6a6030',
-  mountain: '#4a4a5a',
-  desert: '#9a7a30',
-  swamp: '#3a4a2a',
-  tundra: '#7a8a9a',
-  scorched: '#4a1a0a',
-};
-
-const NATION_COLORS = {
-  gojeon: '#7B3DBE', inuvak: '#2E9E9E', ruskel: '#C43030',
-  icebound: '#D8CFC0', oakhaven: '#2E8D32', shadowsfall: '#3C3C3C',
-  onishiman: '#8B1525', silver: '#B0B0B0', kadjimaran: '#C49A2A',
-  nimrudan: '#B5451B', kinetic: '#E07020', ilalocatotlan: '#8B9B30',
-  hestia: '#A08050', azure: '#7A6AED', scorched: '#8B3A0F',
-};
-
-// flat-top hex corners
 function flatHexCorners(cx, cy, size) {
   return Array.from({ length: 6 }, (_, i) => {
     const angle = (Math.PI / 180) * (60 * i);
