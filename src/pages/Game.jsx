@@ -1007,26 +1007,6 @@ export default function Game() {
                   `${Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id).length} territories owned` : ''}
               </span>
             </div>
-            <div className="flex items-center gap-2 mb-1">
-              <button
-                onClick={() => setBuildingPlacementMode(buildingPlacementMode === 'fortress' ? null : 'fortress')}
-                className="text-xs px-3 py-1 rounded font-bold transition-all"
-                style={{
-                  fontFamily: "'Cinzel',serif",
-                  background: buildingPlacementMode === 'fortress' ? 'hsl(43,60%,22%)' : 'hsl(35,20%,22%)',
-                  border: `1px solid ${buildingPlacementMode === 'fortress' ? 'hsl(43,80%,50%)' : 'hsl(35,20%,35%)'}`,
-                  color: buildingPlacementMode === 'fortress' ? 'hsl(43,90%,75%)' : 'hsl(40,20%,65%)',
-                }}>🏰 Place Fortress</button>
-              <button
-                onClick={() => setBuildingPlacementMode(buildingPlacementMode === 'port' ? null : 'port')}
-                className="text-xs px-3 py-1 rounded font-bold transition-all"
-                style={{
-                  fontFamily: "'Cinzel',serif",
-                  background: buildingPlacementMode === 'port' ? 'hsl(43,60%,22%)' : 'hsl(35,20%,22%)',
-                  border: `1px solid ${buildingPlacementMode === 'port' ? 'hsl(43,80%,50%)' : 'hsl(35,20%,35%)'}`,
-                  color: buildingPlacementMode === 'port' ? 'hsl(43,90%,75%)' : 'hsl(40,20%,65%)',
-                }}>🚢 Place Port</button>
-            </div>
             <HexMap
               gameState={gameState}
               selectedHex={selectedTerritory}
@@ -1110,6 +1090,8 @@ export default function Game() {
                 gameState={gameState}
                 onBuild={handleBuild}
                 onUpgrade={handleUpgrade}
+                onSetBuildingPlacementMode={setBuildingPlacementMode}
+                buildingPlacementMode={buildingPlacementMode}
               />
             )}
             {bottomTab === 'build' && currentPlayer?.isAI && (

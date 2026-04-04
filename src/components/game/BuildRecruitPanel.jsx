@@ -30,7 +30,7 @@ function CostTag({ cost, resources }) {
   );
 }
 
-export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onUpgrade, onBuildFortress, phase }) {
+export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onUpgrade, onBuildFortress, onSetBuildingPlacementMode, buildingPlacementMode, phase }) {
   const [tab, setTab] = useState('build'); // 'build' | 'upgrade'
   const [previewImage, setPreviewImage] = useState(null);
   const { resources } = currentPlayer;
@@ -73,6 +73,32 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
             {t === 'build' ? '🏗️ Build' : '⬆️ Upgrade'}
           </button>
         ))}
+      </div>
+
+      {/* Fortress & Port Placement Buttons */}
+      <div className="flex gap-1.5 mb-2">
+        <button
+          onClick={() => onSetBuildingPlacementMode(buildingPlacementMode === 'fortress' ? null : 'fortress')}
+          className="flex-1 py-1.5 rounded text-xs font-bold transition-all"
+          style={{
+            ...s,
+            background: buildingPlacementMode === 'fortress' ? 'hsl(43,60%,22%)' : 'hsl(35,20%,22%)',
+            border: `1px solid ${buildingPlacementMode === 'fortress' ? 'hsl(43,80%,50%)' : 'hsl(35,20%,32%)'}`,
+            color: buildingPlacementMode === 'fortress' ? 'hsl(43,90%,75%)' : 'hsl(40,20%,65%)',
+          }}>
+            🏰 Place Fortress
+          </button>
+        <button
+          onClick={() => onSetBuildingPlacementMode(buildingPlacementMode === 'port' ? null : 'port')}
+          className="flex-1 py-1.5 rounded text-xs font-bold transition-all"
+          style={{
+            ...s,
+            background: buildingPlacementMode === 'port' ? 'hsl(43,60%,22%)' : 'hsl(35,20%,22%)',
+            border: `1px solid ${buildingPlacementMode === 'port' ? 'hsl(43,80%,50%)' : 'hsl(35,20%,32%)'}`,
+            color: buildingPlacementMode === 'port' ? 'hsl(43,90%,75%)' : 'hsl(40,20%,65%)',
+          }}>
+            🚢 Place Port
+          </button>
       </div>
 
       {tab === 'build' && (
@@ -119,7 +145,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
 
       {tab === 'upgrade' && (
         <div className="space-y-1.5">
-           {Object.entries(currentPlayer.buildings || {}).map(([id, b]) => {
+          {Object.entries(currentPlayer.buildings || {}).map(([id, b]) => {
             const def = BUILDING_DEFS[id];
             if (!def || !def.maxLevel) return null;
             const isMaxed = b.level >= def.maxLevel;
