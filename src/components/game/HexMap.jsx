@@ -482,7 +482,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
       }}>
         {/* Tabs */}
          <div style={{ display: 'flex', borderBottom: '1px solid #2a2520' }}>
-           {['selected', 'nation', 'diplomacy', 'actions'].map(t => (
+           {['selected', 'nation', 'actions'].map(t => (
             <button key={t} onClick={() => setPanelTab(t)} style={{
               flex: 1, padding: '10px 0', fontSize: 11,
               fontFamily: "'Cinzel', serif",
@@ -604,38 +604,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             </div>
           )}
 
-          {panelTab === 'diplomacy' && currentPlayer && gameState ? (
-            <div>
-              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
-                Diplomatic Relations
-              </div>
-              {gameState.players.filter(p => p.id !== currentPlayer.id).map(other => {
-                const key = [currentPlayer.id, other.id].sort().join('|');
-                const status = gameState?.diplomacy?.[key] || 'neutral';
-                const statusColors = { alliance: '#27ae60', war: '#e74c3c', neutral: '#888' };
-                const statusLabels = { alliance: '⚔️ Alliance', war: '⚠️ War', neutral: '🤝 Neutral' };
-                const tradeOffers = gameState?.tradeOffers?.filter(t => (t.fromId === currentPlayer.id && t.toId === other.id) || (t.fromId === other.id && t.toId === currentPlayer.id)) || [];
-                return (
-                  <div key={other.id} style={{ marginBottom: 12, padding: 10, background: '#0a0c12', border: `1px solid ${statusColors[status]}33`, borderRadius: 4 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                      <div style={{ width: 12, height: 12, borderRadius: '50%', background: other.color }} />
-                      <span style={{ fontSize: 13, fontFamily: "'Cinzel', serif", fontWeight: 600, color: '#c8c0b0' }}>{other.name}</span>
-                      <span style={{ fontSize: 11, marginLeft: 'auto', color: statusColors[status], fontWeight: 600 }}>{statusLabels[status]}</span>
-                    </div>
-                    {tradeOffers.length > 0 && (
-                      <div style={{ fontSize: 11, color: '#888', marginTop: 4, paddingTop: 4, borderTop: '1px solid #2a2520' }}>
-                        📜 {tradeOffers.length} trade offer{tradeOffers.length > 1 ? 's' : ''}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              </div>
-              ) : panelTab === 'diplomacy' ? (
-              <div style={{ textAlign: 'center', color: '#555', marginTop: 40, fontStyle: 'italic' }}>
-              Data unavailable
-              </div>
-              ) : null}
+
 
           {panelTab === 'actions' && (
             <div style={{ textAlign: 'center', color: '#555', marginTop: 40, fontStyle: 'italic', fontSize: 12 }}>
