@@ -41,7 +41,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   // Viewport setup: use 0-100 coordinates directly but scaled for SVG
   const SVG_W = 1200;
   const SVG_H = 900;
-  const HEX_R = 1.25; // Matching Claude's 2.5 hex_size (radius is half)
+  const HEX_R = 2.5; // Matching Claude's 2.5 hex_size (radius is half)
 
   const toSVG = (px, py) => ({
     cx: (px / 100) * SVG_W,
