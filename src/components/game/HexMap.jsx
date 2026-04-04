@@ -163,8 +163,20 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                     style={{ pointerEvents: 'none' }}
                   />
                 )}
-                {/* Nation color tint overlay */}
-                {nationColor && (
+                {/* Player ownership overlay */}
+                {owner && playerColor && (
+                  <polygon
+                    points={flatHexCorners(cx, cy, HEX_PX * 0.92)}
+                    fill={playerColor}
+                    fillOpacity={0.45}
+                    stroke={playerColor}
+                    strokeWidth={1.5}
+                    strokeOpacity={0.8}
+                    style={{ pointerEvents: 'none' }}
+                  />
+                )}
+                {/* Nation color tint overlay (only when no player owns it) */}
+                {!owner && nationColor && (
                   <polygon
                     points={flatHexCorners(cx, cy, HEX_PX * 0.92)}
                     fill={nationColor}
