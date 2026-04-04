@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import mapData from './ardonia_game_map.json';
 
-const TERRAIN_COLORS = {
+const 
+ = {
   water: '#0a4d68',
   plains: '#8b7355',
   forest: '#2d5016',
