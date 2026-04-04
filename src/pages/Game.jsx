@@ -83,6 +83,7 @@ export default function Game() {
   const [showAiSetup, setShowAiSetup] = useState(false);
   const [onlineSession, setOnlineSession] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
+  const [selectedProvince, setSelectedProvince] = useState(null);
   const [phase, setPhase] = useState('deploy'); // deploy → move → attack → fortify
   const [battle, setBattle] = useState(null);
   const [activeEvent, setActiveEvent] = useState(null);
@@ -942,9 +943,11 @@ export default function Game() {
             <HexMap
               gameState={gameState}
               selectedHex={selectedTerritory}
+              selectedProvince={selectedProvince}
               phase={phase}
               currentPlayer={currentPlayer}
               onHexClick={handleTerritoryClick}
+              onProvincClick={setSelectedProvince}
               movementState={movementState}
               highlightPlayerId={highlightMyTerritories ? currentPlayer?.id : null}
               reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}

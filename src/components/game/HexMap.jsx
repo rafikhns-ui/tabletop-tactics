@@ -90,7 +90,7 @@ function hexNeighborKeys(gc, gr) {
 }
 
 // ══════ COMPONENT ══════
-export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick, movementState, highlightPlayerId, reachableHexes }) {
+export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, highlightPlayerId, reachableHexes }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -232,7 +232,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
   }, [hexGrid]);
 
   const selectedNation = selected?.nation_id ? nations.find(n => n.id === selected.nation_id) : null;
-  const selectedProvince = selectedNation ? selectedNation.provinces.find(p => p.id === selected.province) : null;
+  const selectedProvinceInfo = selectedNation ? selectedNation.provinces.find(p => p.id === selected.province) : null;
 
   return (
     <div style={{ display: 'flex', height: '62vh', background: '#0a0c12', overflow: 'hidden', border: '1px solid #2a2520' }}>
@@ -290,19 +290,31 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             const nationColor = hex.nation_id ? (NATION_COLORS[hex.nation_id] || '#666') : null;
             const isMyHighlighted = highlightPlayerId && owner === highlightPlayerId;
             const isReachable = reachableHexes && reachableHexes.has(hexId);
+            const isInSelectedProvince = selectedProvince && hex.nation_id === selectedProvince.nation_id && hex.province === selectedProvince.province_id;
 
             const highlightMode = !!highlightPlayerId;
             const dimmed = highlightMode && !isMyHighlighted;
 
             return (
-              <g key={hexId} onClick={() => !isWater && handleHexClick(hex)} style={{ cursor: isWater ? 'default' : 'pointer' }}>
+              <g key={hexId} onClick={() => {
+              if (!isWater) {
+                handleHexClick(hex);
+                if (onProvincClick && hex.nation_id && hex.province) {
+                  onProvincClick({
+                    nation_id: hex.nation_id,
+                    province_id: hex.province,
+                    capital_name: hex.capital_name,
+                  });
+                }
+              }
+            }} style={{ cursor: isWater ? 'default' : 'pointer' }}>
                 {/* Base terrain hex */}
                 <polygon
                   points={flatHexCorners(cx, cy, HEX_PX)}
-                  fill={isSelected ? '#d4a853' : isReachable ? '#4a9e6a' : isMyHighlighted ? playerColor : fillColor}
-                  fillOpacity={isSelected ? 0.85 : isReachable ? 0.55 : dimmed ? 0.15 : isWater ? 0.5 : 0.8}
-                  stroke={isReachable ? '#6dffaa' : isMyHighlighted ? playerColor : (isWater ? '#0a0c12' : '#00000020')}
-                  strokeWidth={isReachable ? 2 : isMyHighlighted ? 3 : 0.5}
+                  fill={isSelected ? '#d4a853' : isInSelectedProvince ? '#9370db' : isReachable ? '#4a9e6a' : isMyHighlighted ? playerColor : fillColor}
+                  fillOpacity={isSelected ? 0.85 : isInSelectedProvince ? 0.6 : isReachable ? 0.55 : dimmed ? 0.15 : isWater ? 0.5 : 0.8}
+                  stroke={isReachable ? '#6dffaa' : isInSelectedProvince ? '#9370db' : isMyHighlighted ? playerColor : (isWater ? '#0a0c12' : '#00000020')}
+                  strokeWidth={isReachable ? 2 : isInSelectedProvince ? 2.5 : isMyHighlighted ? 3 : 0.5}
                 />
 
                 {/* Player ownership overlay — skip in highlight mode, already shown via base fill */}
@@ -520,9 +532,9 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                   );
                 })()}
                 {/* Non-capital hex hint */}
-                {!selected.capital_name && selected.nation_id && selectedProvince && (
+                {!selected.capital_name && selected.nation_id && selectedProvinceInfo && (
                   <div style={{ fontSize: 11, color: '#555', fontStyle: 'italic', marginBottom: 8 }}>
-                    ◆ Provincial capital: <span style={{ color: '#7a6a50' }}>{selectedProvince.capital}</span><br/>
+                    ◆ Provincial capital: <span style={{ color: '#7a6a50' }}>{selectedProvinceInfo.capital}</span><br/>
                     <span style={{ color: '#444' }}>Capture the capital hex to control this province</span>
                   </div>
                 )}
