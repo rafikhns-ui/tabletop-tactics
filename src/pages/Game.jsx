@@ -90,6 +90,7 @@ export default function Game() {
   const [battleLog, setBattleLog] = useState([]);
   // Movement state: { fromHexId, selectedUnit (type string), speed }
   const [movementState, setMovementState] = useState(null);
+  const [movedHexes, setMovedHexes] = useState(new Set()); // hexIds that already moved this turn
   const [tradeOffers, setTradeOffers] = useState([]);
   const [bottomTab, setBottomTab] = useState('action'); // 'action' | 'diplomacy' | 'log'
   const [highlightMyTerritories, setHighlightMyTerritories] = useState(false);
@@ -272,6 +273,10 @@ export default function Game() {
         const units = hex.units?.reduce((s, u) => s + u.count, 0) || 0;
         const moveOwner = resolveHexOwner(hexId);
         if (moveOwner === currentPlayer.id && units > 0) {
+          if (movedHexes.has(hexId)) {
+            addMessage('⛔ This unit already moved this turn');
+            return;
+          }
           const unitType = hex.units[0]?.type || 'infantry';
           // Use movementRange from UNIT_DEFS if available, else fallback
           const def = UNIT_DEFS[unitType];
@@ -310,6 +315,7 @@ export default function Game() {
           };
         });
 
+        setMovedHexes(prev => new Set([...prev, fromHexId]));
         setSelectedTerritory(null);
         setMovementState(null);
         addMessage(`🚶 Moved ${unitType} to hex`);
@@ -730,6 +736,7 @@ export default function Game() {
   const advancePhase = () => {
     setSelectedTerritory(null);
     setMovementState(null);
+    setMovedHexes(new Set());
     if (phase === 'deploy') {
       setPhase('move');
       addMessage('🚶 Move phase — move units across the map');
@@ -746,6 +753,7 @@ export default function Game() {
 
   const endTurn = useCallback(() => {
     setSelectedTerritory(null);
+    setMovedHexes(new Set());
     setGameState(prev => {
       if (!prev) return prev;
       const nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length;
