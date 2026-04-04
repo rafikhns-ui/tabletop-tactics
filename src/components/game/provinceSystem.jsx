@@ -162,16 +162,16 @@ export const buildHexToProvinceMap = () => {
 export const getProvincesOwnedBy = (playerId, provinces, gameState) => {
   if (!gameState) return Object.values(provinces).filter(p => p.owner === playerId);
   
-  // Compute ownership dynamically based on hex control
+  // Province is owned if player controls the capital/main city hex
   return Object.values(provinces).map(p => {
-    const hexesInProv = mapData.hex_grid.filter(h => h.nation_id === p.nation_id && h.province === p.province_id);
-    const playerControlledHexes = hexesInProv.filter(h => {
-      const hexId = `${h.col},${h.row}`;
-      return gameState.hexes?.[hexId]?.owner === playerId;
-    }).length;
+    const capitalHex = mapData.hex_grid.find(h => h.capital_name === p.capital_name && h.nation_id === p.nation_id);
+    if (!capitalHex) return p;
     
-    // Player owns province if they control majority of hexes
-    return playerControlledHexes > hexesInProv.length / 2 ? { ...p, owner: playerId } : p;
+    const hexId = `${capitalHex.col},${capitalHex.row}`;
+    const capitalOwner = gameState.hexes?.[hexId]?.owner;
+    
+    // Player owns province if they control the capital
+    return capitalOwner === playerId ? { ...p, owner: playerId } : p;
   }).filter(p => p.owner === playerId);
 };
 
