@@ -132,7 +132,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
   const handleHexClick = (hex) => {
     const hexId = `${hex.col},${hex.row}`;
-    setSelected(hex);
+    const hexWithBuildings = { ...hex, buildings: gameState?.hexes?.[hexId]?.buildings };
+    setSelected(hexWithBuildings);
     setPanelTab('selected');
     if (onHexClick) onHexClick(hexId);
     // Zoom into clicked hex
@@ -341,18 +342,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                     <text x={cx + 8} y={cy - 4} textAnchor="middle" fontSize={7} fill="#0a0c12" fontWeight="bold">{unitCount}</text>
                   </g>
                 )}
-                {/* Fortress icon */}
-                {hex.buildings?.fortress && (
-                  <text x={cx - 8} y={cy + 3} textAnchor="middle" fontSize={12} style={{ pointerEvents: 'none', textShadow: '0 0 2px #000' }}>
-                    🏰
-                  </text>
-                )}
-                {/* Port icon */}
-                {hex.buildings?.port && (
-                  <text x={cx - 8} y={cy + 10} textAnchor="middle" fontSize={12} style={{ pointerEvents: 'none', textShadow: '0 0 2px #000' }}>
-                    🚢
-                  </text>
-                )}
+
               </g>
             );
           })}
@@ -579,6 +569,44 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   <span style={{ textTransform: 'capitalize', color: '#c8c0b0' }}>{selected.terrain}</span>
                   <span style={{ marginLeft: 6, display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: TERRAIN_COLORS[selected.terrain] || '#444', verticalAlign: 'middle' }} />
                 </div>
+
+                {/* Terrain Effects */}
+                {(() => {
+                  const terrainEffects = {
+                    water: 'Naval units only',
+                    coastal: 'Ports allowed · Naval units passable',
+                    plains: 'No terrain penalty',
+                    forest: 'Defense +20% · Movement -1',
+                    hills: 'Defense +15% · Movement -1',
+                    mountain: 'Defense +30% · Movement -2 · Impassable to cavalry',
+                    desert: 'Movement -1 · Low resources',
+                    swamp: 'Defense +10% · Movement -2',
+                    tundra: 'Movement -1 · Resource penalty',
+                    scorched: 'Impassable territory',
+                  };
+                  return (
+                    <div style={{ fontSize: 11, color: '#888', marginBottom: 8, padding: '6px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
+                      {terrainEffects[selected.terrain] || 'No special effects'}
+                    </div>
+                  );
+                })()}
+
+                {/* Buildings on hex */}
+                {selected && (() => {
+                  const buildings = [];
+                  if (selected.buildings?.fortress) buildings.push({ icon: '🏰', name: 'Fortress', effect: 'Defense +2' });
+                  if (selected.buildings?.port) buildings.push({ icon: '🚢', name: 'Port', effect: 'Naval trade +1' });
+                  return buildings.length > 0 ? (
+                    <div style={{ marginBottom: 8 }}>
+                      <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>STRUCTURES</div>
+                      {buildings.map(b => (
+                        <div key={b.name} style={{ fontSize: 11, color: '#c8c0b0', padding: '4px 0' }}>
+                          {b.icon} {b.name} <span style={{ color: '#7a6a50', marginLeft: 4 }}>• {b.effect}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
 
                 {/* Province stats */}
                 {selectedProvinceInfo && (
