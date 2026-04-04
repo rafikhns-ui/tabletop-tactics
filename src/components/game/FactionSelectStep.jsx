@@ -11,58 +11,21 @@ function FactionCard({ faction, selected, disabled, onClick }) {
     <button
       disabled={disabled}
       onClick={onClick}
-      className="text-left px-4 py-4 rounded-sm transition-all text-xs relative overflow-hidden group border-2"
+      className="text-left px-4 py-4 rounded-sm transition-all"
       style={{
-        background: selected 
-          ? `linear-gradient(135deg, ${faction.color}40, ${faction.color}20)`
-          : 'linear-gradient(135deg, hsl(0,0%,12%), hsl(35,15%,10%))',
-        borderColor: selected ? faction.color : disabled ? 'hsl(0,0%,20%)' : 'hsl(0,0%,25%)',
-        color: disabled ? 'hsl(0,0%,30%)' : selected ? faction.color : 'hsl(40,20%,70%)',
-        opacity: disabled ? 0.3 : 1,
-        boxShadow: selected 
-          ? `0 0 30px ${faction.color}50, 0 0 60px ${faction.color}25, inset 0 0 20px ${faction.color}20`
-          : `0 4px 12px rgba(0,0,0,0.7)`,
-      }}>
-      {/* Dramatic glow on hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-all duration-300" style={{ background: faction.color, filter: 'blur(20px)' }} />
-      
-      {/* Crown accent line */}
-      {selected && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '2px',
-          background: faction.color,
-          boxShadow: `0 0 10px ${faction.color}`
-        }} />
-      )}
-      
-      <div className="relative z-10">
-        <div className="font-black text-sm mb-1" style={{ letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-          {faction.emoji} {faction.name}
-        </div>
-        <div className="text-xs opacity-40 mb-2 tracking-widest" style={{ fontFamily: "'Cinzel',serif" }}>
-          {faction.continent}
-        </div>
-        <div className="text-xs leading-relaxed opacity-70 line-clamp-3">{faction.description}</div>
-        {selected && (
-          <div className="mt-3 text-xs px-2.5 py-2 rounded-sm border" style={{ 
-            background: `${faction.color}15`, 
-            borderColor: faction.color,
-            borderLeft: `3px solid ${faction.color}`,
-            color: 'hsl(43,85%,70%)',
-            fontStyle: 'italic'
-          }}>
-            ⚔️ {faction.specialRule}
-          </div>
-        )}
-      </div>
+        background: selected ? '#2a2a2a' : '#1a1a1a',
+        borderWidth: '2px',
+        borderStyle: 'solid',
+        borderColor: selected ? '#ffffff' : disabled ? '#444444' : '#666666',
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      <div className="font-black text-sm mb-1">{faction.emoji} {faction.name}</div>
+      <div className="text-xs opacity-40 mb-2 truncate">{faction.continent}</div>
+      <div className="text-xs leading-relaxed opacity-60">{faction.specialRule}</div>
     </button>
   );
 }
-
 function PlayerSlot({ index, factionId, onChange, takenFactionIds, isAI }) {
   const playerColor = PLAYER_COLORS[index];
 
