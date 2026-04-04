@@ -229,6 +229,15 @@ export default function Game() {
     
     // Handle building placement mode
     if (buildingPlacementMode) {
+      // Check if port is placed on coastal tile
+      if (buildingPlacementMode === 'port') {
+        const terrain = HEX_TERRAIN_LOOKUP[hexId];
+        if (terrain !== 'coastal') {
+          addMessage('⛔ Ports can only be placed on coastal tiles');
+          return;
+        }
+      }
+      
       setGameState(prev => {
         const player = prev.players.find(p => p.id === currentPlayer.id);
         const inventory = (player[`${buildingPlacementMode}_inventory`] || 0);
