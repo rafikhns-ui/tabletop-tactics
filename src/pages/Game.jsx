@@ -21,7 +21,7 @@ import EventModal from '../components/game/EventModal';
 import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn, checkObjective, calculateUnitBonuses } from '../components/game/ardoniaLogic';
 import BuildRecruitPanel from '../components/game/BuildRecruitPanel';
 import RecruitPanel from '../components/game/RecruitPanel';
-import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS } from '../components/game/ardoniaData';
+import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, AVATARS } from '../components/game/ardoniaData';
 import AvatarPanel from '../components/game/AvatarPanel';
 import AiSetupModal from '../components/game/AiSetupModal';
 import AdvisorPanel from '../components/game/AdvisorPanel';
@@ -443,7 +443,6 @@ export default function Game() {
   };
 
   const handleSummonAvatar = (avatarId) => {
-    const { AVATARS } = require('../components/game/ardoniaData');
     const avatar = Object.values(AVATARS).flat().find(a => a.id === avatarId);
     if (!avatar) return;
     setGameState(prev => {

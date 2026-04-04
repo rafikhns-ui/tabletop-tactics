@@ -1,4 +1,4 @@
-import { TERRITORIES, ADJACENCY, FACTIONS, LEADERS, HEROES, OBJECTIVES, BUILDING_DEFS } from './ardoniaData';
+import { TERRITORIES, ADJACENCY, FACTIONS, LEADERS, HEROES, OBJECTIVES, BUILDING_DEFS, TERRAIN_MOVEMENT_COSTS, UNIT_DEFS } from './ardoniaData';
 import { buildHexAdjacency } from './hexGridSystem';
 import { generateWorldMap } from './hexWorldGenerator';
 
@@ -98,8 +98,8 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     });
   } else {
     // Legacy / fallback
-    const p1f = choices.p1?.factionId || 'onishiman';
-    const p2f = choices.p2?.factionId || (mode === 'ai' ? 'sultanate' : 'kadjimaran');
+    const p1f = 'onishiman';
+    const p2f = mode === 'ai' ? 'sultanate' : 'kadjimaran';
     players = mode === 'ai'
       ? [createPlayer('p1', 'Player 1', p1f, false, 0), createPlayer('ai', 'Shadow Lord', p2f, true, 0)]
       : [createPlayer('p1', 'Player 1', p1f, false, 0), createPlayer('p2', 'Player 2', p2f, false, 0)];
@@ -433,27 +433,18 @@ export const getTerritoryCount = (territories, playerId) =>
 // ---- Movement System ----
 // Calculate movement cost for a unit to enter a tile
 export const getMovementCost = (fromTerr, toTerr, unitType, playerFactionId) => {
-  const { TERRAIN_MOVEMENT_COSTS, UNIT_DEFS } = require('./ardoniaData');
-  
-  // Base cost is 1
   let cost = 1;
-  
-  // Add terrain cost
-  const terrainCost = TERRAIN_MOVEMENT_COSTS[toTerr.biome] || 0;
+  const terrainCost = TERRAIN_MOVEMENT_COSTS?.[toTerr.biome] || 0;
   cost += terrainCost;
-  
-  // Apply faction bonuses (Oakbinder/Desert Nomad movement)
   if ((toTerr.biome === 'forest' && playerFactionId === 'oakhaven') ||
       (toTerr.biome === 'desert' && playerFactionId === 'kadjimaran')) {
-    cost -= 1; // No extra cost
+    cost -= 1;
   }
-  
-  return Math.max(1, cost); // Minimum 1 cost
+  return Math.max(1, cost);
 };
 
 // Get all reachable territories from a starting point given movement range
 export const getReachableTerritories = (startTerritoryId, movementRange, gameState, playerId, unitType) => {
-  const { ADJACENCY } = require('./ardoniaData');
   const reachable = new Set();
   const toExplore = [{ id: startTerritoryId, costRemaining: movementRange }];
   const visited = new Set();

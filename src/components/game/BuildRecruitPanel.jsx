@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { getFactionBuildings, getFactionHeroes, getFactionUnits } from './ardoniaData';
+import { BUILDING_DEFS, UNIT_DEFS } from './ardoniaData';
 
-// In your component:
-const buildings = getFactionBuildings(currentPlayer.faction);
-const heroes    = getFactionHeroes(currentPlayer.faction);
-const units     = getFactionUnits(currentPlayer.faction);
+const BUILDABLE = Object.keys(BUILDING_DEFS).filter(id => !['mine','lumber_mill','farm','treasury'].includes(id));
+
+const UNIT_UNLOCK = {
+  barracks: ['infantry', 'elite'],
+  stables: ['cavalry'],
+  archery_range: ['ranged'],
+  siege_workshop: ['siege'],
 };
 
 function canAfford(resources, cost) {
