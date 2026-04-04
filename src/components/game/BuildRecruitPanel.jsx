@@ -75,35 +75,56 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
         ))}
       </div>
 
-      {/* Fortress & Port Placement Buttons */}
-      <div className="flex gap-1.5 mb-2">
-        <button
-          onClick={() => onSetBuildingPlacementMode(buildingPlacementMode === 'fortress' ? null : 'fortress')}
-          className="flex-1 py-1.5 rounded text-xs font-bold transition-all"
-          style={{
-            ...s,
-            background: buildingPlacementMode === 'fortress' ? 'hsl(43,60%,22%)' : 'hsl(35,20%,22%)',
-            border: `1px solid ${buildingPlacementMode === 'fortress' ? 'hsl(43,80%,50%)' : 'hsl(35,20%,32%)'}`,
-            color: buildingPlacementMode === 'fortress' ? 'hsl(43,90%,75%)' : 'hsl(40,20%,65%)',
-          }}>
-            🏰 Place Fortress
-          </button>
-        <button
-          onClick={() => onSetBuildingPlacementMode(buildingPlacementMode === 'port' ? null : 'port')}
-          className="flex-1 py-1.5 rounded text-xs font-bold transition-all"
-          style={{
-            ...s,
-            background: buildingPlacementMode === 'port' ? 'hsl(43,60%,22%)' : 'hsl(35,20%,22%)',
-            border: `1px solid ${buildingPlacementMode === 'port' ? 'hsl(43,80%,50%)' : 'hsl(35,20%,32%)'}`,
-            color: buildingPlacementMode === 'port' ? 'hsl(43,90%,75%)' : 'hsl(40,20%,65%)',
-          }}>
-            🚢 Place Port
-          </button>
-      </div>
-
       {tab === 'build' && (
         <div className="space-y-1.5">
-          {buildable.length === 0 && (
+           {/* Build Fortress & Port */}
+           <div className="grid grid-cols-2 gap-1.5 mb-2">
+             {[
+               { id: 'fortress', emoji: '🏰', name: 'Fortress', cost: { gold: 5, wood: 3 } },
+               { id: 'port', emoji: '🚢', name: 'Port', cost: { gold: 4, wood: 4 } }
+             ].map(item => {
+               const affordable = canAfford(resources, item.cost);
+               const inventory = currentPlayer[`${item.id}_inventory`] || 0;
+               return (
+                 <div key={item.id} className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
+                   <div className="flex items-center justify-between mb-1">
+                     <span className="text-xs font-bold" style={{ ...s, color: 'hsl(40,30%,80%)' }}>
+                       {item.emoji} {item.name}
+                     </span>
+                     <span className="text-xs" style={{ color: 'hsl(43,80%,65%)' }}>×{inventory}</span>
+                   </div>
+                   <button
+                     onClick={() => onBuild(item.id)}
+                     disabled={!affordable}
+                     className="w-full text-xs px-1.5 py-1 rounded font-bold transition-all hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
+                     style={{ ...s, background: 'hsl(38,70%,30%)', border: '1px solid hsl(38,80%,50%)', color: 'hsl(43,90%,80%)' }}>
+                     Build
+                   </button>
+                   <div className="flex gap-1 mt-1 flex-wrap">
+                     {Object.entries(item.cost).map(([k, v]) => {
+                       const icons = { gold: '🪙', wood: '🪵', wheat: '🌾' };
+                       const has = (resources[k] ?? 0) >= v;
+                       return (
+                         <span key={k} className="text-xs px-1 rounded" style={{ background: 'hsl(35,20%,25%)', color: has ? 'hsl(43,80%,65%)' : 'hsl(0,60%,60%)' }}>
+                           {icons[k]} {v}
+                         </span>
+                       );
+                     })}
+                   </div>
+                   {inventory > 0 && (
+                     <button
+                       onClick={() => onSetBuildingPlacementMode(buildingPlacementMode === item.id ? null : item.id)}
+                       className="w-full text-xs px-1.5 py-0.5 rounded mt-1 font-bold transition-all hover:opacity-90"
+                       style={{ ...s, background: buildingPlacementMode === item.id ? 'hsl(43,60%,24%)' : 'hsl(35,20%,26%)', border: `1px solid ${buildingPlacementMode === item.id ? 'hsl(43,80%,50%)' : 'hsl(35,20%,35%)'}`, color: buildingPlacementMode === item.id ? 'hsl(43,90%,75%)' : 'hsl(40,20%,65%)' }}>
+                       {buildingPlacementMode === item.id ? '✓ Place' : 'Place'}
+                     </button>
+                   )}
+                 </div>
+               );
+             })}
+           </div>
+
+           {buildable.length === 0 && (
             <div className="text-xs text-center opacity-40 py-2" style={{ color: 'hsl(40,20%,60%)' }}>
               All buildings constructed
             </div>

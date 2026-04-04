@@ -230,13 +230,17 @@ export default function Game() {
     // Handle building placement mode
     if (buildingPlacementMode) {
       setGameState(prev => {
+        const player = prev.players.find(p => p.id === currentPlayer.id);
+        const inventory = (player[`${buildingPlacementMode}_inventory`] || 0);
+        if (inventory <= 0) return prev;
         const hex = prev.hexes[hexId] || {};
         const buildings = buildingPlacementMode === 'fortress' 
           ? { ...hex.buildings, fortress: true }
           : { ...hex.buildings, port: true };
         return {
           ...prev,
-          hexes: { ...prev.hexes, [hexId]: { ...hex, buildings } }
+          hexes: { ...prev.hexes, [hexId]: { ...hex, buildings } },
+          players: prev.players.map(p => p.id === currentPlayer.id ? { ...p, [`${buildingPlacementMode}_inventory`]: inventory - 1 } : p)
         };
       });
       setBuildingPlacementMode(null);
@@ -379,6 +383,26 @@ export default function Game() {
   };
 
   const handleBuild = (buildingId) => {
+    // Handle fortress/port building
+    if (buildingId === 'fortress' || buildingId === 'port') {
+      const costs = { fortress: { gold: 5, wood: 3 }, port: { gold: 4, wood: 4 } };
+      const cost = costs[buildingId];
+      setGameState(prev => {
+        const player = prev.players.find(p => p.id === currentPlayer.id);
+        for (const [k, v] of Object.entries(cost)) {
+          if ((player.resources[k] ?? 0) < v) return prev;
+        }
+        const newResources = { ...player.resources };
+        for (const [k, v] of Object.entries(cost)) {
+          newResources[k] = (newResources[k] || 0) - v;
+        }
+        const inventory = (player[`${buildingId}_inventory`] || 0) + 1;
+        return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? { ...p, resources: newResources, [`${buildingId}_inventory`]: inventory } : p) };
+      });
+      addMessage(`✅ Built ${buildingId}! Ready to place on map.`);
+      return;
+    }
+    
     const def = BUILDING_DEFS[buildingId];
     if (!def) return;
     setGameState(prev => {
