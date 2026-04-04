@@ -20,23 +20,33 @@ const TERRAIN_COLORS = {
 const NATION_COLORS = {};
 mapData.nations.forEach(n => { NATION_COLORS[n.id] = n.color; });
 
-// ══════ FACTION NAME MAPPING (map faction → playable faction id) ══════
-const remapFaction = (faction, row) => {
-  if (!faction || faction === 'ocean') return null;
-  if (faction === 'gejeon') return 'gojeon';
-  if (faction === 'greenheart') return 'oakhaven';
-  if (faction === 'silverunion') return 'republic';
-  if (faction === 'shadefell') return row <= 6 ? 'tlalocayotlan' : 'sultanate';
-  if (faction === 'shadowsfall') return row <= 12 ? 'kintei' : 'icebound';
-  return faction;
+// ══════ FACTION NAME MAPPING (JSON nation_id → playable faction id) ══════
+const remapFaction = (nationId) => {
+  const map = {
+    gojeon:        'gojeon',
+    inuvak:        'inuvak',
+    ruskel:        'ruskel',
+    icebound:      'icebound',
+    oakhaven:      'oakhaven',
+    onishiman:     'onishiman',
+    kadjimaran:    'kadjimaran',
+    nimrudan:      'nimrudan',
+    kinetic:       'kintei',        // "Greater Kinetic" → Greater Kintei
+    ilalocatotlan: 'tlalocayotlan', // Ilalocatotlan → Tlalocayotlan League
+    hestia:        'republic',      // Republic of Hestia
+    azure:         'sultanate',     // Azure Moon Sultanate → Blue Moon Sultanate
+    silver:        'silver_union',  // Silver Union
+    shadowsfall:   null,            // non-playable, skip
+    scorched:      null,            // non-playable, skip
+  };
+  return map[nationId] ?? null;
 };
 
 // ══════ FACTION CENTROIDS (computed from hex_grid) ══════
 const factionCentroidMap = {};
 mapData.hex_grid.forEach(h => {
-  if (!h.nation_id && !h.faction) return;
-  const rawFaction = h.faction || h.nation_id;
-  const fid = remapFaction(rawFaction, h.row);
+  if (!h.nation_id) return;
+  const fid = remapFaction(h.nation_id);
   if (!fid || !FACTIONS[fid]) return;
   if (!factionCentroidMap[fid]) factionCentroidMap[fid] = { sx: 0, sy: 0, cnt: 0 };
   factionCentroidMap[fid].sx += h.x;
