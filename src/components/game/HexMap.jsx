@@ -179,6 +179,19 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
     <div style={{ display: 'flex', height: '62vh', background: '#0a0c12', overflow: 'hidden', border: '1px solid #2a2520' }}>
       {/* ══════ SVG MAP ══════ */}
       <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
+        {zoomTransform && (
+          <button
+            onClick={handleZoomOut}
+            style={{
+              position: 'absolute', top: 10, left: 10, zIndex: 10,
+              background: '#1a1c22', border: '1px solid #d4a853',
+              color: '#d4a853', fontFamily: "'Cinzel',serif",
+              fontSize: 11, padding: '4px 12px', borderRadius: 4,
+              cursor: 'pointer',
+            }}>
+            ← Zoom Out
+          </button>
+        )}
         <svg
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
           width="100%" height="100%"
@@ -357,17 +370,6 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             );
           })}
           </g>
-          {zoomTransform && (
-            <g style={{ pointerEvents: 'all' }}>
-              <rect x={8} y={8} width={80} height={24} rx={4}
-                fill="#1a1c22" stroke="#d4a853" strokeWidth={1} style={{ cursor: 'pointer' }}
-                onClick={handleZoomOut} />
-              <text x={48} y={24} textAnchor="middle" fontSize={11} fill="#d4a853"
-                fontFamily="'Cinzel',serif" style={{ cursor: 'pointer', pointerEvents: 'none' }}>
-                ← ZOOM OUT
-              </text>
-            </g>
-          )}
         </svg>
       </div>
 
