@@ -1,445 +1,164 @@
-import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { HEXES, REGIONS, HexUtils, hexToPixel, TERRAIN_PROPS, buildHexAdjacency, getReachableHexes, findMovementPath, UNIT_SPEED } from './hexGridSystem';
+import React, { useMemo, useState } from 'react';
+import mapData from './ardonia_game_map.json';
 
 const TERRAIN_COLORS = {
-  plains: '#7a9a3a',
-  forest: '#3d6e3d',
-  mountain: '#6a5e50',
-  tundra: '#92aabb',
-  desert: '#b8942e',
-  ocean: '#2e5e8a',
-  wasteland: '#664d4d',
+  water: '#183a5c',
+  coastal: '#2a6080',
+  plains: '#5a7a30',
+  forest: '#1e4a1e',
+  hills: '#6a6030',
+  mountain: '#4a4a5a',
+  desert: '#9a7a30',
+  swamp: '#3a4a2a',
+  tundra: '#7a8a9a',
+  scorched: '#4a1a0a',
 };
 
 const TERRAIN_ICONS = {
-  plains: '🌾',
-  forest: '🌲',
-  mountain: '⛰️',
-  tundra: '❄️',
-  desert: '🏜️',
-  ocean: '🌊',
-  wasteland: '💀',
+  forest: '\u25B2',
+  mountain: '\u25B2',
+  desert: '~',
+  swamp: '~',
+  scorched: '\u2605',
 };
 
-// Water and coastal tiles disabled for repositioning
-const isWaterHex = () => false;
-const isCoastalHex = () => false;
+const HEX_SIZE = 12;
 
-// Check if unit can enter a water tile
-const canUnitEnterWater = (units) => {
-  if (!units || units.length === 0) return false;
-  return units.some(u => u.type === 'naval' || u.type === 'flying');
-};
-
-// Convert col/row offset coords to flat-top pixel position
-const colRowToPixel = (col, row, size) => {
-  const w = size * 2;
-  const h = Math.sqrt(3) * size;
-  const x = col * w * 0.75;
-  const y = row * h + (col % 2 === 1 ? h / 2 : 0);
-  return { x, y };
-};
+function hexCorners(cx, cy, size) {
+  return Array.from({ length: 6 }, (_, i) => {
+    const angle = (Math.PI / 180) * (60 * i - 30);
+    return `${cx + size * Math.cos(angle)},${cy + size * Math.sin(angle)}`;
+  }).join(' ');
+}
 
 export default function HexMap({ gameState, selectedHex, phase, currentPlayer, onHexClick, movementState }) {
-  const hexSize = 28;
-  const canvasWidth = 3600;
-  const canvasHeight = 1400;
-  const offsetX = 0;
-  const offsetY = 20;
+  const hexGrid = mapData.hex_grid;
+  const nations = mapData.nations;
+  const [tooltip, setTooltip] = useState(null);
 
-  const [focusedHex, setFocusedHex] = useState(null);
-  const defaultVB = { x: 0, y: 0, w: canvasWidth, h: canvasHeight };
-  const hexPixel = (hex) => {
-    const { x, y } = colRowToPixel(hex.col ?? 0, hex.row ?? 0, hexSize);
-    return { x: x + offsetX, y: y + offsetY };
-  };
-  const [viewBox, setViewBox] = useState(defaultVB);
-  const animRef = useRef(null);
-  const currentVB = useRef(defaultVB);
+  const nationColorMap = useMemo(() => {
+    const map = {};
+    if (nations) nations.forEach(n => { map[n.id] = n.color; });
+    return map;
+  }, [nations]);
 
-  const animateTo = useCallback((target) => {
-    if (animRef.current) cancelAnimationFrame(animRef.current);
-    const ease = 0.1;
-    const step = () => {
-      const cur = currentVB.current;
-      const nx = cur.x + (target.x - cur.x) * ease;
-      const ny = cur.y + (target.y - cur.y) * ease;
-      const nw = cur.w + (target.w - cur.w) * ease;
-      const nh = cur.h + (target.h - cur.h) * ease;
-      const done =
-        Math.abs(nx - target.x) < 0.5 &&
-        Math.abs(ny - target.y) < 0.5 &&
-        Math.abs(nw - target.w) < 0.5 &&
-        Math.abs(nh - target.h) < 0.5;
-      const next = done ? target : { x: nx, y: ny, w: nw, h: nh };
-      currentVB.current = next;
-      setViewBox({ ...next });
-      if (!done) animRef.current = requestAnimationFrame(step);
-    };
-    animRef.current = requestAnimationFrame(step);
-  }, []);
+  const SCALE = 5;
 
-  useEffect(() => () => { if (animRef.current) cancelAnimationFrame(animRef.current); }, []);
+  const allHexes = useMemo(() => hexGrid.flat(), [hexGrid]);
 
-  const zoomToHex = useCallback((px, py) => {
-    const zoomW = canvasWidth * 0.2;
-    const zoomH = canvasHeight * 0.4;
-    animateTo({ x: px - zoomW / 2, y: py - zoomH / 2, w: zoomW, h: zoomH });
-  }, [canvasWidth, canvasHeight, animateTo]);
-
-  const resetZoom = () => {
-    animateTo(defaultVB);
-    setFocusedHex(null);
-  };
-
-  const getPlayerColor = (ownerId) => {
-    if (!ownerId) return 'transparent';
-    return gameState?.players.find(p => p.id === ownerId)?.color || '#666';
-  };
-
-  const rawHexes = gameState?.hexes || HEXES;
-
-  // Assign stable sequential indices sorted left-to-right, top-to-bottom
-  const hexes = useMemo(() => {
-    const entries = Object.entries(rawHexes);
-    entries.sort(([, a], [, b]) => {
-      const pa = hexToPixel(a.q, a.r, 36);
-      const pb = hexToPixel(b.q, b.r, 36);
-      const rowDiff = Math.round((pa.y - pb.y) / 10);
-      if (rowDiff !== 0) return rowDiff;
-      return pa.x - pb.x;
+  const { minX, minY } = useMemo(() => {
+    let minX = Infinity, minY = Infinity;
+    allHexes.forEach(h => {
+      if (h.x < minX) minX = h.x;
+      if (h.y < minY) minY = h.y;
     });
-    const result = {};
-    entries.forEach(([id, hex], i) => {
-      result[id] = { ...hex, _stableIndex: i + 1 };
+    return { minX, minY };
+  }, [allHexes]);
+
+  const PAD = HEX_SIZE * 2;
+
+  const { svgWidth, svgHeight } = useMemo(() => {
+    let maxX = -Infinity, maxY = -Infinity;
+    allHexes.forEach(h => {
+      const cx = (h.x - minX) * SCALE + PAD;
+      const cy = (h.y - minY) * SCALE + PAD;
+      if (cx > maxX) maxX = cx;
+      if (cy > maxY) maxY = cy;
     });
-    return result;
-  }, [rawHexes]);
+    return { svgWidth: maxX + PAD, svgHeight: maxY + PAD };
+  }, [allHexes, minX, minY]);
 
-  const isAttackable = (hexId) => {
-    if (phase !== 'attack' || !selectedHex) return false;
-    const adj = hexes[selectedHex];
-    if (!adj) return false;
-    const hexNeighbors = HexUtils.getNeighbors(adj.q, adj.r).map(([q, r]) => 
-      Object.entries(hexes).find(([, h]) => h.q === q && h.r === r)?.[0]
-    ).filter(Boolean);
-    
-    const targetHex = hexes[hexId];
-    const hex = hexes[selectedHex];
-    return targetHex?.owner !== currentPlayer?.id && hexNeighbors.includes(hexId);
-  };
+  const getOwner = (hexId) => gameState?.hexes?.[hexId]?.owner || null;
+  const getPlayerColor = (id) => gameState?.players?.find(p => p.id === id)?.color || null;
+  const getUnits = (hexId) => gameState?.hexes?.[hexId]?.units || [];
 
-  // Reachable hexes computed from movement system
-  const reachableHexes = useMemo(() => {
-    if (phase !== 'move' || !movementState?.selectedUnit || !movementState?.fromHexId) return new Map();
-    return getReachableHexes(
-      movementState.fromHexId,
-      movementState.selectedUnit,
-      movementState.speed,
-      hexes
-    );
-  }, [phase, movementState, hexes]);
-
-  const isMovable = (hexId) => {
-    if (phase !== 'move') return false;
-    if (movementState?.fromHexId) {
-      // Show reachable hexes from the selected unit's position
-      return reachableHexes.has(hexId) && hexId !== movementState.fromHexId;
-    }
-    // Before a unit is selected: highlight own hexes with units
-    if (!selectedHex || hexId === selectedHex) return false;
-    const selectedHexData = hexes[selectedHex];
-    const targetHex = hexes[hexId];
-    if (!selectedHexData || !targetHex) return false;
-    if (targetHex.owner !== currentPlayer?.id) return false;
-    const neighbors = HexUtils.getNeighbors(selectedHexData.q, selectedHexData.r);
-    return neighbors.some(([q, r]) =>
-      Object.entries(hexes).find(([id, h]) => h.q === q && h.r === r)?.[0] === hexId
-    );
-  };
-
-  const isFortifiable = (hexId) => {
-    if (phase !== 'fortify' || !selectedHex) return false;
-    const hex = hexes[hexId];
-    const selectedHexData = hexes[selectedHex];
-    if (!hex || !selectedHexData) return false;
-    
-    const distance = HexUtils.distance(hex.q, hex.r, selectedHexData.q, selectedHexData.r);
-    return hex.owner === currentPlayer?.id && distance === 1 && hexId !== selectedHex;
-  };
-
-  const isDeployable = (hexId) => {
-    if (phase !== 'deploy') return false;
-    const hex = hexes[hexId];
-    return hex.owner === currentPlayer?.id && (currentPlayer?.pendingUnits?.length || 0) > 0;
+  const getReachable = () => {
+    if (!movementState || !gameState) return new Set();
+    const { getReachableHexes } = require('./hexGridSystem');
+    return getReachableHexes(movementState.fromHexId, movementState.selectedUnit, movementState.speed, gameState.hexes) || new Set();
   };
 
   return (
-    <div 
-      className="relative rounded-xl overflow-hidden border-2"
-      style={{
-        width: '100%',
-        aspectRatio: '16/9',
-        borderColor: 'hsl(43,70%,50%)',
-        boxShadow: '0 0 60px rgba(180,140,40,0.15)',
-        background: 'hsl(35,25%,12%)',
-      }}
-    >
-      <svg width="100%" height="100%" viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`} preserveAspectRatio="xMidYMid meet" style={{ position: 'absolute', inset: 0 }}>
-        {/* Background map image */}
-        <image
-          href="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b732e420481df67e8a6804/62c454dca_NemRma69YXUdPY6orqTHe3.jpg"
-          x="0"
-          y="0"
-          width={canvasWidth}
-          height={canvasHeight}
-          preserveAspectRatio="none"
-        />
-        
-        {/* Background grid lines */}
-        {Object.entries(hexes).map(([hexId, hex]) => {
-          const neighbors = HexUtils.getNeighbors(hex.q, hex.r);
-          return neighbors.map(([nq, nr], i) => {
-            const neighbor = Object.entries(hexes).find(([, h]) => h.q === nq && h.r === nr);
-            if (!neighbor || hexId > neighbor[0]) return null;
-            
-            const p1 = hexPixel(hex);
-            const [x1, y1] = [p1.x, p1.y];
-            const neighborHex = Object.values(hexes).find(h => h.q === nq && h.r === nr);
-            if (!neighborHex) return null;
-            const p2 = hexPixel(neighborHex);
-            const [x2, y2] = [p2.x, p2.y];
-            
-            return (
-              <line
-                key={`line-${hexId}-${neighbor[0]}`}
-                x1={x1} y1={y1} x2={x2} y2={y2}
-                stroke="rgba(100,80,40,0.2)" strokeWidth="1"
-              />
-            );
-          });
-        })}
-
-        {/* Movement arrows */}
-        {phase === 'move' && selectedHex && gameState?.hexes[selectedHex] && (
-          (() => {
-            const selectedHexData = gameState.hexes[selectedHex];
-            const selP = hexPixel(selectedHexData);
-            const selectedPx = selP.x;
-            const selectedPy = selP.y;
-            
-            const neighbors = HexUtils.getNeighbors(selectedHexData.q, selectedHexData.r);
-            return neighbors.map(([nq, nr], i) => {
-              const neighbor = Object.values(hexes).find(h => h.q === nq && h.r === nr);
-              if (!neighbor || neighbor.owner !== currentPlayer?.id) return null;
-              
-              const nP = hexPixel(neighbor);
-              const neighborPx = nP.x;
-              const neighborPy = nP.y;
-              
-              const dx = neighborPx - selectedPx;
-              const dy = neighborPy - selectedPy;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              const angle = Math.atan2(dy, dx);
-              
-              const arrowLen = 12;
-              const endX = selectedPx + (dist / 2) * Math.cos(angle);
-              const endY = selectedPy + (dist / 2) * Math.sin(angle);
-              
-              return (
-                <g key={`arrow-${neighbor.id}`}>
-                  <line x1={selectedPx} y1={selectedPy} x2={endX} y2={endY} stroke="rgba(100,255,100,0.7)" strokeWidth="2" markerEnd="url(#arrowhead)" />
-                </g>
-              );
-            });
-          })()
-        )}
-
-        {/* Arrow marker definition */}
-        <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-            <polygon points="0 0, 10 3, 0 6" fill="rgba(100,255,100,0.7)" />
-          </marker>
-        </defs>
-
-        {/* Hex tiles */}
-        {Object.entries(hexes).map(([hexId, hex]) => {
-          const hexIndex = hex._stableIndex;
-          const isWater = isWaterHex(hexIndex);
-          const isCoastal = !isWater && isCoastalHex(hexIndex);
+    <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '58vh', background: '#0d1a2a', position: 'relative' }}>
+      {tooltip && (
+        <div style={{
+          position: 'fixed', top: tooltip.y + 10, left: tooltip.x + 10,
+          background: 'rgba(10,8,5,0.95)', border: '1px solid #8a7a40',
+          color: '#d4c080', padding: '6px 10px', borderRadius: 6,
+          fontSize: 11, pointerEvents: 'none', zIndex: 100,
+          fontFamily: "'Crimson Text', serif", maxWidth: 180
+        }}>
+          <div style={{ fontWeight: 'bold', color: '#f0d070' }}>{tooltip.province || 'Water'}</div>
+          {tooltip.nation && <div style={{ color: '#aaa' }}>{tooltip.nation}</div>}
+          <div style={{ color: '#888', textTransform: 'capitalize' }}>{tooltip.terrain}</div>
+          {tooltip.capital && <div style={{ color: '#f0a030' }}>\u2605 {tooltip.capital}</div>}
+        </div>
+      )}
+      <svg width={svgWidth} height={svgHeight} style={{ display: 'block' }}>
+        {allHexes.map(hex => {
+          const hexId = `${hex.col},${hex.row}`;
+          const cx = (hex.x - minX) * SCALE + PAD;
+          const cy = (hex.y - minY) * SCALE + PAD;
+          const terrain = hex.terrain || 'water';
+          const owner = getOwner(hexId);
+          const playerColor = getPlayerColor(owner);
+          const nationColor = hex.nationid ? nationColorMap[hex.nationid] : null;
+          const isWater = terrain === 'water';
           const isSelected = selectedHex === hexId;
-          const isOwned = hex.owner === currentPlayer?.id;
-          const canAttack = isAttackable(hexId);
-          // For water tiles, only allow move/deploy if player has naval/flying units
-          const pendingUnits = currentPlayer?.pendingUnits || [];
-          const hasNavalPending = pendingUnits.some(u => u === 'naval' || u === 'flying');
-          const canMove = isMovable(hexId) && (!isWater || canUnitEnterWater(hex.units));
-          const canFortify = isFortifiable(hexId) && (!isWater || canUnitEnterWater(hex.units));
-          const canDeploy = isDeployable(hexId) && (!isWater || hasNavalPending);
-          const playerColor = getPlayerColor(hex.owner);
-           const tileColor = hex.owner ? `${playerColor}25` : 'transparent';
-          
-          const { x: px, y: py } = hexPixel(hex);
-
-          let ringColor = 'transparent';
-          let glow = '';
-          let outlineWidth = '0';
-          if (isSelected) { ringColor = 'rgba(255,200,50,0.9)'; glow = '0 0 20px rgba(255,200,50,0.5)'; outlineWidth = '3'; }
-          else if (canAttack) { ringColor = 'rgba(255,60,60,0.8)'; glow = '0 0 15px rgba(255,60,60,0.4)'; }
-          else if (canFortify) { ringColor = 'rgba(60,180,255,0.8)'; glow = '0 0 12px rgba(60,180,255,0.4)'; }
-          else if (canMove) { ringColor = 'rgba(100,255,100,0.7)'; glow = '0 0 10px rgba(100,255,100,0.3)'; }
-          else if (canDeploy) { ringColor = 'rgba(255,220,80,0.85)'; glow = '0 0 14px rgba(255,220,80,0.6)'; outlineWidth = '2'; }
-          else if (isOwned) { ringColor = playerColor; glow = `0 0 8px ${playerColor}33`; }
-
-          const hexPoints = [0, 1, 2, 3, 4, 5].map(i => {
-            const angle = (Math.PI / 3) * i;
-            return `${px + hexSize * Math.cos(angle)},${py + hexSize * Math.sin(angle)}`;
-          }).join(' ');
-
-          const handleClick = () => {
-            onHexClick(hexId);
-            if (focusedHex?.hexId === hexId) {
-              resetZoom();
-            } else {
-              setFocusedHex({ hexId, hex, px, py });
-              zoomToHex(px, py);
-            }
-          };
-
-          const moveCost = reachableHexes.get(hexId);
-          const showMoveCost = phase === 'move' && moveCost !== undefined;
+          const units = getUnits(hexId);
+          const unitCount = units.reduce((s, u) => s + (u.count || 0), 0);
+          const baseColor = playerColor || nationColor || TERRAIN_COLORS[terrain] || '#444';
+          const strokeColor = isSelected ? '#FFD700' : isWater ? '#0d1a2a' : '#00000055';
+          const strokeWidth = isSelected ? 2.5 : 0.6;
+          const icon = TERRAIN_ICONS[terrain];
 
           return (
-           <g key={`hex-${hexId}`} onClick={handleClick} style={{ cursor: 'pointer' }}>
-             {/* Hex border outline — always visible */}
-             <polygon
-               points={hexPoints}
-               fill="transparent"
-               stroke={isWater ? "rgba(50,100,255,0.5)" : "rgba(120,90,40,0.45)"}
-               strokeWidth="0.8"
-             />
-
-
-             {/* Hex state highlight */}
-             {(isSelected || canAttack || canFortify || canMove || canDeploy || isOwned) && (
-               <polygon
-                 points={hexPoints}
-                 fill={isSelected || canDeploy ? ringColor : 'transparent'}
-                 stroke={ringColor}
-                 strokeWidth={isSelected ? '2.5' : '1.5'}
-                 opacity={isSelected ? '0.85' : canDeploy ? '0.25' : '0.7'}
-                 style={{ filter: glow ? `drop-shadow(${glow})` : 'none' }}
-               />
-             )}
-
-
-
-
-
-             {/* Movement cost label */}
-             {showMoveCost && (
-               <text x={px} y={py - hexSize * 0.55} textAnchor="middle" fontSize="9" fill="rgba(100,255,100,0.9)"
-                 style={{ pointerEvents: 'none', textShadow: '1px 1px 2px rgba(0,0,0,1)' }}>
-                 {moveCost}MP
-               </text>
-             )}
-
-             {/* Unit icons + count */}
-             {hex.units && hex.units.length > 0 && (() => {
-               const UNIT_EMOJIS = { infantry: '⚔️', cavalry: '🐴', ranged: '🏹', siege: '💣', naval: '⚓', elite: '🛡️' };
-               const total = hex.units.reduce((sum, u) => sum + u.count, 0);
-               // Show emoji of the dominant unit type
-               const dominant = hex.units.reduce((a, b) => (b.count > a.count ? b : a));
-               const emoji = UNIT_EMOJIS[dominant.type] || '⚔️';
-               return (
-                 <text x={px} y={py + 7} textAnchor="middle" fontSize="11" fill="#fff" fontFamily="'Cinzel',serif" fontWeight="bold"
-                   style={{ textShadow: '1px 1px 3px rgba(0,0,0,1)' }}>
-                   {emoji} {total}
-                 </text>
-               );
-             })()}
-
-
-           </g>
+            <g
+              key={hexId}
+              onClick={() => !isWater && onHexClick && onHexClick(hexId)}
+              onMouseEnter={(e) => !isWater && setTooltip({
+                x: e.clientX, y: e.clientY,
+                province: hex.provincename,
+                nation: hex.nationid ? nations.find(n => n.id === hex.nationid)?.name : null,
+                terrain,
+                capital: hex.capitalname || null
+              })}
+              onMouseLeave={() => setTooltip(null)}
+              style={{ cursor: isWater ? 'default' : 'pointer' }}
+            >
+              <polygon
+                points={hexCorners(cx, cy, HEX_SIZE - 0.8)}
+                fill={baseColor}
+                fillOpacity={isWater ? 0.6 : 0.88}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+              />
+              {isSelected && (
+                <polygon
+                  points={hexCorners(cx, cy, HEX_SIZE - 0.8)}
+                  fill="none"
+                  stroke="#FFD700"
+                  strokeWidth={2.5}
+                  strokeOpacity={0.9}
+                />
+              )}
+              {icon && !isWater && (
+                <text x={cx} y={cy + 3} textAnchor="middle" fontSize={6} fill="rgba(255,255,255,0.35)" style={{ pointerEvents: 'none' }}>
+                  {icon}
+                </text>
+              )}
+              {unitCount > 0 && (
+                <>
+                  <circle cx={cx + 5} cy={cy - 5} r={4} fill={playerColor || '#fff'} stroke="#111" strokeWidth={0.8} />
+                  <text x={cx + 5} y={cy - 2} textAnchor="middle" fontSize={5} fill="#111" fontWeight="bold" style={{ pointerEvents: 'none' }}>
+                    {unitCount}
+                  </text>
+                </>
+              )}
+            </g>
           );
         })}
       </svg>
-
-
-
-      {/* Phase indicator */}
-      <div className="absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded"
-        style={{ background: 'rgba(0,0,0,0.7)', color: 'hsl(43,90%,75%)' }}>
-        {phase.toUpperCase()}
-      </div>
-
-      {/* Zoom out button */}
-      {focusedHex && (
-        <button
-          onClick={resetZoom}
-          className="absolute top-2 right-2 text-xs font-bold px-3 py-1.5 rounded-lg transition-all hover:opacity-90 active:scale-95"
-          style={{ background: 'rgba(0,0,0,0.75)', border: '1px solid hsl(43,70%,50%)', color: 'hsl(43,90%,75%)', fontFamily: "'Cinzel',serif" }}
-        >
-          ← Zoom Out
-        </button>
-      )}
-
-      {/* Region info panel */}
-      {focusedHex && (() => {
-        const { hex, hexId } = focusedHex;
-        const hexIndex = hex._stableIndex;
-        const isWater = isWaterHex(hexIndex);
-        const isCoastal = !isWater && isCoastalHex(hexIndex);
-        const regionKey = hex.region;
-        const regionData = REGIONS[regionKey];
-        const owner = gameState?.players.find(p => p.id === hex.owner);
-        const units = hex.units || [];
-        const totalUnits = units.reduce((s, u) => s + u.count, 0);
-        const TERRAIN_ICONS_MAP = { plains: '🌾', forest: '🌲', mountain: '⛰️', tundra: '❄️', desert: '🏜️', ocean: '🌊', wasteland: '💀' };
-
-        return (
-          <div
-            className="absolute bottom-3 left-3 rounded-xl p-3 max-w-xs"
-            style={{
-              background: 'rgba(20,14,8,0.92)',
-              border: '1px solid hsl(43,70%,45%)',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.7)',
-              fontFamily: "'Crimson Text', serif",
-              color: 'hsl(40,25%,80%)',
-              minWidth: '200px',
-            }}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <span style={{ fontSize: '20px' }}>{TERRAIN_ICONS_MAP[hex.terrain] || '🗺️'}</span>
-              <div>
-                <div className="font-bold text-sm" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,85%,65%)' }}>
-                  {regionData?.name || regionKey || 'Unknown Region'}
-                </div>
-                <div className="text-xs opacity-60 capitalize">{isWater ? '🌊 Water' : isCoastal ? '⚓ Coastal' : `${hex.terrain}`} · Hex #{hexIndex}</div>
-              </div>
-            </div>
-            {regionData?.bonus && (
-              <div className="text-xs mt-1.5 italic opacity-75 leading-snug border-t pt-1.5" style={{ borderColor: 'hsl(43,40%,25%)' }}>
-                {regionData.bonus}
-              </div>
-            )}
-            {owner && (
-              <div className="text-xs mt-1.5 flex items-center gap-1.5">
-                <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: owner.color }} />
-                <span>Controlled by <strong>{owner.name}</strong></span>
-              </div>
-            )}
-            {totalUnits > 0 && (
-              <div className="text-xs mt-1 opacity-70">
-                ⚔️ {totalUnits} unit{totalUnits !== 1 ? 's' : ''} stationed
-              </div>
-            )}
-            {hex.resource && (
-              <div className="text-xs mt-1 opacity-70">💎 Resource: {hex.resource}</div>
-            )}
-          </div>
-        );
-      })()}
     </div>
   );
 }
