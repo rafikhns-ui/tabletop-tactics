@@ -71,6 +71,7 @@ import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, AVATARS } from '../components/ga
 import AvatarPanel from '../components/game/AvatarPanel';
 import AiSetupModal from '../components/game/AiSetupModal';
 import AdvisorPanel from '../components/game/AdvisorPanel';
+import DiplomacyLog from '../components/game/DiplomacyLog';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
@@ -692,18 +693,36 @@ export default function Game() {
   };
 
   const handleDiplomacyAction = ({ type, fromId, toId, offer, request }) => {
+    const from = gameState.players.find(p => p.id === fromId);
+    const to = gameState.players.find(p => p.id === toId);
     if (type === 'trade_offer') {
       setTradeOffers(prev => [...prev, { fromId, toId, offer, request, id: Date.now() }]);
-      const target = gameState.players.find(p => p.id === toId);
-      addMessage(`📜 Trade offer sent to ${target?.name}`);
+      setGameState(prev => ({
+        ...prev,
+        diplomaticEvents: [...(prev.diplomaticEvents || []), {
+          type: 'trade_offer',
+          text: `${from?.name} offered trade to ${to?.name}`,
+          turn: prev.turn,
+        }],
+      }));
+      addMessage(`📜 Trade offer sent to ${to?.name}`);
       return;
     }
-    // alliance, war, neutral — update diplomacy map on gameState
     const key = [fromId, toId].sort().join('|');
-    setGameState(prev => ({ ...prev, diplomacy: { ...(prev.diplomacy || {}), [key]: type } }));
-    const target = gameState.players.find(p => p.id === toId);
+    setGameState(prev => {
+      const typeLabels = { alliance: 'Alliance', war: 'War', neutral: 'Peace' };
+      return {
+        ...prev,
+        diplomacy: { ...(prev.diplomacy || {}), [key]: type },
+        diplomaticEvents: [...(prev.diplomaticEvents || []), {
+          type,
+          text: `${from?.name} declared ${typeLabels[type]} with ${to?.name}`,
+          turn: prev.turn,
+        }],
+      };
+    });
     const labels = { alliance: '🕊️ Alliance formed', war: '⚔️ War declared', neutral: '🤝 Peace proposed' };
-    addMessage(`${labels[type] || type} with ${target?.name}!`);
+    addMessage(`${labels[type] || type} with ${to?.name}!`);
   };
 
   const handleAcceptTrade = (offer) => {
@@ -711,7 +730,6 @@ export default function Game() {
       const fromPlayer = prev.players.find(p => p.id === offer.fromId);
       const toPlayer = prev.players.find(p => p.id === offer.toId);
       if (!fromPlayer || !toPlayer) return prev;
-      // Check fromPlayer can afford offer, toPlayer can afford request
       for (const [k, v] of Object.entries(offer.offer || {})) {
         if ((fromPlayer.resources?.[k] || 0) < v) return prev;
       }
@@ -733,13 +751,31 @@ export default function Game() {
         }
         return p;
       });
-      return { ...prev, players: newPlayers };
+      return {
+        ...prev,
+        players: newPlayers,
+        diplomaticEvents: [...(prev.diplomaticEvents || []), {
+          type: 'trade_accepted',
+          text: `Trade agreement between ${fromPlayer?.name} and ${toPlayer?.name} fulfilled`,
+          turn: prev.turn,
+        }],
+      };
     });
     setTradeOffers(prev => prev.filter(o => o.id !== offer.id));
     addMessage(`✅ Trade accepted!`);
   };
 
   const handleDeclineTrade = (offer) => {
+    const fromPlayer = gameState?.players?.find(p => p.id === offer.fromId);
+    const toPlayer = gameState?.players?.find(p => p.id === offer.toId);
+    setGameState(prev => ({
+      ...prev,
+      diplomaticEvents: [...(prev.diplomaticEvents || []), {
+        type: 'trade_declined',
+        text: `${toPlayer?.name} declined trade offer from ${fromPlayer?.name}`,
+        turn: prev.turn,
+      }],
+    }));
     setTradeOffers(prev => prev.filter(o => o.id !== offer.id));
     addMessage(`❌ Trade declined.`);
   };
@@ -963,14 +999,15 @@ export default function Game() {
           {/* Tab bar */}
           <div className="flex border-b border-border flex-shrink-0" style={{ background: 'hsl(35,22%,13%)' }}>
             {[
-               { id: 'action', icon: '⚔️', label: 'Action' },
-               { id: 'build', icon: '🏗️', label: 'Build' },
-               { id: 'recruit', icon: '⚔️', label: 'Recruit' },
-               { id: 'heroes', icon: '⭐', label: 'Heroes' },
-               { id: 'avatars', icon: '👹', label: 'Avatars' },
-               { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
-               { id: 'log', icon: '📜', label: 'Battle Log' },
-               { id: 'advisor', icon: '⚜️', label: 'Advisor' },
+             { id: 'action', icon: '⚔️', label: 'Action' },
+             { id: 'build', icon: '🏗️', label: 'Build' },
+             { id: 'recruit', icon: '⚔️', label: 'Recruit' },
+             { id: 'heroes', icon: '⭐', label: 'Heroes' },
+             { id: 'avatars', icon: '👹', label: 'Avatars' },
+             { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
+             { id: 'diplog', icon: '📋', label: 'Dip Log' },
+             { id: 'log', icon: '📜', label: 'Battle Log' },
+             { id: 'advisor', icon: '⚜️', label: 'Advisor' },
             ].map(t => (
               <button key={t.id} onClick={() => setBottomTab(t.id)}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold transition-all"
@@ -1065,6 +1102,9 @@ export default function Game() {
               <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
                 Diplomacy available during your turn
               </div>
+            )}
+            {bottomTab === 'diplog' && gameState && (
+              <DiplomacyLog gameState={gameState} />
             )}
             {bottomTab === 'log' && (
               <BattleLog entries={battleLog} />
