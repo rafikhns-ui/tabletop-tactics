@@ -411,9 +411,29 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                 </div>
 
                 {/* Capital city */}
-                {selected.capital_name && (
-                  <div style={{ color: '#f0a030', fontSize: 13, marginBottom: 10, fontStyle: 'italic' }}>
-                    {selected.capital_name === selectedProvince?.capital && selectedProvince?.is_national_capital ? '★' : '◆'} {selected.capital_name}
+                {selected.capital_name && (() => {
+                  const isNatCap = selectedProvince?.is_national_capital;
+                  return (
+                    <div style={{ marginBottom: 10 }}>
+                      <div style={{ color: isNatCap ? '#d4a853' : '#c8a060', fontSize: 13, fontStyle: 'italic', marginBottom: 4 }}>
+                        {isNatCap ? '★' : '◆'} {selected.capital_name}
+                        <span style={{ marginLeft: 6, fontSize: 10, fontFamily: "'Cinzel',serif", letterSpacing: 0.5,
+                          color: isNatCap ? '#d4a853' : '#a08050', opacity: 0.85 }}>
+                          {isNatCap ? 'NATIONAL CAPITAL' : 'PROVINCIAL CAPITAL'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11, color: '#7a6a50', fontStyle: 'italic', padding: '4px 8px', borderLeft: `2px solid ${isNatCap ? '#d4a853' : '#7a6030'}`, background: 'rgba(0,0,0,0.2)', borderRadius: 2 }}>
+                        ⚔️ Capture this city to control the province
+                        {isNatCap && <span style={{ color: '#c08030' }}> — and cripple the nation</span>}
+                      </div>
+                    </div>
+                  );
+                })()}
+                {/* Non-capital hex hint */}
+                {!selected.capital_name && selected.nation_id && selectedProvince && (
+                  <div style={{ fontSize: 11, color: '#555', fontStyle: 'italic', marginBottom: 8 }}>
+                    ◆ Provincial capital: <span style={{ color: '#7a6a50' }}>{selectedProvince.capital}</span><br/>
+                    <span style={{ color: '#444' }}>Capture the capital hex to control this province</span>
                   </div>
                 )}
 
