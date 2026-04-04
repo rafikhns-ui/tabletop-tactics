@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import mapData from './ardonia_game_map.json';
+import { FACTIONS } from './ardoniaData';
 
 // ══════ TERRAIN COLORS (dark fantasy palette) ══════
 const TERRAIN_COLORS = {
@@ -18,6 +19,37 @@ const TERRAIN_COLORS = {
 // ══════ NATION COLORS (from game data) ══════
 const NATION_COLORS = {};
 mapData.nations.forEach(n => { NATION_COLORS[n.id] = n.color; });
+
+// ══════ FACTION NAME MAPPING (map faction → playable faction id) ══════
+const remapFaction = (faction, row) => {
+  if (!faction || faction === 'ocean') return null;
+  if (faction === 'gejeon') return 'gojeon';
+  if (faction === 'greenheart') return 'oakhaven';
+  if (faction === 'silverunion') return 'republic';
+  if (faction === 'shadefell') return row <= 6 ? 'tlalocayotlan' : 'sultanate';
+  if (faction === 'shadowsfall') return row <= 12 ? 'kintei' : 'icebound';
+  return faction;
+};
+
+// ══════ FACTION CENTROIDS (computed from hex_grid) ══════
+const factionCentroidMap = {};
+mapData.hex_grid.forEach(h => {
+  if (!h.nation_id && !h.faction) return;
+  const rawFaction = h.faction || h.nation_id;
+  const fid = remapFaction(rawFaction, h.row);
+  if (!fid || !FACTIONS[fid]) return;
+  if (!factionCentroidMap[fid]) factionCentroidMap[fid] = { sx: 0, sy: 0, cnt: 0 };
+  factionCentroidMap[fid].sx += h.x;
+  factionCentroidMap[fid].sy += h.y;
+  factionCentroidMap[fid].cnt++;
+});
+const FACTION_CENTROIDS = Object.entries(factionCentroidMap).map(([fid, v]) => ({
+  fid,
+  x: v.sx / v.cnt,
+  y: v.sy / v.cnt,
+  name: FACTIONS[fid]?.name || fid,
+  color: FACTIONS[fid]?.color || '#fff',
+}));
 
 // ══════ HEX GEOMETRY ══════
 function flatHexCorners(cx, cy, size) {
@@ -250,25 +282,41 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
             );
           })}
 
-          {/* ── Nation labels ── */}
-          {nations.map(nation => {
-            const { cx, cy } = toSVG(nation.centroid[0], nation.centroid[1]);
+          {/* ── Faction labels ── */}
+          {FACTION_CENTROIDS.map(fc => {
+            const { cx, cy } = toSVG(fc.x, fc.y);
+            // Split long names onto two lines
+            const words = fc.name.split(' ');
+            const line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ');
+            const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
             return (
-              <g key={`nl${nation.id}`} style={{ pointerEvents: 'none' }}>
-                {/* Color halo */}
-                <text x={cx} y={cy} textAnchor="middle" fontSize={16}
-                  fill="none" stroke={nation.color} strokeWidth={5} strokeOpacity={0.25}
-                  fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={2}
-                  style={{ textTransform: 'uppercase' }}>
-                  {nation.name.toUpperCase()}
+              <g key={`fl${fc.fid}`} style={{ pointerEvents: 'none' }}>
+                <text x={cx} y={cy - (line2 ? 6 : 0)} textAnchor="middle" fontSize={13}
+                  fill="none" stroke={fc.color} strokeWidth={4} strokeOpacity={0.4}
+                  fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}>
+                  {line1.toUpperCase()}
                 </text>
-                {/* White text */}
-                <text x={cx} y={cy} textAnchor="middle" fontSize={14}
-                  fill="#fff" stroke="#0a0806" strokeWidth={3.5} paintOrder="stroke"
-                  fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={2}
-                  style={{ textTransform: 'uppercase', opacity: 0.95 }}>
-                  {nation.name.toUpperCase()}
+                <text x={cx} y={cy - (line2 ? 6 : 0)} textAnchor="middle" fontSize={13}
+                  fill="#fff" stroke="#0a0806" strokeWidth={3} paintOrder="stroke"
+                  fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}
+                  style={{ opacity: 0.95 }}>
+                  {line1.toUpperCase()}
                 </text>
+                {line2 && (
+                  <>
+                    <text x={cx} y={cy + 10} textAnchor="middle" fontSize={13}
+                      fill="none" stroke={fc.color} strokeWidth={4} strokeOpacity={0.4}
+                      fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}>
+                      {line2.toUpperCase()}
+                    </text>
+                    <text x={cx} y={cy + 10} textAnchor="middle" fontSize={13}
+                      fill="#fff" stroke="#0a0806" strokeWidth={3} paintOrder="stroke"
+                      fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}
+                      style={{ opacity: 0.95 }}>
+                      {line2.toUpperCase()}
+                    </text>
+                  </>
+                )}
               </g>
             );
           })}
