@@ -384,7 +384,7 @@ export default function HexMap({ gameState, selectedHex, phase, currentPlayer, o
                 {/* Controller info */}
                 {(() => {
                   const hexId = selected ? `${selected.col},${selected.row}` : null;
-                  const owner = hexId ? getOwner(hexId) : null;
+                  const owner = hexId ? getOwner(hexId, selected?.nation_id) : null;
                   const ownerPlayer = owner ? gameState?.players?.find(p => p.id === owner) : null;
                   if (!ownerPlayer) return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
