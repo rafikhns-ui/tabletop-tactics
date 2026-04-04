@@ -604,12 +604,12 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             </div>
           )}
 
-          {panelTab === 'diplomacy' && currentPlayer && (
+          {panelTab === 'diplomacy' && currentPlayer && gameState ? (
             <div>
               <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
                 Diplomatic Relations
               </div>
-              {gameState?.players?.filter(p => p.id !== currentPlayer.id).map(other => {
+              {gameState.players.filter(p => p.id !== currentPlayer.id).map(other => {
                 const key = [currentPlayer.id, other.id].sort().join('|');
                 const status = gameState?.diplomacy?.[key] || 'neutral';
                 const statusColors = { alliance: '#27ae60', war: '#e74c3c', neutral: '#888' };
@@ -630,8 +630,12 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   </div>
                 );
               })}
-            </div>
-          )}
+              </div>
+              ) : panelTab === 'diplomacy' ? (
+              <div style={{ textAlign: 'center', color: '#555', marginTop: 40, fontStyle: 'italic' }}>
+              Data unavailable
+              </div>
+              ) : null}
 
           {panelTab === 'actions' && (
             <div style={{ textAlign: 'center', color: '#555', marginTop: 40, fontStyle: 'italic', fontSize: 12 }}>
