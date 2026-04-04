@@ -135,23 +135,27 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       };
     });
 
-  // Fallback: also distribute old territories
-  const ids = shuffle(Object.keys(TERRITORIES));
+  // Assign territories based on each territory's faction property
+  const factionToPlayerId = {};
+  players.forEach(p => { if (p.factionId) factionToPlayerId[p.factionId] = p.id; });
+
   const territories = {};
-  ids.forEach((id, i) => {
-    const owner = players[i % players.length].id;
+  const capitalAssignedTerr = new Set();
+  Object.entries(TERRITORIES).forEach(([id, terr]) => {
+    const owner = factionToPlayerId[terr.faction] || null;
+    let isCapital = false;
+    if (owner && !capitalAssignedTerr.has(owner)) {
+      isCapital = true;
+      capitalAssignedTerr.add(owner);
+    }
     territories[id] = {
-      ...TERRITORIES[id],
+      ...terr,
       owner,
-      troops: 2,
+      troops: owner ? 3 : 1,
       units: [],
-      hasForceress: false,
-      isCapital: false,
+      hasFortress: false,
+      isCapital,
     };
-  });
-  players.forEach((p, pi) => {
-    const firstId = ids[pi];
-    if (firstId) territories[firstId].isCapital = true;
   });
 
   return {
