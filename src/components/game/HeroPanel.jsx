@@ -114,8 +114,8 @@ export default function HeroPanel({ gameState, currentPlayer, onRecruit }) {
   const [tab, setTab] = useState('owned'); // 'owned' | 'available'
   const ownedHeroIds = currentPlayer.heroes || [];
   const availableHeroes = Object.values(HEROES).filter(h =>
-    !ownedHeroIds.includes(h.id) && 
-    h.faction === currentPlayer.factionId
+    !ownedHeroIds.includes(h.id) &&
+    (h.faction === null || h.faction === currentPlayer.factionId)
   );
 
   return (

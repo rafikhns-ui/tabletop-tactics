@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { BUILDING_DEFS, UNIT_DEFS } from './ardoniaData';
+import { BUILDING_DEFS, UNIT_DEFS, FACTION_BUILDINGS, FACTION_UNITS } from './ardoniaData';
 
-const BUILDABLE = Object.keys(BUILDING_DEFS).filter(id => !['mine','lumber_mill','farm','treasury'].includes(id));
+// BUILDABLE is now per-faction (resolved at render time)
 
 const UNIT_UNLOCK = {
   barracks: ['infantry', 'elite'],
@@ -31,20 +31,29 @@ function CostTag({ cost, resources }) {
 }
 
 export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onUpgrade, onBuildFortress, phase }) {
-  const [tab, setTab] = useState('build'); // 'build' | 'upgrade' | 'fortress'
+  const [tab, setTab] = useState('build'); // 'build' | 'upgrade'
   const [previewImage, setPreviewImage] = useState(null);
   const { resources } = currentPlayer;
   const ownedBuildings = Object.keys(currentPlayer.buildings || {});
   const ownedTerritories = Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id);
 
-  // Which buildings can still be built
-  const buildable = BUILDABLE.filter(id => !ownedBuildings.includes(id));
+  // Faction-specific buildable list (exclude already-owned and starting buildings)
+  const factionBuildableIds = FACTION_BUILDINGS[currentPlayer.factionId] || Object.keys(BUILDING_DEFS).filter(id => !['mine','lumber_mill','farm','treasury'].includes(id));
+  const buildable = factionBuildableIds.filter(id => !ownedBuildings.includes(id));
 
-  // Which units are unlocked by owned buildings
-  const unlockedUnits = Object.entries(UNIT_UNLOCK)
-    .filter(([bId]) => ownedBuildings.includes(bId))
-    .flatMap(([, units]) => units);
-  const uniqueUnits = [...new Set(unlockedUnits)];
+  // Faction-specific unit unlock
+  const factionUnits = FACTION_UNITS[currentPlayer.factionId] || [];
+  const UNIT_UNLOCK_LOCAL = {
+    barracks:     factionUnits.filter(u => ['infantry','elite','spearmen_infantry'].includes(u)),
+    stables:      factionUnits.filter(u => ['cavalry','onishiman_cavalry'].includes(u)),
+    archerytower: factionUnits.filter(u => ['ranged','imperial_crossbow'].includes(u)),
+    siegeworks:   factionUnits.filter(u => ['siege','wildfire_thrower'].includes(u)),
+    shipyard:     factionUnits.filter(u => ['naval','infamous_reapership'].includes(u)),
+    omitoji_dojo: factionUnits.filter(u => ['onmmy_warlocks','night_blade_clan'].includes(u)),
+    fighting_pit: factionUnits.filter(u => ['elite','night_blade_clan'].includes(u)),
+  };
+
+  // (buildable and units are already set above from faction-specific data)
 
   const s = { fontFamily: "'Cinzel',serif" };
 
@@ -96,9 +105,9 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
                 </div>
                 <div className="text-xs opacity-55 mt-0.5" style={{ color: 'hsl(40,20%,65%)' }}>{b.description}</div>
                 {/* Show what units it unlocks */}
-                {UNIT_UNLOCK[id] && (
+                {UNIT_UNLOCK_LOCAL[id]?.length > 0 && (
                   <div className="text-xs mt-0.5" style={{ color: 'hsl(200,60%,65%)' }}>
-                    Unlocks: {UNIT_UNLOCK[id].map(u => `${UNIT_DEFS[u]?.emoji} ${UNIT_DEFS[u]?.name}`).join(', ')}
+                    Unlocks: {UNIT_UNLOCK_LOCAL[id].map(u => `${UNIT_DEFS[u]?.emoji} ${UNIT_DEFS[u]?.name}`).join(', ')}
                   </div>
                 )}
                 <CostTag cost={b.cost} resources={resources} />

@@ -686,17 +686,42 @@ export const FACTION_DATA = {
   },
 };
 
-// Helper: get faction buildings
+// ── Faction-specific BUILDING_DEFS ids available to each faction ──
+export const FACTION_BUILDINGS = {
+  onishiman:     ['imperial_stronghold', 'omitoji_dojo', 'spirit_gate', 'tower_of_intrigues', 'siege_engine_workshop', 'fighting_pit', 'grand_market', 'crimson_port'],
+  gojeon:        ['temple', 'barracks', 'market', 'stables', 'archerytower'],
+  sultanate:     ['temple', 'market', 'barracks', 'grand_market'],
+  republic:      ['barracks', 'market', 'shipyard', 'stables', 'archerytower', 'crimson_port'],
+  kadjimaran:    ['stables', 'barracks', 'temple', 'archerytower'],
+  oakhaven:      ['barracks', 'archerytower', 'temple', 'market'],
+  ruskel:        ['barracks', 'siegeworks', 'stables', 'market', 'fighting_pit'],
+  icebound:      ['barracks', 'stables', 'siegeworks', 'fighting_pit'],
+  inuvak:        ['temple', 'barracks', 'archerytower'],
+  kintei:        ['barracks', 'siegeworks', 'stables', 'market', 'grand_market'],
+  nimrudan:      ['barracks', 'temple', 'stables', 'archerytower', 'fighting_pit'],
+  tlalocayotlan: ['temple', 'barracks', 'archerytower', 'market'],
+};
+
+// ── Faction-specific UNIT_DEFS ids available to each faction ──
+export const FACTION_UNITS = {
+  onishiman:     ['spearmen_infantry', 'onishiman_cavalry', 'imperial_crossbow', 'onmmy_warlocks', 'night_blade_clan', 'wildfire_thrower', 'infamous_reapership'],
+  gojeon:        ['infantry', 'cavalry', 'ranged', 'elite'],
+  sultanate:     ['infantry', 'cavalry', 'ranged', 'elite'],
+  republic:      ['infantry', 'naval', 'ranged', 'cavalry', 'elite'],
+  kadjimaran:    ['cavalry', 'infantry', 'ranged'],
+  oakhaven:      ['infantry', 'ranged', 'elite'],
+  ruskel:        ['infantry', 'siege', 'cavalry', 'elite'],
+  icebound:      ['infantry', 'cavalry', 'elite', 'siege'],
+  inuvak:        ['infantry', 'ranged', 'elite'],
+  kintei:        ['infantry', 'siege', 'cavalry', 'ranged'],
+  nimrudan:      ['infantry', 'cavalry', 'ranged', 'elite', 'siege'],
+  tlalocayotlan: ['infantry', 'ranged', 'elite'],
+};
+
+// Helper: get faction buildings (FACTION_DATA display info)
 export const getFactionBuildings = (factionId) =>
   FACTION_DATA[factionId]?.buildings ?? [];
 
-// Helper: get faction heroes
-export const getFactionHeroes = (factionId) =>
-  FACTION_DATA[factionId]?.heroes ?? [];
-
-// Helper: get faction units
-export const getFactionUnits = (factionId) =>
-  FACTION_DATA[factionId]?.units ?? [];
 // ---- Unit Definitions ----
 export const UNIT_DEFS = {
   infantry:   { id: 'infantry',   name: 'Infantry',     emoji: '🗡️',  dice: 6,  cost: { gold: 2, wheat: 1 }, canCapture: true,  requires: 'barracks',  movementRange: 1, description: 'Basic melee unit, moves 1 tile/turn' },
