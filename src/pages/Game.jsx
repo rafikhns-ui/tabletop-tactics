@@ -99,6 +99,7 @@ export default function Game() {
   const [bottomTab, setBottomTab] = useState('action'); // 'action' | 'diplomacy' | 'log'
   const [highlightMyTerritories, setHighlightMyTerritories] = useState(false);
   const [provinces, setProvinces] = useState(null);
+  const [buildingPlacementMode, setBuildingPlacementMode] = useState(null); // 'fortress' | 'port' | null
 
   // Initialize provinces on game start
   useEffect(() => {
@@ -225,6 +226,24 @@ export default function Game() {
 
   const handleTerritoryClick = (hexId) => {
     if (!gameState || winner) return;
+    
+    // Handle building placement mode
+    if (buildingPlacementMode) {
+      setGameState(prev => {
+        const hex = prev.hexes[hexId] || {};
+        const buildings = buildingPlacementMode === 'fortress' 
+          ? { ...hex.buildings, fortress: true }
+          : { ...hex.buildings, port: true };
+        return {
+          ...prev,
+          hexes: { ...prev.hexes, [hexId]: { ...hex, buildings } }
+        };
+      });
+      setBuildingPlacementMode(null);
+      addMessage(`🏰 ${buildingPlacementMode === 'fortress' ? 'Fortress' : 'Port'} placed on hex`);
+      return;
+    }
+    
     const hex = gameState.hexes[hexId] || {}; // allow missing hex (no units yet)
 
     if (phase === 'deploy') {
@@ -987,6 +1006,26 @@ export default function Game() {
                 {gameState.territories && currentPlayer ? 
                   `${Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id).length} territories owned` : ''}
               </span>
+            </div>
+            <div className="flex items-center gap-2 mb-1">
+              <button
+                onClick={() => setBuildingPlacementMode(buildingPlacementMode === 'fortress' ? null : 'fortress')}
+                className="text-xs px-3 py-1 rounded font-bold transition-all"
+                style={{
+                  fontFamily: "'Cinzel',serif",
+                  background: buildingPlacementMode === 'fortress' ? 'hsl(43,60%,22%)' : 'hsl(35,20%,22%)',
+                  border: `1px solid ${buildingPlacementMode === 'fortress' ? 'hsl(43,80%,50%)' : 'hsl(35,20%,35%)'}`,
+                  color: buildingPlacementMode === 'fortress' ? 'hsl(43,90%,75%)' : 'hsl(40,20%,65%)',
+                }}>🏰 Place Fortress</button>
+              <button
+                onClick={() => setBuildingPlacementMode(buildingPlacementMode === 'port' ? null : 'port')}
+                className="text-xs px-3 py-1 rounded font-bold transition-all"
+                style={{
+                  fontFamily: "'Cinzel',serif",
+                  background: buildingPlacementMode === 'port' ? 'hsl(43,60%,22%)' : 'hsl(35,20%,22%)',
+                  border: `1px solid ${buildingPlacementMode === 'port' ? 'hsl(43,80%,50%)' : 'hsl(35,20%,35%)'}`,
+                  color: buildingPlacementMode === 'port' ? 'hsl(43,90%,75%)' : 'hsl(40,20%,65%)',
+                }}>🚢 Place Port</button>
             </div>
             <HexMap
               gameState={gameState}
