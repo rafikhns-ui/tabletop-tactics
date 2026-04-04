@@ -297,17 +297,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
             return (
               <g key={hexId} onClick={() => {
-              if (!isWater) {
-                handleHexClick(hex);
-                if (onProvincClick && hex.nation_id && hex.province) {
-                  onProvincClick({
-                    nation_id: hex.nation_id,
-                    province_id: hex.province,
-                    capital_name: hex.capital_name,
-                  });
+                if (!isWater) {
+                  handleHexClick(hex);
                 }
-              }
-            }} style={{ cursor: isWater ? 'default' : 'pointer' }}>
+              }} style={{ cursor: isWater ? 'default' : 'pointer' }}>
                 {/* Base terrain hex */}
                 <polygon
                   points={flatHexCorners(cx, cy, HEX_PX)}
@@ -514,7 +507,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
                 {/* Capital city */}
                 {selected.capital_name && (() => {
-                  const isNatCap = selectedProvince?.is_national_capital;
+                 const isNatCap = selectedProvinceInfo?.is_national_capital;
                   return (
                     <div style={{ marginBottom: 10 }}>
                       <div style={{ color: isNatCap ? '#d4a853' : '#c8a060', fontSize: 13, fontStyle: 'italic', marginBottom: 4 }}>
@@ -573,10 +566,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 </div>
 
                 {/* Province stats */}
-                {selectedProvince && (
-                  <div style={{ fontSize: 12, color: '#888', marginTop: 8 }}>
-                    <div>Province hexes: <span style={{ color: '#c8c0b0' }}>{selectedProvince.hex_count}</span></div>
-                  </div>
+                {selectedProvinceInfo && (
+                 <div style={{ fontSize: 12, color: '#888', marginTop: 8 }}>
+                   <div>Province hexes: <span style={{ color: '#c8c0b0' }}>{selectedProvinceInfo.hex_count}</span></div>
+                 </div>
                 )}
 
                 {/* Grid coords */}
