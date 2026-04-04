@@ -299,6 +299,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
               <g key={hexId} onClick={() => {
                 if (!isWater) {
                   handleHexClick(hex);
+                  if (hex.nation_id && hex.province && onProvincClick) {
+                    onProvincClick({ nation_id: hex.nation_id, province: hex.province });
+                  }
                 }
               }} style={{ cursor: isWater ? 'default' : 'pointer' }}>
                 {/* Base terrain hex */}
