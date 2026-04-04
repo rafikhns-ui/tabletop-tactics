@@ -342,6 +342,18 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                     <text x={cx + 8} y={cy - 4} textAnchor="middle" fontSize={7} fill="#0a0c12" fontWeight="bold">{unitCount}</text>
                   </g>
                 )}
+                {/* Fortress icon */}
+                {gameState?.hexes?.[hexId]?.buildings?.fortress && (
+                  <text x={cx - 8} y={cy + 2} textAnchor="middle" fontSize={11} style={{ pointerEvents: 'none', textShadow: '0 0 2px #000' }}>
+                    🏰
+                  </text>
+                )}
+                {/* Port icon */}
+                {gameState?.hexes?.[hexId]?.buildings?.port && (
+                  <text x={cx + 8} y={cy + 10} textAnchor="middle" fontSize={11} style={{ pointerEvents: 'none', textShadow: '0 0 2px #000' }}>
+                    ⚓
+                  </text>
+                )}
 
               </g>
             );
