@@ -905,6 +905,7 @@ export default function Game() {
   const endTurn = useCallback(() => {
     setSelectedTerritory(null);
     setMovedHexes(new Set());
+    if (!gameState) return;
     const nextIndex2 = (gameState.currentPlayerIndex + 1) % gameState.players.length;
     if (nextIndex2 === 0) setTurnLog([]);
     setGameState(prev => {
