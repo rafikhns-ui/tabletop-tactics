@@ -72,6 +72,7 @@ import AvatarPanel from '../components/game/AvatarPanel';
 import AiSetupModal from '../components/game/AiSetupModal';
 import AdvisorPanel from '../components/game/AdvisorPanel';
 import DiplomacyLog from '../components/game/DiplomacyLog';
+import EffectsPanel from '../components/game/EffectsPanel';
 import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar } from '../components/game/aiPersonalities';
 
 export default function Game() {
@@ -599,6 +600,25 @@ export default function Game() {
     addMessage(`👹 ${avatar.name} has been summoned!`);
   };
 
+  const handleHeroAbility = (heroId, abilityInfo) => {
+    // Deduct cost and mark hero as used (exhausted for this turn)
+    setGameState(prev => {
+      const player = prev.players.find(p => p.id === currentPlayer.id);
+      let newIp = player.ip ?? 0;
+      let newSp = player.sp ?? 0;
+      const newResources = { ...player.resources };
+      for (const [k, v] of Object.entries(abilityInfo.cost || {})) {
+        if (k === 'ip') newIp -= v;
+        else if (k === 'sp') newSp -= v;
+        else newResources[k] = (newResources[k] || 0) - v;
+      }
+      const heroStatus = { ...(player.heroStatus || {}), [heroId]: { ...(player.heroStatus?.[heroId] || {}), exhausted: true } };
+      return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? { ...p, ip: newIp, sp: newSp, resources: newResources, heroStatus } : p) };
+    });
+    const hero = HEROES[heroId];
+    addMessage(`⚔️ ${hero?.name} used ability: ${abilityInfo.label}!`);
+  };
+
   const handleRecruitHero = (heroId) => {
     const hero = HEROES[heroId];
     if (!hero) return;
@@ -1068,6 +1088,7 @@ export default function Game() {
              { id: 'recruit', icon: '⚔️', label: 'Recruit' },
              { id: 'heroes', icon: '⭐', label: 'Heroes' },
              { id: 'avatars', icon: '👹', label: 'Avatars' },
+             { id: 'effects', icon: '📊', label: 'Effects' },
              { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
              { id: 'diplog', icon: '📋', label: 'Dip Log' },
              { id: 'log', icon: '📜', label: 'Battle Log' },
@@ -1110,6 +1131,7 @@ export default function Game() {
                 gameState={gameState}
                 currentPlayer={currentPlayer}
                 onRecruit={handleRecruitHero}
+                onTriggerAbility={handleHeroAbility}
               />
             )}
             {bottomTab === 'heroes' && currentPlayer?.isAI && (
@@ -1153,6 +1175,9 @@ export default function Game() {
                <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
                  Avatars available during your turn
                </div>
+             )}
+             {bottomTab === 'effects' && gameState && currentPlayer && (
+               <EffectsPanel currentPlayer={currentPlayer} gameState={gameState} />
              )}
              {bottomTab === 'diplomacy' && gameState && currentPlayer && !currentPlayer.isAI && (
               <DiplomacyPanel
