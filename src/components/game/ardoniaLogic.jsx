@@ -123,9 +123,12 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     players.forEach(p => {
       if (!p.factionId) return;
       const nationId = factionToNation[p.factionId];
-      const landHexes = Object.entries(generatedHexWorld).filter(
-        ([, h]) => h.nation_id === nationId && h.type !== 'water'
+      const allNationHexes = Object.entries(generatedHexWorld).filter(([, h]) => h.nation_id === nationId);
+      console.log(`[DEBUG] Nation '${nationId}' has ${allNationHexes.length} hexes. Types:`, allNationHexes.slice(0, 5).map(([id, h]) => `${id}(${h.type})`));
+      const landHexes = allNationHexes.filter(
+        ([, h]) => h.type && h.type !== 'water' && h.type !== 'coastal'
       );
+      console.log(`[DEBUG] Nation '${nationId}' has ${landHexes.length} land hexes after filtering`);
       if (landHexes.length === 0) return;
       
       // Find center: land hex closest to average position of all land hexes
