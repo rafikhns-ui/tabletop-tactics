@@ -1,5 +1,4 @@
 import { TERRITORIES, ADJACENCY, FACTIONS, LEADERS, HEROES, OBJECTIVES, BUILDING_DEFS, TERRAIN_MOVEMENT_COSTS, UNIT_DEFS } from './ardoniaData';
-import { buildHexAdjacency } from './hexGridSystem';
 import { generateWorldMap } from './hexWorldGenerator';
 
 // ---- Hero passive bonus helpers ----
@@ -106,8 +105,7 @@ export const createGameState = (mode, playersArr = null) => {  let players;
   }
 
   // Initialize hexes from the JSON map, assigning ownership by sourceFaction
-    const generatedHexWorld = generateWorldMap();
-    const hexAdjacency = buildHexAdjacency();
+  const generatedHexWorld = generateWorldMap();
 
     // Build a map from factionId -> playerId
     const factionToPlayer = {};
@@ -178,7 +176,6 @@ export const createGameState = (mode, playersArr = null) => {  let players;
 
   return {
     hexes,
-    hexAdjacency,
     territories,
     adjacency: ADJACENCY,
     players,
