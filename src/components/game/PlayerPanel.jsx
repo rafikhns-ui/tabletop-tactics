@@ -92,6 +92,9 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
               {player.factionId === 'onishiman' && (
                 <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/8a875b40d_photo-output.png" alt="Onishiman" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} />
               )}
+              {player.factionId === 'ruskel' && (
+                <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/0ef66cce6_photo-output4.png" alt="Ruskel" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} />
+              )}
               {player.faction?.emoji} {player.faction?.name}
             </div>
           </div>

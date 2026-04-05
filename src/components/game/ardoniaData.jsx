@@ -253,6 +253,7 @@ export const FACTIONS = {
   },
   ruskel: {
     id: 'ruskel', name: 'Ruskel Federation', color: '#7f8c8d', emoji: '⚙️', playable: true,
+    logo: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/0ef66cce6_photo-output4.png',
     continent: 'Sharqian',
     description: 'A bastion of iron and industry born from unified northern duchies. Allied with the Dwarves of the Ironclad Holds for advanced weaponry and fortifications. Highly disciplined and industrious.',
     specialRule: 'Siege Engines get +2 attack. Buildings cost 1 less Gold due to Dwarven alliances.',
