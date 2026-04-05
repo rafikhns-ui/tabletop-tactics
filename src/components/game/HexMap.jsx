@@ -253,7 +253,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
           </button>
         )}
         <svg
-          viewBox={`-400 -280 ${SVG_W + 800} ${SVG_H + 560}`}
+          viewBox={`-250 -160 ${SVG_W + 500} ${SVG_H + 320}`}
           width="100%" height="100%"
           preserveAspectRatio="xMidYMid meet"
           style={{ background: '#0a0c12', display: 'block' }}
