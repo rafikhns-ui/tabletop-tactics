@@ -359,11 +359,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
               <circle cx="6" cy="2" r="0.6" fill="#cc4400" fillOpacity="0.4" />
             </pattern>
 
-            {/* ── Vignette ── */}
-            <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
-              <stop offset="60%" stopColor="transparent" />
-              <stop offset="100%" stopColor="#000000" stopOpacity="0.65" />
-            </radialGradient>
+
           </defs>
 
           {zoomTransform && (
@@ -589,8 +585,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
           })}
           </g>
 
-          {/* ── Vignette overlay ── */}
-          <rect x={0} y={0} width={SVG_W} height={SVG_H} fill="url(#vignette)" style={{ pointerEvents: 'none' }} />
+
         </svg>
       </div>
 
