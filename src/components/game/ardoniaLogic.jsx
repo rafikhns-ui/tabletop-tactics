@@ -490,20 +490,21 @@ export const checkObjective = (obj, player, gameState) => {
 export const doAiTurn = (gameState) => {
   let state = { ...gameState };
   state.territories = { ...state.territories };
-  const ai = state.players[state.currentPlayerIndex];
+  state.players = state.players.map(p => ({ ...p }));
+  const aiIndex = state.currentPlayerIndex;
+  const ai = state.players[aiIndex];
   if (!ai || !ai.isAI) return state;
 
   const difficulty = ai.difficulty || 'normal';
   const logs = [];
 
   // Difficulty parameters
-  // easy:   won't attack unless very safe, skips sometimes, no bonus
-  // normal: standard aggression
-  // hard:   attacks more, gets attack/defense bonus, smarter targeting
   const skipChance = difficulty === 'easy' ? 0.35 : 0;
   const minAdvantage = difficulty === 'easy' ? 3 : difficulty === 'hard' ? 1.3 : 2;
   const attackBonus = difficulty === 'hard' ? 1 : 0;
   const maxAttacks = difficulty === 'hard' ? 3 : 1;
+  const buildingChance = difficulty === 'hard' ? 0.7 : difficulty === 'normal' ? 0.4 : 0.1;
+  const diplomacyChance = difficulty === 'hard' ? 0.6 : difficulty === 'normal' ? 0.35 : 0.1;
 
   // 1. Deploy troops
   let bestDeploy = null, bestScore = -1;
@@ -524,7 +525,37 @@ export const doAiTurn = (gameState) => {
     logs.push(`🤖 AI deployed ${ai.troopsToDeploy} troops`);
   }
 
-  // 2. Attack (difficulty-gated)
+  // 2. Recruitment - build armies
+  const gold = state.players[aiIndex].resources?.gold || 0;
+  const wheat = state.players[aiIndex].resources?.wheat || 0;
+  const hasBarracks = Object.values(state.players[aiIndex].buildings || {}).some(b => b.id === 'barracks');
+  if (gold > 3 && wheat > 1 && hasBarracks && Math.random() < buildingChance) {
+    state.players[aiIndex].resources = { ...state.players[aiIndex].resources, gold: gold - 2, wheat: wheat - 1 };
+    logs.push(`🤖 ${ai.name} recruited infantry`);
+  }
+
+  // 3. Building upgrades
+  const goldLeft = state.players[aiIndex].resources?.gold || 0;
+  if (goldLeft >= 4 && Math.random() < buildingChance * 0.6) {
+    const mine = state.players[aiIndex].buildings?.mine;
+    if (mine && mine.level < 3) {
+      state.players[aiIndex].buildings = { ...state.players[aiIndex].buildings, mine: { ...mine, level: mine.level + 1 } };
+      state.players[aiIndex].resources.gold -= 4;
+      logs.push(`🤖 ${ai.name} upgraded their mine`);
+    }
+  }
+
+  // 4. Diplomacy - offer trades to human players
+  if (difficulty !== 'easy' && Math.random() < diplomacyChance) {
+    const otherPlayers = state.players.filter(p => p.id !== ai.id && !p.isAI);
+    if (otherPlayers.length > 0 && (state.players[aiIndex].resources?.gold || 0) > 2) {
+      const target = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
+      state.players[aiIndex].activeTradeDeals = [...(state.players[aiIndex].activeTradeDeals || []), { partnerId: target.id, goldPerTurn: 1, duration: 3 }];
+      logs.push(`🤖 ${ai.name} proposed trade with ${target.name}`);
+    }
+  }
+
+  // 5. Attack (difficulty-gated)
   if (Math.random() >= skipChance) {
     const myTerrs = Object.values(state.territories)
       .filter(t => t.owner === ai.id)
@@ -576,25 +607,11 @@ export const doAiTurn = (gameState) => {
     }
   }
 
-  // 3. Hard AI: spend resources on buildings
-  if (difficulty === 'hard') {
-    state.players = state.players.map(p => {
-      if (p.id !== ai.id) return p;
-      const resources = { ...p.resources };
-      const buildings = { ...p.buildings };
-      // Upgrade mine if affordable
-      if ((resources.gold || 0) >= 4 && buildings.mine && buildings.mine.level < 3) {
-        resources.gold -= 4;
-        buildings.mine = { ...buildings.mine, level: buildings.mine.level + 1 };
-      }
-      return { ...p, resources, buildings };
-    });
-  }
-
-  // 4. SP gain
-  if (ai.sp < 10) {
+  // 6. SP generation
+  if (state.players[aiIndex].sp < 10) {
     const spGain = difficulty === 'hard' ? 2 : 1;
-    state.players = state.players.map(p => p.id === ai.id ? { ...p, sp: Math.min(10, p.sp + spGain) } : p);
+    state.players[aiIndex].sp = Math.min(10, state.players[aiIndex].sp + spGain);
+    logs.push(`✨ ${ai.name} gained ${spGain} SP`);
   }
 
   state.log = [...(state.log || []).slice(-10), ...logs];
