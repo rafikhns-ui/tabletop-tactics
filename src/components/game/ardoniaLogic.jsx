@@ -111,18 +111,51 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     const factionToPlayer = {};
     players.forEach(p => { if (p.factionId) factionToPlayer[p.factionId] = p.id; });
 
-    // Track which player has been assigned a capital hex
-    const capitalAssigned = new Set();
+    // Find first non-water hex per faction (capital)
+    const capitalsByFaction = {};
+    Object.entries(generatedHexWorld).forEach(([id, hex]) => {
+      const sf = hex.sourceFaction;
+      if (sf && !capitalsByFaction[sf] && hex.type !== 'water') {
+        capitalsByFaction[sf] = id;
+      }
+    });
+
+    // Helper: get neighbors of a hex
+    const getHexNeighbors = (hexId) => {
+      const [col, row] = hexId.split(',').map(Number);
+      const even = col % 2 === 0;
+      return [
+        [col+1, even ? row-1 : row], [col+1, even ? row : row+1],
+        [col-1, even ? row-1 : row], [col-1, even ? row : row+1],
+        [col, row-1], [col, row+1],
+      ].map(([c, r]) => `${c},${r}`);
+    };
+
+    // Assign starting hexes: capital + immediate neighbors only
+    const playerStartingHexes = {};
+    Object.entries(capitalsByFaction).forEach(([faction, capitalId]) => {
+      const owner = factionToPlayer[faction];
+      if (!owner) return;
+      playerStartingHexes[owner] = new Set([capitalId]);
+      const neighbors = getHexNeighbors(capitalId);
+      neighbors.forEach(nId => {
+        if (generatedHexWorld[nId] && generatedHexWorld[nId].type !== 'water') {
+          playerStartingHexes[owner].add(nId);
+        }
+      });
+    });
 
     const hexes = {};
     Object.entries(generatedHexWorld).forEach(([id, hex]) => {
-      const sf = hex.sourceFaction;
-      const owner = factionToPlayer[sf] || null;
-      // Assign capital: first non-water hex per player
+      let owner = null;
       let isCapital = false;
-      if (owner && !capitalAssigned.has(owner) && hex.type !== 'water') {
-        isCapital = true;
-        capitalAssigned.add(owner);
+      // Only assign owner if hex is in the starting hexes for this player
+      for (const [playerId, hexSet] of Object.entries(playerStartingHexes)) {
+        if (hexSet.has(id)) {
+          owner = playerId;
+          isCapital = capitalsByFaction[hex.sourceFaction] === id;
+          break;
+        }
       }
       hexes[id] = {
         ...hex,
