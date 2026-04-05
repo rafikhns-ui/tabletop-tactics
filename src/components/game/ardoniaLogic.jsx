@@ -180,6 +180,7 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     Object.entries(hexes).forEach(([id, hex]) => {
       if (hex.isCapital && hex.owner) {
         hexes[id] = { ...hex, units: [{ type: 'elite', count: 1 }] };
+        console.log(`[DEBUG] Deployed elite to capital ${id}, owner: ${hex.owner}`);
       }
     });
     // Second pass: deploy 3 infantry on first 3 non-capital owned hexes per player
@@ -189,8 +190,10 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       if (count < 3) {
         hexes[id] = { ...hex, units: [{ type: 'infantry', count: 1 }] };
         infantryDeployed[hex.owner] = count + 1;
+        console.log(`[DEBUG] Deployed infantry to ${id}, owner: ${hex.owner}, count: ${infantryDeployed[hex.owner]}`);
       }
     });
+    console.log('[DEBUG] Final hexes with units:', Object.entries(hexes).filter(([,h]) => h.units?.length > 0).slice(0, 10));
 
   // Assign territories based on each territory's faction property
   const factionToPlayerId = {};
