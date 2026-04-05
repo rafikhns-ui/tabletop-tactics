@@ -945,21 +945,23 @@ export default function Game() {
     const cp = gameState.players[gameState.currentPlayerIndex];
     if (!cp.isAI) return;
     const timeout = setTimeout(() => {
+      const oldLog = gameState.log || [];
       const newState = doAiTurn(gameState);
       setGameState(checkObjectives(newState));
-      (newState.log || []).slice(-3).forEach(l => addMessage(l));
-      // Add AI actions to turn log
+
+      // Only process truly new log entries (diff)
+      const newEntries = (newState.log || []).filter(l => !oldLog.includes(l));
+      newEntries.slice(-3).forEach(l => addMessage(l.includes(':') ? l.split(':').slice(2).join(':') : l));
+
       const aiPlayer = gameState.players[gameState.currentPlayerIndex];
-      (newState.log || []).forEach(l => {
-        // New structured format: "type:playerId:message"
+      const newLogItems = newEntries.map(l => {
         let type = 'default';
         let text = l;
         let playerName = aiPlayer?.name;
         let playerColor = aiPlayer?.color;
         if (l.startsWith('conquest:') || l.startsWith('attack:')) {
           const parts = l.split(':');
-          type = parts[0];
-          // parts[1] = playerId, parts[2+] = message
+          type = parts[0]; // 'conquest' or 'attack'
           text = parts.slice(2).join(':');
           const logPlayer = newState.players.find(p => p.id === parts[1]);
           if (logPlayer) { playerName = logPlayer.name; playerColor = logPlayer.color; }
@@ -967,8 +969,16 @@ export default function Game() {
           const lc = l.toLowerCase();
           type = lc.includes('deploy') ? 'deploy' : lc.includes('build') ? 'build' : lc.includes('upgrade') ? 'upgrade' : 'default';
         }
-        setTurnLog(prev => [...prev, { type, text, detail: null, phase: 'AI Turn', playerName, playerColor, turn: null }]);
+        return { type, text, detail: null, phase: 'AI Turn', playerName, playerColor, turn: null };
       });
+
+      if (newLogItems.length > 0) {
+        setTurnLog(prev => [...prev, ...newLogItems]);
+      } else if (newEntries.length === 0) {
+        // AI did nothing notable — still log their turn
+        setTurnLog(prev => [...prev, { type: 'default', text: `${aiPlayer?.name} ended their turn`, detail: null, phase: 'AI Turn', playerName: aiPlayer?.name, playerColor: aiPlayer?.color, turn: null }]);
+      }
+
       // End AI turn
       const nextIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
       setGameState(s => collectIncome({
@@ -976,7 +986,6 @@ export default function Game() {
         currentPlayerIndex: nextIndex,
         turn: s.turn + (nextIndex === 0 ? 1 : 0),
       }));
-      if (nextIndex === 0) setTurnLog([]);
       setPhase('deploy');
     }, 1800);
     return () => clearTimeout(timeout);
