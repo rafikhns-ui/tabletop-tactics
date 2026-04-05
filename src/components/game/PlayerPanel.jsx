@@ -62,7 +62,7 @@ function ObjectivesModal({ player, onClose }) {
   );
 }
 
-export default function PlayerPanel({ player, isActive, territories, isSelf, provinces, gameState }) {
+export default function PlayerPanel({ player, isActive, territories, isSelf, provinces, gameState, onHighlight, isHighlighted }) {
   const [expanded, setExpanded] = useState(false);
   const [showObjectives, setShowObjectives] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
@@ -76,8 +76,9 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
   return (
     <div className="border-b border-border"
       style={{
-        background: isActive ? 'hsl(35,20%,16%)' : 'hsl(35,20%,13%)',
-        borderLeft: isActive ? `3px solid ${player.color}` : '3px solid transparent',
+        background: isHighlighted ? `${player.color}18` : isActive ? 'hsl(35,20%,16%)' : 'hsl(35,20%,13%)',
+        borderLeft: isHighlighted ? `3px solid ${player.color}` : isActive ? `3px solid ${player.color}` : '3px solid transparent',
+        outline: isHighlighted ? `1px solid ${player.color}55` : 'none',
       }}>
       <div className="flex items-center justify-between px-3 py-2 cursor-pointer" onClick={() => setShowDetail(true)}>
         <div className="flex items-center gap-2 min-w-0">
@@ -121,6 +122,13 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          <button
+            onClick={e => { e.stopPropagation(); onHighlight && onHighlight(isHighlighted ? null : player.id); }}
+            title={isHighlighted ? 'Clear highlight' : 'Highlight territories'}
+            className="text-xs px-1.5 py-0.5 rounded hover:opacity-90 transition-all"
+            style={{ background: isHighlighted ? `${player.color}44` : 'hsl(35,20%,24%)', border: `1px solid ${isHighlighted ? player.color : 'hsl(35,20%,34%)'}`, color: isHighlighted ? player.color : 'hsl(40,20%,60%)' }}>
+            🗺️
+          </button>
           {isSelf && (
             <button onClick={e => { e.stopPropagation(); setShowObjectives(true); }}
               className="text-xs px-1.5 py-0.5 rounded hover:opacity-90 transition-all"

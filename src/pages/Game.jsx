@@ -101,6 +101,7 @@ export default function Game() {
   const [tradeOffers, setTradeOffers] = useState([]);
   const [bottomTab, setBottomTab] = useState('action'); // 'action' | 'diplomacy' | 'log'
   const [highlightMyTerritories, setHighlightMyTerritories] = useState(false);
+  const [highlightedPlayerId, setHighlightedPlayerId] = useState(null);
   const [provinces, setProvinces] = useState(null);
   const [buildingPlacementMode, setBuildingPlacementMode] = useState(null); // 'fortress' | 'port' | null
   const [turnLog, setTurnLog] = useState([]);
@@ -1088,6 +1089,8 @@ export default function Game() {
                 isSelf={!p.isAI}
                 provinces={provinces}
                 gameState={gameState}
+                onHighlight={setHighlightedPlayerId}
+                isHighlighted={highlightedPlayerId === p.id}
               />
             </div>
           ))}
@@ -1127,7 +1130,7 @@ export default function Game() {
               onHexClick={handleTerritoryClick}
               onProvincClick={setSelectedProvince}
               movementState={movementState}
-              highlightPlayerId={highlightMyTerritories ? currentPlayer?.id : null}
+              highlightPlayerId={highlightedPlayerId || (highlightMyTerritories ? currentPlayer?.id : null)}
               reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
               onZoomChange={setMapZoomTransform}
             />
