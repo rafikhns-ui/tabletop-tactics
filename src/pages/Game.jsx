@@ -105,6 +105,7 @@ export default function Game() {
   const [buildingPlacementMode, setBuildingPlacementMode] = useState(null); // 'fortress' | 'port' | null
   const [turnLog, setTurnLog] = useState([]);
   const hexMapRef = useRef(null);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   // Initialize provinces on game start
   useEffect(() => {
@@ -1129,11 +1130,14 @@ export default function Game() {
               movementState={movementState}
               highlightPlayerId={highlightMyTerritories ? currentPlayer?.id : null}
               reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
+              onZoomChange={setIsZoomed}
             />
-            <MiniMap
-              gameState={gameState}
-              onPanTo={(mapX, mapY) => hexMapRef.current?.panTo(mapX, mapY)}
-            />
+            {isZoomed && (
+              <MiniMap
+                gameState={gameState}
+                onPanTo={(mapX, mapY) => hexMapRef.current?.panTo(mapX, mapY)}
+              />
+            )}
           </>
         )}
       </div>

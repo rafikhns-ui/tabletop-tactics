@@ -90,7 +90,7 @@ function hexNeighborKeys(gc, gr) {
 }
 
 // ══════ COMPONENT ══════
-export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, highlightPlayerId, reachableHexes }) {
+export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, highlightPlayerId, reachableHexes, onZoomChange }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -139,14 +139,21 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
     // Zoom into clicked hex
     const { cx, cy } = toSVG(hex.x, hex.y);
     const scale = 4;
-    setZoomTransform({
+    const zt = {
       tx: SVG_W / 2 - cx * scale,
       ty: SVG_H / 2 - cy * scale,
       scale,
-    });
+    };
+    setZoomTransform(zt);
+    if (onZoomChange) onZoomChange(true);
   };
 
-  const handleZoomOut = () => setZoomTransform(null);
+  const handleZoomOut = () => {
+    setZoomTransform(null);
+    if (onZoomChange) onZoomChange(false);
+  };
+
+
 
   // Helper: get diplomatic status between two players
   const getDiplomaticStatus = (player1Id, player2Id) => {

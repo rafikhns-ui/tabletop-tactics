@@ -77,7 +77,7 @@ export default function MiniMap({ gameState, onPanTo }) {
       style={{
         position: 'absolute',
         bottom: 10,
-        right: 10,
+        left: 10,
         zIndex: 20,
         background: 'rgba(10,12,18,0.92)',
         border: '1px solid #d4a853',
