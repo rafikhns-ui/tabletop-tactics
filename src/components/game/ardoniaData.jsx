@@ -242,6 +242,7 @@ export const FACTIONS = {
   },
   kadjimaran: {
     id: 'kadjimaran', name: 'Kadjimaran Kingdom', color: '#8b6a1a', emoji: '☀️', playable: true,
+    logo: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/5e6882e48_photo-output2.png',
     continent: 'Sharqian',
     description: 'An ancient realm of warriors founded by the legendary Koufou. A confederation of tribes renowned for precious metals, reality-bending powers, and fierce resistance against slavers and invaders.',
     specialRule: 'Cavalry units move 2 territories per turn. Must hold at least 1 Spiritual objective.',
