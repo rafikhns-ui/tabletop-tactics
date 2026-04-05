@@ -246,6 +246,7 @@ export const FACTIONS = {
   },
   oakhaven: {
     id: 'oakhaven', name: 'Republic of Oakhaven', color: '#27ae60', emoji: '🌳', playable: true,
+    logo: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/449a73901_oakhaven.png',
     continent: 'Sharqian',
     description: 'A sanctuary of freedom forged in ancient forests after the Great Cataclysm. The Oakmen use Oakbinding to shape nature and protect their borders against Ruskel Federation industrial expansion.',
     specialRule: 'Forest territories give +2 defense. Oakbinding: forest units cost 1 less Wheat.',
