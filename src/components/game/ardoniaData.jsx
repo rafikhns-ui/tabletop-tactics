@@ -439,7 +439,7 @@ export const HEROES = {
   onseiko_warhound: {
     id: 'onseiko_warhound', name: 'Onseiko, The Warhound', type: 'Warlord',
     stealth: 1, charisma: 2, force: 5, arcana: 0,
-    cost: { gold: 8, sp: 2 }, faction: 'onishiman', requiredBuilding: 'barracks',
+    cost: { gold: 6 }, faction: 'onishiman', requiredBuilding: 'fighting_pit', requiredBuildingLevel: 2,
     ability: 'Siege killer: Once per turn, targeted unit may ignore enemy Fort or Tower bonuses during a siege. If the defender has elevation-based bonuses, they are nullified this round.',
     passive: 'Warhound Unleashed: Once per game, Onseiko may become a unit. He now functions as a Hero Unit rolling a D10 in combat. He may move and occupy territory like a normal unit. Adjacent friendly armies gain +1 on their top combat die while he remains active on the field. While in this form, all other abilities are disabled.',
     passiveEffect: { attackBonus: 1, forceBonus: 2 },
@@ -448,16 +448,16 @@ export const HEROES = {
   black_chrysanthemum: {
     id: 'black_chrysanthemum', name: 'Black Chrysanthemum, Cunning Advisor', type: 'Strategist',
     stealth: 4, charisma: 4, force: 1, arcana: 2,
-    cost: { gold: 7, ip: 2 }, faction: 'onishiman', requiredBuilding: 'market',
+    cost: { gold: 5, ip: 1 }, faction: 'onishiman', requiredBuilding: 'tower_of_intrigues', requiredBuildingLevel: 1,
     ability: 'Web of Shadows: Once per round, you may reduce the additional cost of one Clandestine card by 2 IP.',
     passive: 'False Alliances: Once per game round, choose a player: Until your next turn, they cannot play Trade or Diplomacy cards unless they pay 2 extra IP per card.',
     passiveEffect: { ipPerTurn: 1, charismaBonus: 1 },
     image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/f712307e2_6.png',
   },
   ube_tarawa: {
-    id: 'ube_tarawa', name: 'Ube Tarawa, Underwold Master', type: 'Diplomat',
+    id: 'ube_tarawa', name: 'Ube Tarawa, Underworld Master', type: 'Diplomat',
     stealth: 2, charisma: 5, force: 2, arcana: 1,
-    cost: { gold: 6, ip: 3 }, faction: 'onishiman', requiredBuilding: 'market',
+    cost: { gold: 5, ip: 2 }, faction: 'onishiman', requiredBuilding: 'tower_of_intrigues', requiredBuildingLevel: 2,
     ability: 'An Offer They Can\'t Refuse: Once per round, when initiating a diplomatic deal or trade, you may force the other player to choose: Accept the deal as proposed, Or pay 3 IP to resist your coercion. If they accept, gain 1 IP and give that player resources of your choice.',
     passive: 'Shadow Patronage: Once per round, if you play a Clandestine card, you may also gain 1 IP. If that card successfully targets a player you\'re in diplomatic/trade contact with, gain +1 Gold as well.',
     passiveEffect: { ipPerTurn: 2, goldPerTurn: 1 },
@@ -466,7 +466,7 @@ export const HEROES = {
   itawan_shadow_death: {
     id: 'itawan_shadow_death', name: 'Itawan, The Shadow Death', type: 'Shadow Master',
     stealth: 6, charisma: 1, force: 2, arcana: 3,
-    cost: { gold: 8, ip: 3 }, faction: 'onishiman', requiredBuilding: 'temple',
+    cost: { gold: 6, ip: 2 }, faction: 'onishiman', requiredBuilding: 'tower_of_intrigues', requiredBuildingLevel: 3,
     ability: 'Silent Kill: Once per round, spend 2 IP to eliminate one enemy non-hero unit from any territory adjacent to one you control. If the target is an elite unit, roll a D6 – on a 5+, it is eliminated.',
     passive: 'Smokescreen: Once per game round, spend 1 IP to cancel any single combat roll made by another player. The affected die must be re-rolled immediately.',
     passiveEffect: { stealthBonus: 2, ipPerTurn: 1 },
@@ -475,7 +475,7 @@ export const HEROES = {
   ayame_crimson_spark: {
     id: 'ayame_crimson_spark', name: 'Ayame, The Crimson Spark', type: 'Mage',
     stealth: 2, charisma: 2, force: 1, arcana: 6,
-    cost: { gold: 9, sp: 4, crystals: 1 }, faction: 'onishiman', requiredBuilding: 'temple',
+    cost: { gold: 4, sp: 1 }, faction: 'onishiman', requiredBuilding: 'omitoji_dojo', requiredBuildingLevel: 2,
     ability: 'Crimson Lightning: Once per turn target a territory within 2 territories of one you control. Roll 1 D12 – on a 7+, destroy up to 3 enemy units there. If at least one unit is destroyed, gain +1 SP. If 3 If, draw 1 Spiritual/Arcane card immediately.',
     passive: 'Flashblind: Roll 1D6 – on 3+ to prevent an enemy army from moving into a chosen territory for one turn. You gain 1 IP.',
     passiveEffect: { spPerTurn: 1, arcanaBonus: 2 },
@@ -522,12 +522,12 @@ export const BUILDING_DEFS = {
   farm:     { id: 'farm',    name: 'Farm',     emoji: '🌾',  starting: true, maxLevel: 3, upgradeBase: { gold: 3, wheat: 2 }, effect: 'wheat', effectPerLevel: { 1: 1, 2: 2, 3: 3 }, description: 'Wheat production', unlocks: {}, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/cbbd104fa_25.png' },
   treasury: { id: 'treasury', name: 'Crimson Vault',  emoji: '🏦',  starting: true, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'storage', effectPerLevel: 5, description: '+5 max resource storage per level', unlocks: {}, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d38213280_17.png' },
   // Constructible - Onishiman buildings
-  imperial_stronghold: { id: 'imperial_stronghold', name: 'Imperial Stronghold', emoji: '🏯', starting: false, cost: { gold: 8, wood: 5 }, maxLevel: 1, upgradeBase: {}, description: '+2 defending roll, walls can be built in owned territories', unlocks: {}, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/75b79fd83_23.png' },
-  omitoji_dojo: { id: 'omitoji_dojo', name: 'Omitoji Dojo', emoji: '⛩️', starting: false, cost: { gold: 6, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 2 }, description: 'Unlock hero and unit recruitment', unlocks: { 1: 'omotojo_warlock', 2: 'sorcerer_hero', 3: 'magic_cost_reduction' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/2a42bcd8d_24.png' },
-  spirit_gate: { id: 'spirit_gate', name: 'The Spirit Gate', emoji: '🌙', starting: false, cost: { gold: 8, wood: 5 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, effect: 'sp', effectPerLevel: { 1: 1, 2: 1, 3: 1 }, description: 'Summon avatars at each level', unlocks: { 1: 'basic_avatar', 2: 'advanced_avatar', 3: 'legendary_avatar' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/9c136164e_31.png' },
-  tower_of_intrigues: { id: 'tower_of_intrigues', name: 'Tower of Intrigues', emoji: '🏛️', starting: false, cost: { gold: 7, wood: 5 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, description: 'Unlock hero classes', unlocks: { 1: 'strategist_hero', 2: 'diplomat_hero', 3: 'spy_hero' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/cc0a336d2_27.png' },
-  siege_engine_workshop: { id: 'siege_engine_workshop', name: 'Siege Engine Workshop', emoji: '🏗️', starting: false, cost: { gold: 8, wood: 6 }, maxLevel: 2, upgradeBase: { gold: 4, wood: 4 }, description: 'Unlock ranged units', unlocks: { 1: 'ranged_unit', 2: 'wildfire_thrower' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/e1de025b8_28.png' },
-  fighting_pit: { id: 'fighting_pit', name: 'Fighting Pit', emoji: '⚔️', starting: false, cost: { gold: 7, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 3 }, description: 'Unlock combat units and heroes', unlocks: { 1: 'melee_infantry', 2: 'warlord_hero', 3: 'elite_unit' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ac98f2aed_29.png' },
+  imperial_stronghold: { id: 'imperial_stronghold', name: 'Imperial Stronghold', emoji: '🏯', starting: false, cost: { gold: 8, wood: 5 }, maxLevel: 1, upgradeBase: {}, description: '+2 defending roll; basic units inside use d8 for defense', unlocks: {}, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/75b79fd83_23.png' },
+  omitoji_dojo: { id: 'omitoji_dojo', name: 'Omitoji Dojo', emoji: '⛩️', starting: false, cost: { gold: 2, wood: 1 }, maxLevel: 3, upgradeBase: { 1: { gold: 2, wood: 1 }, 2: { gold: 3, wood: 2 }, 3: { gold: 4, wood: 3 } }, description: 'Lvl I: Warlocks · Lvl II: Sorcerer Heroes · Lvl III: +1 SP/turn & reduced magic costs', unlocks: { 1: 'onmmy_warlocks', 2: 'sorcerer_hero', 3: 'magic_cost_reduction' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/2a42bcd8d_24.png' },
+  spirit_gate: { id: 'spirit_gate', name: 'The Spirit Gate', emoji: '🌙', starting: false, cost: { gold: 3, crystals: 2 }, maxLevel: 3, upgradeBase: { 1: { gold: 3, crystals: 2 }, 2: { gold: 5, crystals: 3 }, 3: { gold: 8, crystals: 4 } }, effect: 'sp', effectPerLevel: { 1: 1, 2: 1, 3: 1 }, description: 'Lvl I: Lesser Avatars · Lvl II: Intermediate Avatars · Lvl III: Legendary Avatars', unlocks: { 1: 'elder_protectors', 2: 'guardian_eternal', 3: 'eternal_emperor' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/9c136164e_31.png' },
+  tower_of_intrigues: { id: 'tower_of_intrigues', name: 'Tower of Intrigues', emoji: '🏛️', starting: false, cost: { gold: 3, wood: 1 }, maxLevel: 3, upgradeBase: { 1: { gold: 3, wood: 1 }, 2: { gold: 4, wood: 2 }, 3: { gold: 5, wood: 3 } }, description: 'Lvl I: Strategists (Black Chrysanthemum) · Lvl II: Diplomats (Ube Tarawa) · Lvl III: Spies/Shadowmasters (Itawan)', unlocks: { 1: 'black_chrysanthemum', 2: 'ube_tarawa', 3: 'itawan_shadow_death' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/cc0a336d2_27.png' },
+  siege_engine_workshop: { id: 'siege_engine_workshop', name: 'Siege Engine Workshop', emoji: '🏗️', starting: false, cost: { gold: 3, wood: 2 }, maxLevel: 2, upgradeBase: { 1: { gold: 3, wood: 2 }, 2: { gold: 4, wood: 3 } }, description: 'Lvl I: Ranged Units · Lvl II: Wildfire Thrower', unlocks: { 1: 'imperial_crossbow', 2: 'wildfire_thrower' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/e1de025b8_28.png' },
+  fighting_pit: { id: 'fighting_pit', name: 'Fighting Pit', emoji: '⚔️', starting: false, cost: { gold: 2, wood: 2 }, maxLevel: 3, upgradeBase: { 1: { gold: 2, wood: 2 }, 2: { gold: 3, wood: 3 }, 3: { gold: 4, wood: 4 } }, description: 'Lvl I: Melee Infantry · Lvl II: Warlord Heroes (Onseiko) · Lvl III: Elite Units', unlocks: { 1: 'spearmen_infantry', 2: 'onseiko_warhound', 3: 'night_blade_clan' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ac98f2aed_29.png' },
   grand_market: { id: 'grand_market', name: 'Grand Market', emoji: '🏪', starting: false, cost: { gold: 8, wood: 5 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, description: 'Unlock global trade and trading with neighbours', unlocks: { 1: 'trade_unlock', 2: 'global_trade', 3: 'silver_union_trade' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d1ae5b9da_21.png' },
   crimson_port: { id: 'crimson_port', name: 'Crimson Port', emoji: '⚓', starting: false, cost: { gold: 8, wood: 6 }, maxLevel: 3, upgradeBase: { gold: 4, wood: 3 }, description: 'Unlock shipyard and overseas trade', unlocks: { 1: 'shipyard_unlock', 2: 'safe_harbor', 3: 'overseas_trade' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/36da616cb_22.png' },
   temple: { id: 'temple', name: 'Temple', emoji: '⛩️', starting: false, cost: { gold: 6, wood: 4 }, maxLevel: 3, upgradeBase: { gold: 3, wood: 3 }, effect: 'sp', effectPerLevel: { 1: 1, 2: 1, 3: 1 }, description: 'Spiritual power generation', unlocks: { 1: 'basic_ritual', 2: 'advanced_ritual', 3: 'legendary_ritual' }, image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/fa337750f_30.png' },
@@ -848,11 +848,9 @@ export const EVENT_CARDS = [
 // ---- Avatar Definitions ----
 export const AVATARS = {
   onishiman: [
-    { id: 'shadow_dragon', name: 'Shadow Dragon', tier: 'Lesser', cost: { sp: 6, crystals: 2 }, templeLevel: 1, duration: 2, passive: 'All friendly units +1 attack', active: 'Destroy 1 enemy unit in adjacent territory', emoji: '🐲' },
-    { id: 'death_incarnate', name: 'Death Incarnate', tier: 'Greater', cost: { sp: 12, crystals: 4 }, templeLevel: 3, duration: 3, passive: 'Enemy units in range roll -2', active: 'Capture 1 territory without combat', emoji: '💀' },
-    { id: 'eternal_emperor', name: 'The Eternal Emperor', tier: 'Legendary', cost: { ip: 4 }, templeLevel: 3, duration: 3, passive: 'At start of turn, gain +2 IP', active: 'Kneel Before Me: Spend 5 IP to seize full control of an entire region (all territories within it). Enemy units in that region must immediately retreat to the nearest adjacent region or be destroyed.', emoji: '👹', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ca56fd4c2_18.png' },
-    { id: 'guardian_eternal', name: 'Guardian of the Eternal Emperor', tier: 'Avatar-Construct', cost: { militaryUnit: 1 }, templeLevel: 3, duration: 3, passive: 'Eternal Vigil: All friendly units in the same region roll +1 when defending', active: 'Soul Surge (use once per summon): Spend 2 SP to grant all units in the same battle +2 to their rolls for one round', emoji: '🔱', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ac7245089_19.png' },
-    { id: 'elder_protectors', name: 'Elder Protectors', tier: 'Greater', cost: { sp: 2 }, templeLevel: 2, duration: 3, passive: 'Waters of Silence: Enemy units entering your region roll -1 on their first attack, as if the spirit drowns their will to fight', active: 'Tidal Awakening: Spend 3 SP to unleash a wave of spectral energy. Make your enemy reroll on dice for any action and take the lowest result once per round', emoji: '🌊', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/6ec299a80_20.png' },
+    { id: 'elder_protectors', name: 'Elder Protectors', tier: 'Lesser', cost: { sp: 6, crystals: 2 }, gateLevel: 1, duration: 3, passive: 'Waters of Silence: Enemy units entering your region roll -1 on their first attack', active: 'Tidal Awakening: Spend 3 SP to force enemy to take the lowest of two dice rolls once per round', emoji: '🌊', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/6ec299a80_20.png' },
+    { id: 'guardian_eternal', name: 'Guardian of the Eternal Emperor', tier: 'Intermediate', cost: { sp: 9, sacrificeUnit: 1 }, gateLevel: 2, duration: 3, passive: 'Eternal Vigil: All friendly units in the same region roll +1 when defending', active: 'Soul Surge: Spend 2 SP to grant all units in the same battle +2 to their rolls for one round', emoji: '🔱', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ac7245089_19.png' },
+    { id: 'eternal_emperor', name: 'The Eternal Emperor', tier: 'Legendary', cost: { sp: 12, crystals: 4 }, gateLevel: 3, duration: 3, passive: 'At start of turn, gain +2 IP', active: 'Kneel Before Me: Spend 5 IP to seize full control of an entire region; enemies must retreat or be destroyed', emoji: '👹', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ca56fd4c2_18.png' },
   ],
   sultanate: [
     { id: 'moon_guardian', name: 'Moon Guardian', tier: 'Lesser', cost: { sp: 6, crystals: 2 }, templeLevel: 1, duration: 2, passive: '+2 SP per turn', active: 'Negate one enemy attack this turn', emoji: '🌙' },
