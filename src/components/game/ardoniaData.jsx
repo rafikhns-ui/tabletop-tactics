@@ -195,6 +195,7 @@ export const FACTIONS = {
   },
   onishiman: {
     id: 'onishiman', name: 'Onishiman Empire', color: '#8b1a1a', emoji: '🐉', playable: true,
+    logo: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/8a875b40d_photo-output.png',
     continent: 'Mangian',
     description: 'A formidable southern domain ruled by the Dark Sun emperor. The secretive Order of Shadowfell guides its pursuit of a utopian society through territorial conquest and dark arts.',
     specialRule: 'Must complete at least 1 Military objective to win. Reality-bending grants +1 attack die.',

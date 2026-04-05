@@ -88,7 +88,10 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
               {player.isAI && <span className="ml-1 text-xs opacity-50">🤖</span>}
               {isActive && <span className="ml-1 text-xs" style={{ color: 'hsl(43,90%,65%)' }}>▶</span>}
             </div>
-            <div className="text-xs truncate" style={{ color: player.color, opacity: 0.85 }}>
+            <div className="flex items-center gap-1 text-xs truncate" style={{ color: player.color, opacity: 0.85 }}>
+              {player.factionId === 'onishiman' && (
+                <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/8a875b40d_photo-output.png" alt="Onishiman" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} />
+              )}
               {player.faction?.emoji} {player.faction?.name}
             </div>
           </div>

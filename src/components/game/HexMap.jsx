@@ -570,7 +570,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 {/* Nation info */}
                 {selectedNation && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                    <div style={{ width: 14, height: 14, borderRadius: 3, background: NATION_COLORS[selectedNation.id], border: '1px solid #ffffff20' }} />
+                    <div style={{ width: 14, height: 14, borderRadius: 3, background: NATION_COLORS[selectedNation.id], border: '1px solid #ffffff20', flexShrink: 0 }} />
+                    {selectedNation.id === 'onishiman' && (
+                      <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/8a875b40d_photo-output.png" alt="Onishiman" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                    )}
                     <span style={{ fontSize: 14, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{NATION_LABEL_MAP[selectedNation.id]?.name || selectedNation.name}</span>
                   </div>
                 )}

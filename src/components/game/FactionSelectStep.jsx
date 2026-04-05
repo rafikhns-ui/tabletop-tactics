@@ -20,7 +20,10 @@ function FactionCard({ faction, selected, disabled, onClick }) {
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      <div className="font-black text-sm mb-1">{faction.emoji} {faction.name}</div>
+      <div className="flex items-center gap-2 mb-1">
+        {faction.logo && <img src={faction.logo} alt={faction.name} style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />}
+        <div className="font-black text-sm">{faction.emoji} {faction.name}</div>
+      </div>
       <div className="text-xs opacity-40 mb-2 truncate">{faction.continent}</div>
       <div className="text-xs leading-relaxed opacity-60">{faction.specialRule}</div>
     </button>
