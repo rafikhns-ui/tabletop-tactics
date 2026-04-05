@@ -941,7 +941,7 @@ export default function Game() {
     });
     setPhase('deploy');
     addMessage('🔄 New turn — deploy your reinforcements');
-  }, [gameState, checkObjectives]);
+  }, [checkObjectives]);
 
   // AI turn logic — step by step so moves are visible on the map
   useEffect(() => {
