@@ -135,6 +135,24 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       };
     });
 
+    // Deploy starting units: 1 elite on capital, 3 infantry spread across owned hexes
+    const infantryDeployed = {}; // playerId -> count
+    // First pass: deploy elite on capitals
+    Object.entries(hexes).forEach(([id, hex]) => {
+      if (hex.isCapital && hex.owner) {
+        hexes[id] = { ...hex, units: [{ type: 'elite', count: 1 }] };
+      }
+    });
+    // Second pass: deploy 3 infantry on first 3 non-capital owned hexes per player
+    Object.entries(hexes).forEach(([id, hex]) => {
+      if (!hex.owner || hex.isCapital || hex.type === 'water') return;
+      const count = infantryDeployed[hex.owner] || 0;
+      if (count < 3) {
+        hexes[id] = { ...hex, units: [{ type: 'infantry', count: 1 }] };
+        infantryDeployed[hex.owner] = count + 1;
+      }
+    });
+
   // Assign territories based on each territory's faction property
   const factionToPlayerId = {};
   players.forEach(p => { if (p.factionId) factionToPlayerId[p.factionId] = p.id; });
