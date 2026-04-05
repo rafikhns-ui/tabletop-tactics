@@ -36,9 +36,15 @@ export default function AiSetupModal({ onStart, onBack }) {
   };
 
   const handleFactionChange = (index, factionId) => {
-    const newFactions = [...aiFactions];
-    newFactions[index] = factionId;
-    setAiFactions(newFactions);
+   const newFactions = [...aiFactions];
+   newFactions[index] = factionId;
+   setAiFactions(newFactions);
+  };
+
+  // Get list of available factions (not already chosen by other AIs)
+  const getAvailableFactions = (currentIndex) => {
+   const takenFactions = aiFactions.filter((_, i) => i !== currentIndex);
+   return FACTION_LIST.filter(f => !takenFactions.includes(f.id));
   };
 
   const handleDifficultyChange = (index, difficulty) => {
@@ -157,7 +163,8 @@ export default function AiSetupModal({ onStart, onBack }) {
                       color: 'hsl(40,20%,65%)',
                     }}
                   >
-                    {FACTION_LIST.map(f => (
+                    <option value="">-- Select Faction --</option>
+                    {getAvailableFactions(i).map(f => (
                       <option key={f.id} value={f.id}>{f.name}</option>
                     ))}
                   </select>

@@ -217,17 +217,21 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     console.log('[DEBUG] Final hexes with units:', Object.entries(hexes).filter(([,h]) => h.units?.length > 0).slice(0, 10));
 
   // Assign territories based on each territory's faction property
+  // IMPORTANT: Every player (human + AI) must control at least one territory
   const factionToPlayerId = {};
   players.forEach(p => { if (p.factionId) factionToPlayerId[p.factionId] = p.id; });
 
   const territories = {};
   const capitalAssignedTerr = new Set();
+  const playersWithTerritory = new Set();
+  
   Object.entries(TERRITORIES).forEach(([id, terr]) => {
     const owner = factionToPlayerId[terr.faction] || null;
     let isCapital = false;
     if (owner && !capitalAssignedTerr.has(owner)) {
       isCapital = true;
       capitalAssignedTerr.add(owner);
+      playersWithTerritory.add(owner);
     }
     territories[id] = {
       ...terr,
@@ -238,6 +242,19 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       isCapital,
     };
   });
+  
+  // Ensure every player has at least one territory
+  const playersNeedingTerritory = players.filter(p => p.factionId && !playersWithTerritory.has(p.id));
+  if (playersNeedingTerritory.length > 0) {
+    const availableTerritories = Object.entries(territories).filter(([, t]) => !t.owner);
+    playersNeedingTerritory.forEach(p => {
+      if (availableTerritories.length > 0) {
+        const [terrId, terr] = availableTerritories.shift();
+        territories[terrId] = { ...terr, owner: p.id, troops: 3, isCapital: true };
+        playersWithTerritory.add(p.id);
+      }
+    });
+  }
 
   return {
     hexes,
