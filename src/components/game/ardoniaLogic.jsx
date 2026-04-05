@@ -222,16 +222,15 @@ export const createGameState = (mode, playersArr = null) => {  let players;
   players.forEach(p => { if (p.factionId) factionToPlayerId[p.factionId] = p.id; });
 
   const territories = {};
-  const capitalAssignedTerr = new Set();
   const playersWithTerritory = new Set();
+  const capitalAssignedToPlayer = new Set();
   
   Object.entries(TERRITORIES).forEach(([id, terr]) => {
     const owner = factionToPlayerId[terr.faction] || null;
     let isCapital = false;
-    if (owner && !capitalAssignedTerr.has(owner)) {
+    if (owner && !capitalAssignedToPlayer.has(owner)) {
       isCapital = true;
-      capitalAssignedTerr.add(owner);
-      playersWithTerritory.add(owner);
+      capitalAssignedToPlayer.add(owner);
     }
     territories[id] = {
       ...terr,
@@ -241,6 +240,7 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       hasFortress: false,
       isCapital,
     };
+    if (owner) playersWithTerritory.add(owner);
   });
   
   // Ensure every player has at least one territory
