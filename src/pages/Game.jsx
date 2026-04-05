@@ -73,6 +73,7 @@ import AiSetupModal from '../components/game/AiSetupModal';
 import AdvisorPanel from '../components/game/AdvisorPanel';
 import DiplomacyLog from '../components/game/DiplomacyLog';
 import EffectsPanel from '../components/game/EffectsPanel';
+import TurnLog from '../components/game/TurnLog';
 import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar } from '../components/game/aiPersonalities';
 
 export default function Game() {
@@ -101,6 +102,7 @@ export default function Game() {
   const [highlightMyTerritories, setHighlightMyTerritories] = useState(false);
   const [provinces, setProvinces] = useState(null);
   const [buildingPlacementMode, setBuildingPlacementMode] = useState(null); // 'fortress' | 'port' | null
+  const [turnLog, setTurnLog] = useState([]);
 
   // Initialize provinces on game start
   useEffect(() => {
@@ -124,6 +126,10 @@ export default function Game() {
   };
 
   const addMessage = (msg) => setMessages(prev => [...prev.slice(-4), msg]);
+
+  const addLog = (type, text, detail, phase) => {
+    setTurnLog(prev => [...prev, { type, text, detail, phase, turn: null }]);
+  };
 
   // Called from GameMenu — go to AI setup or faction select
   const handleMenuStart = (mode, count) => {
@@ -191,6 +197,7 @@ export default function Game() {
     setWinner(null);
     setMessages(['⚜️ Rulers of Ardonia begins! Recruit troops then deploy them.']);
     setTradeOffers([]);
+    setTurnLog([]);
     setBottomTab('action');
   };
 
@@ -291,6 +298,7 @@ export default function Game() {
           return checkObjectives(next);
         });
         addMessage(`🏰 Deployed ${unitType} to hex`);
+        addLog('deploy', `Deployed ${unitType} to the map`, null, 'Deploy');
       }
     } else if (phase === 'attack') {
       if (!selectedTerritory) {
@@ -365,6 +373,7 @@ export default function Game() {
         setSelectedTerritory(null);
         setMovementState(null);
         addMessage(`🚶 Moved ${unitType} to hex`);
+        addLog('move', `Moved ${unitType} to new hex`, null, 'Move');
       }
     } else if (phase === 'fortify') {
       if (!selectedTerritory) {
@@ -434,6 +443,7 @@ export default function Game() {
       return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
     });
     addMessage(`🏗️ Built ${buildingId}!`);
+    addLog('build', `Built ${BUILDING_DEFS[buildingId]?.name || buildingId}`, null, 'Action');
   };
 
   const handleUpgrade = (buildingId) => {
@@ -453,6 +463,7 @@ export default function Game() {
       return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
     });
     addMessage(`⬆️ Upgraded ${BUILDING_DEFS[buildingId]?.name}!`);
+    addLog('upgrade', `Upgraded ${BUILDING_DEFS[buildingId]?.name}`, null, 'Action');
   };
 
   const handleRecruit = (unitId) => {
@@ -474,6 +485,7 @@ export default function Game() {
       };
     });
     addMessage(`⚔️ Recruited ${def.name} — deploy it on the map!`);
+    addLog('recruit', `Recruited ${def.name}`, null, 'Deploy');
   };
 
   const handleBuildImperialStronghold = (territoryId) => {
@@ -564,8 +576,10 @@ export default function Game() {
     setBattle(null);
     if (conquered) {
       addMessage(`🏴 ${defenderTerr.name} has been conquered!`);
+      addLog('conquest', `Conquered ${defenderTerr.name}!`, `Attacker lost ${result.attackerLosses}, defender lost ${result.defenderLosses}`, 'Attack');
     } else {
       addMessage(`⚔️ Battle at ${defenderTerr.name}: A:${result.attackerLosses} lost, D:${result.defenderLosses} lost`);
+      addLog('attack', `Battle at ${defenderTerr.name}`, `Attacker lost ${result.attackerLosses} • Defender lost ${result.defenderLosses}`, 'Attack');
     }
   };
 
@@ -598,6 +612,7 @@ export default function Game() {
       return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
     });
     addMessage(`👹 ${avatar.name} has been summoned!`);
+    addLog('avatar', `Summoned ${avatar.name}`, `Tier: ${avatar.tier} · Duration: ${avatar.duration} turns`, 'Action');
   };
 
   const handleHeroAbility = (heroId, abilityInfo) => {
@@ -617,6 +632,7 @@ export default function Game() {
     });
     const hero = HEROES[heroId];
     addMessage(`⚔️ ${hero?.name} used ability: ${abilityInfo.label}!`);
+    addLog('ability', `${hero?.name} used: ${abilityInfo.label}`, null, 'Action');
   };
 
   const handleRecruitHero = (heroId) => {
@@ -650,6 +666,7 @@ export default function Game() {
       return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
     });
     addMessage(`⭐ ${hero.name} has joined your ranks!`);
+    addLog('hero', `Recruited ${hero.name}`, `Type: ${hero.type}`, 'Deploy');
   };
 
 
@@ -763,6 +780,7 @@ export default function Game() {
       return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
     });
     addMessage(`🃏 Played ${card.name}: ${card.effect}`);
+    addLog('card', `Played card: ${card.name}`, card.effect, 'Action');
   };
 
   const handleDiplomacyAction = ({ type, fromId, toId, offer, request }) => {
@@ -779,6 +797,7 @@ export default function Game() {
         }],
       }));
       addMessage(`📜 Trade offer sent to ${to?.name}`);
+    addLog('diplomacy', `Trade offer sent to ${to?.name}`, null, 'Diplomacy');
       return;
     }
     const key = [fromId, toId].sort().join('|');
@@ -796,6 +815,7 @@ export default function Game() {
     });
     const labels = { alliance: '🕊️ Alliance formed', war: '⚔️ War declared', neutral: '🤝 Peace proposed' };
     addMessage(`${labels[type] || type} with ${to?.name}!`);
+    addLog('diplomacy', `${labels[type] || type} with ${to?.name}`, null, 'Diplomacy');
   };
 
   const handleAcceptTrade = (offer) => {
@@ -912,6 +932,7 @@ export default function Game() {
 
       return checkObjectives(state);
     });
+    setTurnLog([]);
     setPhase('deploy');
     addMessage('🔄 New turn — deploy your reinforcements');
   }, [checkObjectives]);
@@ -1089,6 +1110,7 @@ export default function Game() {
              { id: 'heroes', icon: '⭐', label: 'Heroes' },
              { id: 'avatars', icon: '👹', label: 'Avatars' },
              { id: 'effects', icon: '📊', label: 'Effects' },
+             { id: 'turnlog', icon: '📜', label: 'Turn Log' },
              { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
              { id: 'diplog', icon: '📋', label: 'Dip Log' },
              { id: 'log', icon: '📜', label: 'Battle Log' },
@@ -1178,6 +1200,9 @@ export default function Game() {
              )}
              {bottomTab === 'effects' && gameState && currentPlayer && (
                <EffectsPanel currentPlayer={currentPlayer} gameState={gameState} />
+             )}
+             {bottomTab === 'turnlog' && (
+               <TurnLog entries={turnLog} currentTurn={gameState?.turn} />
              )}
              {bottomTab === 'diplomacy' && gameState && currentPlayer && !currentPlayer.isAI && (
               <DiplomacyPanel
