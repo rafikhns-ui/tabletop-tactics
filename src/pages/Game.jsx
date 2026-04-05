@@ -127,8 +127,8 @@ export default function Game() {
 
   const addMessage = (msg) => setMessages(prev => [...prev.slice(-4), msg]);
 
-  const addLog = (type, text, detail, phase) => {
-    setTurnLog(prev => [...prev, { type, text, detail, phase, turn: null }]);
+  const addLog = (type, text, detail, phase, playerName) => {
+    setTurnLog(prev => [...prev, { type, text, detail, phase, playerName: playerName || currentPlayer?.name, playerColor: currentPlayer?.color, turn: null }]);
   };
 
   // Called from GameMenu — go to AI setup or faction select
@@ -905,6 +905,8 @@ export default function Game() {
   const endTurn = useCallback(() => {
     setSelectedTerritory(null);
     setMovedHexes(new Set());
+    const nextIndex2 = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+    if (nextIndex2 === 0) setTurnLog([]);
     setGameState(prev => {
       if (!prev) return prev;
       const nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length;
@@ -932,7 +934,7 @@ export default function Game() {
 
       return checkObjectives(state);
     });
-    setTurnLog([]);
+    // Only clear turn log at start of a new round (when all players have gone)
     setPhase('deploy');
     addMessage('🔄 New turn — deploy your reinforcements');
   }, [checkObjectives]);
@@ -946,6 +948,23 @@ export default function Game() {
       const newState = doAiTurn(gameState);
       setGameState(checkObjectives(newState));
       (newState.log || []).slice(-3).forEach(l => addMessage(l));
+      // Add AI actions to turn log
+      const aiPlayer = gameState.players[gameState.currentPlayerIndex];
+      (newState.log || []).forEach(l => {
+        const lc = l.toLowerCase();
+        const type = lc.includes('conquer') || lc.includes('captured') ? 'conquest'
+          : lc.includes('attack') || lc.includes('battle') ? 'attack'
+          : lc.includes('recruit') || lc.includes('trained') ? 'recruit'
+          : lc.includes('built') || lc.includes('build') ? 'build'
+          : lc.includes('upgrade') ? 'upgrade'
+          : lc.includes('move') ? 'move'
+          : lc.includes('deploy') ? 'deploy'
+          : lc.includes('avatar') ? 'avatar'
+          : lc.includes('hero') ? 'hero'
+          : lc.includes('trade') || lc.includes('alliance') || lc.includes('war') ? 'diplomacy'
+          : 'default';
+        setTurnLog(prev => [...prev, { type, text: l, detail: null, phase: 'AI Turn', playerName: aiPlayer?.name, playerColor: aiPlayer?.color, turn: null }]);
+      });
       // End AI turn
       const nextIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
       setGameState(s => collectIncome({
@@ -953,6 +972,7 @@ export default function Game() {
         currentPlayerIndex: nextIndex,
         turn: s.turn + (nextIndex === 0 ? 1 : 0),
       }));
+      if (nextIndex === 0) setTurnLog([]);
       setPhase('deploy');
     }, 1800);
     return () => clearTimeout(timeout);

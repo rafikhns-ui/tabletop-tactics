@@ -59,14 +59,21 @@ export default function TurnLog({ entries, currentTurn }) {
                   style={{ background: 'hsl(35,20%,16%)', border: '1px solid hsl(35,20%,24%)' }}>
                   <span className="flex-shrink-0 text-sm mt-0.5">{style.icon}</span>
                   <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      {entry.playerName && (
+                        <span className="text-xs font-bold" style={{ color: entry.playerColor || 'hsl(43,80%,60%)', fontFamily: "'Cinzel',serif", fontSize: '10px' }}>
+                          {entry.playerName}
+                        </span>
+                      )}
+                      {entry.phase && (
+                        <span className="text-xs opacity-40" style={{ color: 'hsl(40,20%,55%)', fontSize: '9px' }}>[{entry.phase}]</span>
+                      )}
+                    </div>
                     <span className="text-xs leading-relaxed" style={{ color: style.color }}>{entry.text}</span>
                     {entry.detail && (
                       <div className="text-xs mt-0.5 opacity-60" style={{ color: 'hsl(40,20%,55%)' }}>{entry.detail}</div>
                     )}
                   </div>
-                  <span className="text-xs opacity-30 flex-shrink-0" style={{ color: 'hsl(40,20%,60%)', fontSize: '10px' }}>
-                    {entry.phase || ''}
-                  </span>
                 </div>
               );
             })}
