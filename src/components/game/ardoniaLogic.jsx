@@ -118,27 +118,28 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     });
 
     // Find first non-water hex per faction (capital) — use nation_id -> faction mapping
-    // Find capital: the center hex of each nation's territory
+    // Find capital: the center hex of each nation's LAND territory
     const capitalsByFaction = {};
     players.forEach(p => {
       if (!p.factionId) return;
       const nationId = factionToNation[p.factionId];
-      const nationHexes = Object.entries(generatedHexWorld).filter(
+      const landHexes = Object.entries(generatedHexWorld).filter(
         ([, h]) => h.nation_id === nationId && h.type !== 'water'
       );
-      if (nationHexes.length === 0) return;
+      if (landHexes.length === 0) return;
       
-      // Find center: hex closest to average position
-      const avgCol = nationHexes.reduce((sum, [, h]) => sum + h.col, 0) / nationHexes.length;
-      const avgRow = nationHexes.reduce((sum, [, h]) => sum + h.row, 0) / nationHexes.length;
-      const center = nationHexes.reduce((best, curr) => {
+      // Find center: land hex closest to average position of all land hexes
+      const avgCol = landHexes.reduce((sum, [, h]) => sum + h.col, 0) / landHexes.length;
+      const avgRow = landHexes.reduce((sum, [, h]) => sum + h.row, 0) / landHexes.length;
+      const center = landHexes.reduce((best, curr) => {
         const bestDist = Math.pow(best[1].col - avgCol, 2) + Math.pow(best[1].row - avgRow, 2);
         const currDist = Math.pow(curr[1].col - avgCol, 2) + Math.pow(curr[1].row - avgRow, 2);
         return currDist < bestDist ? curr : best;
       });
       
+      const capitalHex = center[1];
       capitalsByFaction[p.factionId] = center[0];
-      console.log(`[DEBUG] Faction '${p.factionId}' capital: ${center[0]} (nation: ${nationId})`);
+      console.log(`[DEBUG] Faction '${p.factionId}' capital: ${center[0]} type=${capitalHex.type} nation=${nationId}`);
     });
     console.log('[DEBUG] Final capitalsByFaction:', capitalsByFaction);
 
