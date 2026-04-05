@@ -19,7 +19,7 @@ import PlayerPanel from '../components/game/PlayerPanel';
 import ActionBar from '../components/game/ActionBar';
 import BattleModal from '../components/game/BattleModal';
 import EventModal from '../components/game/EventModal';
-import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn, checkObjective, calculateUnitBonuses } from '../components/game/ardoniaLogic';
+import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn, getAiTurnSteps, checkObjective, calculateUnitBonuses } from '../components/game/ardoniaLogic';
 import mapData from '../components/game/ardonia_game_map.json';
 import { FACTION_TO_NATION_ID } from '../components/game/ardoniaData';
 
@@ -943,56 +943,51 @@ export default function Game() {
     addMessage('🔄 New turn — deploy your reinforcements');
   }, [checkObjectives]);
 
-  // AI turn logic
+  // AI turn logic — step by step so moves are visible on the map
   useEffect(() => {
     if (!gameState || winner) return;
     const cp = gameState.players[gameState.currentPlayerIndex];
     if (!cp.isAI) return;
-    const timeout = setTimeout(() => {
-      const oldLog = gameState.log || [];
-      const newState = doAiTurn(gameState);
-      setGameState(checkObjectives(newState));
 
-      // Only process truly new log entries (diff)
-      const newEntries = (newState.log || []).filter(l => !oldLog.includes(l));
-      newEntries.slice(-3).forEach(l => addMessage(l.includes(':') ? l.split(':').slice(2).join(':') : l));
+    const timeouts = [];
+    const schedule = (fn, delay) => { const t = setTimeout(fn, delay); timeouts.push(t); return t; };
 
-      const aiPlayer = gameState.players[gameState.currentPlayerIndex];
-      const newLogItems = newEntries.map(l => {
-        let type = 'default';
-        let text = l;
-        let playerName = aiPlayer?.name;
-        let playerColor = aiPlayer?.color;
-        if (l.startsWith('conquest:') || l.startsWith('attack:')) {
-          const parts = l.split(':');
-          type = parts[0]; // 'conquest' or 'attack'
-          text = parts.slice(2).join(':');
-          const logPlayer = newState.players.find(p => p.id === parts[1]);
-          if (logPlayer) { playerName = logPlayer.name; playerColor = logPlayer.color; }
-        } else {
-          const lc = l.toLowerCase();
-          type = lc.includes('deploy') ? 'deploy' : lc.includes('build') ? 'build' : lc.includes('upgrade') ? 'upgrade' : 'default';
-        }
-        return { type, text, detail: null, phase: 'AI Turn', playerName, playerColor, turn: null };
-      });
+    schedule(() => {
+      const steps = getAiTurnSteps(gameState);
 
-      if (newLogItems.length > 0) {
-        setTurnLog(prev => [...prev, ...newLogItems]);
-      } else if (newEntries.length === 0) {
-        // AI did nothing notable — still log their turn
-        setTurnLog(prev => [...prev, { type: 'default', text: `${aiPlayer?.name} ended their turn`, detail: null, phase: 'AI Turn', playerName: aiPlayer?.name, playerColor: aiPlayer?.color, turn: null }]);
+      const endAiTurn = (finalState) => {
+        const nextIndex = (finalState.currentPlayerIndex + 1) % finalState.players.length;
+        const nextState = collectIncome({
+          ...finalState,
+          currentPlayerIndex: nextIndex,
+          turn: finalState.turn + (nextIndex === 0 ? 1 : 0),
+        });
+        setGameState(checkObjectives(nextState));
+        setPhase('deploy');
+        addMessage(`🔄 ${cp.name} ended their turn`);
+        setTurnLog(prev => [...prev, { type: 'default', text: `${cp.name} ended their turn`, detail: null, phase: 'AI Turn', playerName: cp.name, playerColor: cp.color }]);
+      };
+
+      if (steps.length === 0) {
+        endAiTurn(gameState);
+        return;
       }
 
-      // End AI turn
-      const nextIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
-      setGameState(s => collectIncome({
-        ...s,
-        currentPlayerIndex: nextIndex,
-        turn: s.turn + (nextIndex === 0 ? 1 : 0),
-      }));
-      setPhase('deploy');
-    }, 1800);
-    return () => clearTimeout(timeout);
+      steps.forEach((step, i) => {
+        schedule(() => {
+          setGameState(checkObjectives(step.state));
+          if (step.message) {
+            addMessage(step.message);
+            setTurnLog(prev => [...prev, { type: 'attack', text: step.message, detail: null, phase: 'AI Turn', playerName: cp.name, playerColor: cp.color }]);
+          }
+          if (i === steps.length - 1) {
+            schedule(() => endAiTurn(step.state), 800);
+          }
+        }, i * 800);
+      });
+    }, 600);
+
+    return () => timeouts.forEach(clearTimeout);
   }, [gameState?.currentPlayerIndex, gameState?.turn, gameMode, winner]);
 
   if (onlineSession) return <OnlineGame session={onlineSession} onLeave={() => { setOnlineSession(null); setShowLobby(false); }} />;
