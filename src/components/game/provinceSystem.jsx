@@ -86,10 +86,21 @@ export const TERRAIN_STATS = {
   scorched: { income: 0, defense: 0, moveCost: 0 },
 };
 
-// Build reverse map: nation_id -> factionId
-const NATION_ID_TO_FACTION = Object.fromEntries(
-  Object.entries(FACTION_TO_NATION_ID).map(([factionId, nationId]) => [nationId, factionId])
-);
+// Legacy nation_id aliases from the map JSON -> canonical factionId
+const NATION_ID_ALIASES = {
+  kinetic:        'kintei',
+  ilalocatotlan:  'tlalocayotlan',
+  hestia:         'republic',
+  azure:          'sultanate',
+  shadowsfall:    'shadowfell',
+  silver:         'silver_union',
+};
+
+// Normalize a nation_id from the map to the canonical factionId
+const normNationId = (id) => NATION_ID_ALIASES[id] || id;
+
+// Build reverse map: factionId -> factionId (1:1 since FACTION_TO_NATION_ID is now 1:1)
+// We just use normNationId directly when looking up owners.
 
 // ════ PROVINCE STATE CREATION ════
 export const createInitialProvinceState = (gameState) => {
@@ -100,7 +111,7 @@ export const createInitialProvinceState = (gameState) => {
   mapData.nations.forEach(nation => {
     nation.provinces.forEach(prov => {
       const provId = `${nation.id}-${prov.id}`;
-      const hexesInProv = mapData.hex_grid.filter(h => h.nation_id === nation.id && h.province === prov.id);
+      const hexesInProv = mapData.hex_grid.filter(h => normNationId(h.nation_id) === nation.id && h.province === prov.id);
       
       // Calculate terrain distribution and base income
       const terrainDist = {};
@@ -111,7 +122,7 @@ export const createInitialProvinceState = (gameState) => {
       });
 
       // Find owner from gameState using the nation→faction mapping
-      const factionId = NATION_ID_TO_FACTION[nation.id];
+      const factionId = normNationId(nation.id);
       const owner = factionId
         ? (gameState?.players?.find(p => p.factionId === factionId)?.id || null)
         : null;
@@ -154,7 +165,7 @@ export const buildHexToProvinceMap = () => {
   mapData.nations.forEach(nation => {
     nation.provinces.forEach(prov => {
       mapData.hex_grid.forEach(h => {
-        if (h.nation_id === nation.id && h.province === prov.id) {
+        if (normNationId(h.nation_id) === nation.id && h.province === prov.id) {
           const hexId = `${h.col},${h.row}`;
           map[hexId] = `${nation.id}-${prov.id}`;
         }
@@ -166,38 +177,14 @@ export const buildHexToProvinceMap = () => {
 
 // ════ PROVINCE QUERIES ════
 export const getProvincesOwnedBy = (playerId, provinces, gameState) => {
-  if (!gameState) return Object.values(provinces).filter(p => p.owner === playerId);
-  
-  // Province is owned if player controls the capital/main city hex
-  return Object.values(provinces).map(p => {
-    const capitalHex = mapData.hex_grid.find(h => h.capital_name === p.capital_name && h.nation_id === p.nation_id);
-    if (!capitalHex) return p;
-    
-    const hexId = `${capitalHex.col},${capitalHex.row}`;
-    const capitalOwner = gameState.hexes?.[hexId]?.owner;
-    
-    // Player owns province if they control the capital
-    return capitalOwner === playerId ? { ...p, owner: playerId } : p;
-  }).filter(p => p.owner === playerId);
-};
-
-export const getNationalCapital = (nationId, provinces) =>
-  Object.values(provinces).find(p => p.nation_id === nationId && p.is_national_capital);
-
-export const hasLostCapital = (playerId, provinces) => {
-  const owned = getProvincesOwnedBy(playerId, provinces);
-  const nations = [...new Set(owned.map(p => p.nation_id))];
-  return nations.some(nid => {
-    const cap = getNationalCapital(nid, provinces);
-    return cap && cap.owner !== playerId;
-  });
+  return Object.values(provinces).filter(p => p.owner === playerId);
 };
 
 export const getAdjacentProvinces = (provinceId, provinces) => {
   const province = provinces[provinceId];
   if (!province) return [];
   
-  const hexesInProv = mapData.hex_grid.filter(h => h.nation_id === province.nation_id && h.province === province.province_id);
+  const hexesInProv = mapData.hex_grid.filter(h => normNationId(h.nation_id) === province.nation_id && h.province === province.province_id);
   const adjSet = new Set();
   
   hexesInProv.forEach(h => {

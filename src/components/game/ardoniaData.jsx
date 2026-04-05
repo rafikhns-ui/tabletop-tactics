@@ -176,12 +176,12 @@ export const FACTION_TO_NATION_ID = {
   kadjimaran:    'kadjimaran',
   oakhaven:      'oakhaven',
   nimrudan:      'nimrudan',
-  kintei:        'kinetic',
-  republic:      'hestia',
-  sultanate:     'azure',
-  tlalocayotlan: 'ilalocatotlan',
-  silver_union:  'silver',
-  shadowfell:    'shadowsfall',
+  kintei:        'kintei',
+  republic:      'republic',
+  sultanate:     'sultanate',
+  tlalocayotlan: 'tlalocayotlan',
+  silver_union:  'silver_union',
+  shadowfell:    'shadowfell',
 };
 
 // Hardcoded capital hex IDs (col,row) per faction, derived from MAP_DATA geography
