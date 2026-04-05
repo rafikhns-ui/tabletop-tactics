@@ -2,6 +2,17 @@ import React, { useMemo, useState } from 'react';
 import mapData from './ardonia_game_map.json';
 import { FACTIONS, FACTION_TO_NATION_ID } from './ardoniaData';
 
+// Legacy nation_id aliases from the map JSON
+const NATION_ID_ALIASES = {
+  kinetic:        'kintei',
+  ilalocatotlan:  'tlalocayotlan',
+  hestia:         'republic',
+  azure:          'sultanate',
+  shadowsfall:    'shadowfell',
+  silver:         'silver_union',
+};
+const normNationId = (id) => NATION_ID_ALIASES[id] || id;
+
 // ══════ TERRAIN COLORS (dark fantasy palette) ══════
 const TERRAIN_COLORS = {
   water:    '#183a5c',
@@ -66,8 +77,9 @@ mapData.hex_grid.forEach(h => { hexLookup[`${h.col},${h.row}`] = h; });
 const provinceCentroids = {};
 mapData.hex_grid.forEach(h => {
   if (!h.nation_id || !h.province) return;
-  const key = `${h.nation_id}-${h.province}`;
-  if (!provinceCentroids[key]) provinceCentroids[key] = { sx: 0, sy: 0, cnt: 0, nid: h.nation_id, prov: h.province };
+  const normNid = normNationId(h.nation_id);
+  const key = `${normNid}-${h.province}`;
+  if (!provinceCentroids[key]) provinceCentroids[key] = { sx: 0, sy: 0, cnt: 0, nid: normNid, prov: h.province };
   provinceCentroids[key].sx += h.x;
   provinceCentroids[key].sy += h.y;
   provinceCentroids[key].cnt++;
@@ -124,7 +136,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
   const getOwner = (hexId, hexNationId) => {
     const hexOwner = gameState?.hexes?.[hexId]?.owner;
     if (hexOwner) return hexOwner;
-    if (hexNationId && nationOwnerMap[hexNationId]) return nationOwnerMap[hexNationId];
+    if (hexNationId) {
+      const normId = normNationId(hexNationId);
+      if (nationOwnerMap[normId]) return nationOwnerMap[normId];
+    }
     return null;
   };
   const getPlayerColor = (id) => gameState?.players?.find(p => p.id === id)?.color || null;
@@ -173,6 +188,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
     
     hexGrid.forEach(h => {
       if (!h.nation_id) return;
+      const normNid = normNationId(h.nation_id);
       const { cx, cy } = toSVG(h.x, h.y);
       const nbs = hexNeighborKeys(h.col, h.row);
       
@@ -180,8 +196,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
         const nb = hexLookup[`${nbs[k][0]},${nbs[k][1]}`];
         if (!nb || !nb.nation_id) continue;
         
-        const h1Owner = getOwner(`${h.col},${h.row}`, h.nation_id);
-        const h2Owner = getOwner(`${nbs[k][0]},${nbs[k][1]}`, nb.nation_id);
+        const h1Owner = getOwner(`${h.col},${h.row}`, normNationId(h.nation_id));
+        const h2Owner = getOwner(`${nbs[k][0]},${nbs[k][1]}`, normNationId(nb.nation_id));
         
         // Border between different players
         if (h1Owner && h2Owner && h1Owner !== h2Owner) {
@@ -218,6 +234,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
     const nEdges = [];
     hexGrid.forEach(h => {
       if (!h.nation_id) return;
+      const normNid = normNationId(h.nation_id);
       const { cx, cy } = toSVG(h.x, h.y);
       const nbs = hexNeighborKeys(h.col, h.row);
       for (let k = 0; k < 6; k++) {
@@ -229,9 +246,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
         const x2 = cx + HEX_PX * Math.cos(a2);
         const y2 = cy + HEX_PX * Math.sin(a2);
 
-        if (!nb || nb.nation_id !== h.nation_id) {
+        if (!nb || normNationId(nb.nation_id) !== normNid) {
           nEdges.push({ x1, y1, x2, y2, color: NATION_COLORS[h.nation_id] || '#333' });
-        } else if (nb.nation_id === h.nation_id && nb.province !== h.province) {
+        } else if (normNationId(nb.nation_id) === normNid && nb.province !== h.province) {
           pEdges.push({ x1, y1, x2, y2 });
         }
       }
@@ -389,7 +406,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const terrain = hex.terrain || 'water';
             const isWater = !hex.nation_id;
             const isSelected = selectedHex === hexId || (selected?.col === hex.col && selected?.row === hex.row);
-            const owner = getOwner(hexId, hex.nation_id);
+            const owner = getOwner(hexId, normNationId(hex.nation_id));
             const playerColor = getPlayerColor(owner);
             const units = getUnits(hexId);
             const unitCount = units.reduce((s, u) => s + (u.count || 0), 0);
