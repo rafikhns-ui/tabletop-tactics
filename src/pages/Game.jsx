@@ -993,7 +993,6 @@ export default function Game() {
 
     return () => {
       timeouts.forEach(clearTimeout);
-      isAiRunningRef.current = false;
     };
   }, [gameState?.currentPlayerIndex, gameState?.turn, gameMode, winner]);
 
