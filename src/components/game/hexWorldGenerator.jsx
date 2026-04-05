@@ -971,6 +971,7 @@ export const generateWorldMap = () => {
       terrain: resolvedTerrain,
       is_coastal,
       sourceFaction: isWater ? null : playableFaction,
+      nation_id: isWater ? null : playableFaction,
       region: isWater ? null : playableFaction,
       owner: null,
       units: [],
