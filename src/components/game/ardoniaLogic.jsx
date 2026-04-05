@@ -118,23 +118,27 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     });
 
     // Find first non-water hex per faction (capital) — use nation_id -> faction mapping
-    // Use hardcoded capital hex positions derived from MAP_DATA geography
+    // Find capital: the center hex of each nation's territory
     const capitalsByFaction = {};
     players.forEach(p => {
       if (!p.factionId) return;
-      const capitalHexId = FACTION_CAPITAL_HEX[p.factionId];
-      if (capitalHexId && generatedHexWorld[capitalHexId]) {
-        capitalsByFaction[p.factionId] = capitalHexId;
-        console.log(`[DEBUG] Faction '${p.factionId}' capital hex: ${capitalHexId}`);
-      } else {
-        // Fallback: first non-water hex with matching nation_id
-        const nationId = factionToNation[p.factionId];
-        const fallback = Object.entries(generatedHexWorld).find(([, h]) => h.nation_id === nationId && h.type !== 'water');
-        if (fallback) {
-          capitalsByFaction[p.factionId] = fallback[0];
-          console.log(`[DEBUG] Fallback capital for '${p.factionId}': ${fallback[0]}`);
-        }
-      }
+      const nationId = factionToNation[p.factionId];
+      const nationHexes = Object.entries(generatedHexWorld).filter(
+        ([, h]) => h.nation_id === nationId && h.type !== 'water'
+      );
+      if (nationHexes.length === 0) return;
+      
+      // Find center: hex closest to average position
+      const avgCol = nationHexes.reduce((sum, [, h]) => sum + h.col, 0) / nationHexes.length;
+      const avgRow = nationHexes.reduce((sum, [, h]) => sum + h.row, 0) / nationHexes.length;
+      const center = nationHexes.reduce((best, curr) => {
+        const bestDist = Math.pow(best[1].col - avgCol, 2) + Math.pow(best[1].row - avgRow, 2);
+        const currDist = Math.pow(curr[1].col - avgCol, 2) + Math.pow(curr[1].row - avgRow, 2);
+        return currDist < bestDist ? curr : best;
+      });
+      
+      capitalsByFaction[p.factionId] = center[0];
+      console.log(`[DEBUG] Faction '${p.factionId}' capital: ${center[0]} (nation: ${nationId})`);
     });
     console.log('[DEBUG] Final capitalsByFaction:', capitalsByFaction);
 
