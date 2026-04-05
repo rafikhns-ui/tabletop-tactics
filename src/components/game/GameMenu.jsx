@@ -17,7 +17,19 @@ export default function GameMenu({ onStart, onOnline }) {
 
       <div className="w-full max-w-lg rounded-2xl p-8 text-center relative scroll-in"
         style={{ background: 'linear-gradient(160deg, hsl(35,25%,14%), hsl(35,20%,10%))', border: '2px solid hsl(43,70%,45%)', boxShadow: '0 0 60px rgba(180,140,40,0.15)' }}>
-        <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/18fc0b373_photo-output11.png" alt="Rulers of Ardonia" className="w-full max-w-sm mx-auto mb-4" style={{ filter: 'drop-shadow(0 0 15px rgba(255,200,50,0.4))' }} />
+        <div className="relative w-full max-w-sm mx-auto mb-4">
+          {/* Sun glow behind the logo */}
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '120%', height: '120%',
+            background: 'radial-gradient(ellipse at center, rgba(255,210,60,0.55) 0%, rgba(255,160,20,0.3) 35%, rgba(255,100,0,0.1) 65%, transparent 80%)',
+            filter: 'blur(18px)',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+          }} />
+          <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/18fc0b373_photo-output11.png" alt="Rulers of Ardonia" className="w-full relative" style={{ filter: 'drop-shadow(0 0 18px rgba(255,200,50,0.7)) drop-shadow(0 0 40px rgba(255,150,20,0.4))' }} />
+        </div>
 
         <p className="text-base leading-relaxed mb-6" style={{ color: 'hsl(40,20%,62%)', fontFamily: "'Crimson Text',serif" }}>
           The factions of Ardonia are diverse nations shaped by an eternal struggle between magic and technology.
