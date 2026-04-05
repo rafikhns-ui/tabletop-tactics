@@ -915,7 +915,6 @@ export default function Game() {
     setGameState(prev => {
       if (!prev) return prev;
       const nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length;
-      // Decrement event countdown
       let eventCountdown = (prev.eventCountdown || 3) - 1;
       let eventTrigger = null;
       if (eventCountdown <= 0) {
@@ -939,10 +938,9 @@ export default function Game() {
 
       return checkObjectives(state);
     });
-    // Only clear turn log at start of a new round (when all players have gone)
     setPhase('deploy');
     addMessage('🔄 New turn — deploy your reinforcements');
-  }, [checkObjectives]);
+  }, [gameState, checkObjectives]);
 
   // AI turn logic — step by step so moves are visible on the map
   useEffect(() => {
