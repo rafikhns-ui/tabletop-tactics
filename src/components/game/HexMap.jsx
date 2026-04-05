@@ -449,11 +449,17 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   <polygon points={ptsInner} fill={nationColor} fillOpacity={0.28} style={{ pointerEvents: 'none' }} />
                 )}
 
-                {/* Unit badge */}
-                {unitCount > 0 && (
+                {/* Unit icons */}
+                {units.length > 0 && (
                   <g style={{ pointerEvents: 'none' }}>
-                    <circle cx={cx + 8} cy={cy - 8} r={6} fill={playerColor || '#d4a853'} stroke="#0a0c12" strokeWidth={1} />
-                    <text x={cx + 8} y={cy - 4} textAnchor="middle" fontSize={7} fill="#0a0c12" fontWeight="bold">{unitCount}</text>
+                    {units.map((u, i) => {
+                      const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
+                      return (
+                        <text key={i} x={cx - 10 + (i % 2) * 12} y={cy - 10 + Math.floor(i / 2) * 10} fontSize={9} style={{ pointerEvents: 'none' }}>
+                          {icons[u.type] || '⚔️'}
+                        </text>
+                      );
+                    })}
                   </g>
                 )}
                 {/* Fortress icon */}
@@ -607,7 +613,12 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
       }}>
         {/* Tabs */}
          <div style={{ display: 'flex', borderBottom: '1px solid #2a2520' }}>
-           {['selected', 'nation', 'actions'].map(t => (
+            {[
+             { id: 'selected', icon: '🗺️', label: 'Territory' },
+             { id: 'units', icon: '⚔️', label: 'Units' },
+             { id: 'buildings', icon: '🏛️', label: 'Structures' },
+             { id: 'nation', icon: '269c', label: 'Nation' },
+           ].map(t => (
             <button key={t} onClick={() => setPanelTab(t)} style={{
               flex: 1, padding: '10px 0', fontSize: 11,
               fontFamily: "'Cinzel', serif",
@@ -616,7 +627,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
               border: 'none',
               borderBottom: panelTab === t ? '2px solid #d4a853' : '2px solid transparent',
               cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 1,
-            }}>{t}</button>
+            }}>{t.icon} {t.label}</button>
           ))}
         </div>
 
@@ -777,6 +788,55 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             )
           )}
 
+          {panelTab === 'units' && selected && (() => {
+            const hexId = `${selected.col},${selected.row}`;
+            const panelUnits = getUnits(hexId);
+            return (
+            <div>
+              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, marginBottom: 8 }}>UNITS ON HEX</div>
+              {panelUnits.length > 0 ? (
+                <div>
+                  {panelUnits.map((u, i) => {
+                    const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
+                    const typeNames = { infantry: 'Infantry', cavalry: 'Cavalry', elite: 'Elite', ranged: 'Ranged', siege: 'Siege', naval: 'Naval' };
+                    return (
+                      <div key={i} style={{ fontSize: 13, color: '#c8c0b0', marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid #2a2520' }}>
+                        <span style={{ fontSize: 14, marginRight: 8 }}>{icons[u.type] || '⚔️'}</span>
+                        <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{typeNames[u.type] || u.type}</span>
+                        {u.count && <span style={{ marginLeft: 8, color: '#7a6a50' }}>x{u.count}</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>No units on this hex</div>
+              )}
+            </div>
+            );
+          })()}
+
+          {panelTab === 'buildings' && selected && (
+            <div>
+              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, marginBottom: 8 }}>STRUCTURES</div>
+              {selected.buildings && (Object.keys(selected.buildings).length > 0) ? (
+                <div>
+                  {Object.entries(selected.buildings).map(([key, val]) => {
+                    const icons = { fortress: '🏰', port: '⚓' };
+                    const names = { fortress: 'Fortress', port: 'Port' };
+                    return (
+                      <div key={key} style={{ fontSize: 13, color: '#c8c0b0', marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid #2a2520' }}>
+                        <span style={{ fontSize: 14, marginRight: 8 }}>{icons[key] || '🏛️'}</span>
+                        <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{names[key] || key}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>No structures on this hex</div>
+              )}
+            </div>
+          )}
+
           {panelTab === 'nation' && currentPlayer && (
             <div>
               <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
@@ -796,8 +856,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
               <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
                 <span style={{ color: '#2e9e9e' }}>Faith:</span> {currentPlayer.sp ?? 0}
               </div>
-            </div>
-          )}
+              </div>
+              )}
 
 
 
