@@ -449,14 +449,20 @@ export const doAiTurn = (gameState) => {
 
       if (targets.length > 0) {
         const target = targets[0];
+        const defenderTroops = target.units?.reduce((s, u) => s + u.count, 0) || target.troops || 0;
         const result = resolveBattle(
           from.units?.length > 0 ? from.units : [{ type: 'infantry', count: fromTroops }],
-          target.units?.length > 0 ? target.units : [{ type: 'infantry', count: target.troops || 1 }],
+          target.units?.length > 0 ? target.units : [{ type: 'infantry', count: defenderTroops }],
           target.hasFortress,
           { attackBonus }
         );
+        const conquered = result.defenderLosses >= defenderTroops;
         state = executeAttack(state, from.id, target.id, result);
-        logs.push(`🤖 AI attacked from ${from.name || from.id}!`);
+        if (conquered) {
+          logs.push(`conquest:${ai.id}:${ai.name} conquered ${target.name || target.id}! (lost ${result.attackerLosses}, enemy lost ${result.defenderLosses})`);
+        } else {
+          logs.push(`attack:${ai.id}:${ai.name} attacked ${target.name || target.id} (lost ${result.attackerLosses}, enemy lost ${result.defenderLosses})`);
+        }
         attacksDone++;
       }
     }

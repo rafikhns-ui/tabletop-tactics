@@ -951,19 +951,23 @@ export default function Game() {
       // Add AI actions to turn log
       const aiPlayer = gameState.players[gameState.currentPlayerIndex];
       (newState.log || []).forEach(l => {
-        const lc = l.toLowerCase();
-        const type = lc.includes('conquer') || lc.includes('captured') ? 'conquest'
-          : lc.includes('attack') || lc.includes('battle') ? 'attack'
-          : lc.includes('recruit') || lc.includes('trained') ? 'recruit'
-          : lc.includes('built') || lc.includes('build') ? 'build'
-          : lc.includes('upgrade') ? 'upgrade'
-          : lc.includes('move') ? 'move'
-          : lc.includes('deploy') ? 'deploy'
-          : lc.includes('avatar') ? 'avatar'
-          : lc.includes('hero') ? 'hero'
-          : lc.includes('trade') || lc.includes('alliance') || lc.includes('war') ? 'diplomacy'
-          : 'default';
-        setTurnLog(prev => [...prev, { type, text: l, detail: null, phase: 'AI Turn', playerName: aiPlayer?.name, playerColor: aiPlayer?.color, turn: null }]);
+        // New structured format: "type:playerId:message"
+        let type = 'default';
+        let text = l;
+        let playerName = aiPlayer?.name;
+        let playerColor = aiPlayer?.color;
+        if (l.startsWith('conquest:') || l.startsWith('attack:')) {
+          const parts = l.split(':');
+          type = parts[0];
+          // parts[1] = playerId, parts[2+] = message
+          text = parts.slice(2).join(':');
+          const logPlayer = newState.players.find(p => p.id === parts[1]);
+          if (logPlayer) { playerName = logPlayer.name; playerColor = logPlayer.color; }
+        } else {
+          const lc = l.toLowerCase();
+          type = lc.includes('deploy') ? 'deploy' : lc.includes('build') ? 'build' : lc.includes('upgrade') ? 'upgrade' : 'default';
+        }
+        setTurnLog(prev => [...prev, { type, text, detail: null, phase: 'AI Turn', playerName, playerColor, turn: null }]);
       });
       // End AI turn
       const nextIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
