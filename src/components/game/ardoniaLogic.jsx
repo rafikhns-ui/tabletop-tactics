@@ -223,15 +223,26 @@ export const collectIncome = (gameState) => {
   newState.players = gameState.players.map(p => {
     const income = calculateIncome(p, gameState.territories);
     const maxStorage = 10 + (p.buildings.treasury?.level || 1) * 5;
+    // Apply active world event penalties to income
+    const crisisPenalty = p.cardEffects?.economic_crisis?.active ? (p.cardEffects.economic_crisis.goldPenalty || 0) : 0;
+    // Tick down card effects duration
+    const newCardEffects = { ...(p.cardEffects || {}) };
+    Object.keys(newCardEffects).forEach(k => {
+      if (newCardEffects[k]?.duration > 0) {
+        newCardEffects[k] = { ...newCardEffects[k], duration: newCardEffects[k].duration - 1 };
+        if (newCardEffects[k].duration <= 0) newCardEffects[k] = { ...newCardEffects[k], active: false };
+      }
+    });
     return {
       ...p,
       resources: {
-        gold: Math.min(maxStorage, p.resources.gold + income.gold),
+        gold: Math.min(maxStorage, Math.max(0, p.resources.gold + income.gold - crisisPenalty)),
         wood: Math.min(maxStorage, p.resources.wood + income.wood),
         wheat: Math.min(maxStorage, p.resources.wheat + income.wheat),
       },
       sp: Math.min(10, p.sp + income.sp),
       ip: Math.min(10, p.ip + income.ip),
+      cardEffects: newCardEffects,
     };
   });
   return newState;
@@ -490,6 +501,104 @@ export const doAiTurn = (gameState) => {
   }
 
   state.log = [...(state.log || []).slice(-10), ...logs];
+  return state;
+};
+
+// ---- World Event Effects ----
+export const applyEventEffect = (gameState, event) => {
+  let state = { ...gameState, players: gameState.players.map(p => ({ ...p })) };
+
+  switch (event.id) {
+    case 'famine': {
+      // All players lose 2 Wheat; units in hexes with no owner lose 1 troop
+      state.players = state.players.map(p => ({
+        ...p,
+        resources: { ...p.resources, wheat: Math.max(0, (p.resources.wheat || 0) - 2) },
+      }));
+      // Units in unclaimed hexes lose 1 troop (simulate supply cut)
+      const newHexes = { ...state.hexes };
+      Object.entries(newHexes).forEach(([id, h]) => {
+        if (h.units?.length > 0) {
+          const newUnits = h.units
+            .map(u => ({ ...u, count: Math.max(0, u.count - 1) }))
+            .filter(u => u.count > 0);
+          newHexes[id] = { ...h, units: newUnits };
+        }
+      });
+      state.hexes = newHexes;
+      break;
+    }
+    case 'gold_rush': {
+      state.players = state.players.map(p => ({
+        ...p,
+        resources: { ...p.resources, gold: (p.resources.gold || 0) + 3 },
+      }));
+      break;
+    }
+    case 'spiritual_surge': {
+      state.players = state.players.map(p => ({
+        ...p,
+        sp: Math.min(15, (p.sp || 0) + 2),
+        activeAvatar: p.activeAvatar ? { ...p.activeAvatar, duration: p.activeAvatar.duration + 1 } : null,
+      }));
+      break;
+    }
+    case 'economic_crisis': {
+      state.players = state.players.map(p => ({
+        ...p,
+        resources: { ...p.resources, gold: Math.max(0, (p.resources.gold || 0) - 3) },
+        cardEffects: { ...(p.cardEffects || {}), economic_crisis: { duration: 2, active: true, goldPenalty: 1 } },
+      }));
+      break;
+    }
+    case 'revolution': {
+      // Each player pays 3 Gold or loses control of one owned hex
+      const hexKeys = Object.keys(state.hexes);
+      state.players = state.players.map(p => {
+        const gold = p.resources.gold || 0;
+        if (gold >= 3) {
+          return { ...p, resources: { ...p.resources, gold: gold - 3 } };
+        } else {
+          // Lose control of a random owned hex
+          const ownedHex = hexKeys.find(id => state.hexes[id]?.owner === p.id);
+          if (ownedHex) {
+            state.hexes = { ...state.hexes, [ownedHex]: { ...state.hexes[ownedHex], owner: null } };
+          }
+          return p;
+        }
+      });
+      break;
+    }
+    case 'mercenary_wave': {
+      // Each player gets 1 free infantry added to pending
+      state.players = state.players.map(p => ({
+        ...p,
+        pendingUnits: [...(p.pendingUnits || []), 'infantry'],
+      }));
+      break;
+    }
+    case 'plague': {
+      // Mark all heroes as exhausted for this turn
+      state.players = state.players.map(p => {
+        const heroStatus = { ...(p.heroStatus || {}) };
+        (p.heroes || []).forEach(hId => {
+          heroStatus[hId] = { ...(heroStatus[hId] || {}), exhausted: true };
+        });
+        return { ...p, heroStatus };
+      });
+      break;
+    }
+    case 'peace_treaty': {
+      // Flag: no attacks allowed this turn (checked in handleTerritoryClick)
+      state.peaceTreatyActive = true;
+      break;
+    }
+    default:
+      break;
+  }
+
+  // Store active event for UI/income effects
+  state.activeWorldEvent = { ...event, turnsRemaining: event.duration || 0 };
   return state;
 };
 

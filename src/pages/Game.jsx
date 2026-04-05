@@ -19,7 +19,7 @@ import PlayerPanel from '../components/game/PlayerPanel';
 import ActionBar from '../components/game/ActionBar';
 import BattleModal from '../components/game/BattleModal';
 import EventModal from '../components/game/EventModal';
-import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn, getAiTurnSteps, checkObjective, calculateUnitBonuses } from '../components/game/ardoniaLogic';
+import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn, getAiTurnSteps, checkObjective, calculateUnitBonuses, applyEventEffect } from '../components/game/ardoniaLogic';
 import mapData from '../components/game/ardonia_game_map.json';
 import { FACTION_TO_NATION_ID } from '../components/game/ardoniaData';
 
@@ -1297,7 +1297,10 @@ export default function Game() {
       {activeEvent && (
         <EventModal
           event={activeEvent}
-          onClose={() => setActiveEvent(null)}
+          onClose={() => {
+            setGameState(prev => applyEventEffect(prev, activeEvent));
+            setActiveEvent(null);
+          }}
         />
       )}
     </div>
