@@ -583,6 +583,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                     {selectedNation.id === 'ilalocatotlan' && (
                       <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/75e3d6016_photo-output3.png" alt="Tlalocayotlan" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                     )}
+                    {selectedNation.id === 'nimrudan' && (
+                      <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/c8851f071_empireassyrian.png" alt="Nimrudan" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                    )}
                     <span style={{ fontSize: 14, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{NATION_LABEL_MAP[selectedNation.id]?.name || selectedNation.name}</span>
                   </div>
                 )}

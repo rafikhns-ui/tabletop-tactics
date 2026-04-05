@@ -101,6 +101,9 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
               {player.factionId === 'tlalocayotlan' && (
                 <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/75e3d6016_photo-output3.png" alt="Tlalocayotlan" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} />
               )}
+              {player.factionId === 'nimrudan' && (
+                <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/c8851f071_empireassyrian.png" alt="Nimrudan" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} />
+              )}
               {player.faction?.emoji} {player.faction?.name}
             </div>
           </div>

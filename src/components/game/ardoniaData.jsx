@@ -226,6 +226,7 @@ export const FACTIONS = {
   // ── Eastern Continent (Sharqian) ──
   nimrudan: {
     id: 'nimrudan', name: 'Nimrudan Empire', color: '#e67e22', emoji: '🔥', playable: true,
+    logo: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/c8851f071_empireassyrian.png',
     continent: 'Sharqian',
     description: 'A realm of light, fire, and shadow ruled by Archduke Nim-Ramash from the Obsidian Throne. Spiritually divided between the Cult of Ethiriel (light) and the Cult of the Obsidian Flame (fire supremacy).',
     specialRule: 'Choose a Cult at game start: Ethiriel grants +2 defense; Obsidian Flame grants +2 attack.',
