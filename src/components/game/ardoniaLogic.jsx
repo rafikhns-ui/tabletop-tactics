@@ -1,4 +1,4 @@
-import { TERRITORIES, ADJACENCY, FACTIONS, LEADERS, HEROES, OBJECTIVES, BUILDING_DEFS, TERRAIN_MOVEMENT_COSTS, UNIT_DEFS, FACTION_TO_NATION_ID } from './ardoniaData';
+import { TERRITORIES, ADJACENCY, FACTIONS, LEADERS, HEROES, OBJECTIVES, BUILDING_DEFS, TERRAIN_MOVEMENT_COSTS, UNIT_DEFS, FACTION_TO_NATION_ID, FACTION_CAPITAL_HEX } from './ardoniaData';
 import { generateWorldMap } from './hexWorldGenerator';
 
 // ---- Hero passive bonus helpers ----
@@ -118,31 +118,22 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     });
 
     // Find first non-water hex per faction (capital) — use nation_id -> faction mapping
-    console.log('[DEBUG] FACTION_TO_NATION_ID:', factionToNation);
-    const nationToFaction = {};
-    Object.entries(factionToNation).forEach(([faction, nation]) => {
-      nationToFaction[nation] = faction;
-    });
-    console.log('[DEBUG] nationToFaction (reverse):', nationToFaction);
-    
+    // Use hardcoded capital hex positions derived from MAP_DATA geography
     const capitalsByFaction = {};
-    const hexesByNation = {};
-    
-    Object.entries(generatedHexWorld).forEach(([id, hex]) => {
-      if (hex.nation_id && hex.type !== 'water') {
-        if (!hexesByNation[hex.nation_id]) hexesByNation[hex.nation_id] = [];
-        hexesByNation[hex.nation_id].push({ id, hex });
-      }
-    });
-    
-    Object.entries(hexesByNation).forEach(([nationId, hexList]) => {
-      const faction = nationToFaction[nationId];
-      if (faction && !capitalsByFaction[faction]) {
-        const cap = hexList[0];
-        capitalsByFaction[faction] = cap.id;
-        console.log(`[DEBUG] Nation '${nationId}' -> Faction '${faction}', Capital hex: ${cap.id} (grid: ${cap.hex.col},${cap.hex.row}, nation_id: ${cap.hex.nation_id})`);
-      } else if (!faction) {
-        console.log(`[DEBUG] Nation '${nationId}' has no faction mapping! Hexes: ${hexList.slice(0, 3).map(h => h.id).join(', ')}`);
+    players.forEach(p => {
+      if (!p.factionId) return;
+      const capitalHexId = FACTION_CAPITAL_HEX[p.factionId];
+      if (capitalHexId && generatedHexWorld[capitalHexId]) {
+        capitalsByFaction[p.factionId] = capitalHexId;
+        console.log(`[DEBUG] Faction '${p.factionId}' capital hex: ${capitalHexId}`);
+      } else {
+        // Fallback: first non-water hex with matching nation_id
+        const nationId = factionToNation[p.factionId];
+        const fallback = Object.entries(generatedHexWorld).find(([, h]) => h.nation_id === nationId && h.type !== 'water');
+        if (fallback) {
+          capitalsByFaction[p.factionId] = fallback[0];
+          console.log(`[DEBUG] Fallback capital for '${p.factionId}': ${fallback[0]}`);
+        }
       }
     });
     console.log('[DEBUG] Final capitalsByFaction:', capitalsByFaction);

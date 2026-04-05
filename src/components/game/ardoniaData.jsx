@@ -180,8 +180,24 @@ export const FACTION_TO_NATION_ID = {
   republic:      'republic',
   sultanate:     'sultanate',
   tlalocayotlan: 'tlalocayotlan',
-  silver_union:  'silver_union',
+  silver_union:  'silverunion',
   shadowfell:    'shadowfell',
+};
+
+// Hardcoded capital hex IDs (col,row) per faction, derived from MAP_DATA geography
+export const FACTION_CAPITAL_HEX = {
+  gojeon:        '10,6',   // center of gejeon territory
+  inuvak:        '22,4',   // center of inuvak territory
+  ruskel:        '33,6',   // center of ruskel territory
+  icebound:      '53,12',  // shadowsfall lower = icebound capital
+  oakhaven:      '44,12',  // greenheart territory
+  onishiman:     '11,14',  // onishiman territory
+  kadjimaran:    '46,9',   // kadjimaran territory
+  nimrudan:      '56,10',  // nimrudan (kadjimaran area)
+  kintei:        '53,10',  // shadowsfall upper = kintei capital
+  republic:      '22,13',  // silverunion = republic
+  sultanate:     '41,10',  // greenheart mapped to sultanate? no — shadefell lower
+  tlalocayotlan: '40,4',   // shadefell upper rows = tlalocayotlan
 };
 
 export const FACTIONS = {
