@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GameMenu from '../components/game/GameMenu';
 import Lobby from '../components/game/Lobby';
 import OnlineGame from './OnlineGame';
@@ -74,6 +74,7 @@ import AdvisorPanel from '../components/game/AdvisorPanel';
 import DiplomacyLog from '../components/game/DiplomacyLog';
 import EffectsPanel from '../components/game/EffectsPanel';
 import TurnLog from '../components/game/TurnLog';
+import MiniMap from '../components/game/MiniMap';
 import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar } from '../components/game/aiPersonalities';
 
 export default function Game() {
@@ -103,6 +104,7 @@ export default function Game() {
   const [provinces, setProvinces] = useState(null);
   const [buildingPlacementMode, setBuildingPlacementMode] = useState(null); // 'fortress' | 'port' | null
   const [turnLog, setTurnLog] = useState([]);
+  const hexMapRef = useRef(null);
 
   // Initialize provinces on game start
   useEffect(() => {
@@ -1095,7 +1097,7 @@ export default function Game() {
 
 
       {/* Map */}
-      <div className="p-2" style={{ background: 'hsl(35,22%,12%)' }}>
+      <div className="p-2" style={{ background: 'hsl(35,22%,12%)', position: 'relative' }}>
         {gameState && (
           <>
             <div className="flex items-center gap-2 mb-1">
@@ -1116,6 +1118,7 @@ export default function Game() {
               </span>
             </div>
             <HexMap
+              ref={hexMapRef}
               gameState={gameState}
               selectedHex={selectedTerritory}
               selectedProvince={selectedProvince}
@@ -1126,6 +1129,10 @@ export default function Game() {
               movementState={movementState}
               highlightPlayerId={highlightMyTerritories ? currentPlayer?.id : null}
               reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
+            />
+            <MiniMap
+              gameState={gameState}
+              onPanTo={(mapX, mapY) => hexMapRef.current?.panTo(mapX, mapY)}
             />
           </>
         )}
