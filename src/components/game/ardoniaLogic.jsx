@@ -716,69 +716,85 @@ export const applyEventEffect = (gameState, event) => {
   return state;
 };
 
-// ---- Hex neighbor helper ----
-const getHexNeighborIds = (hexId) => {
-  const [gc, gr] = hexId.split(',').map(Number);
-  const even = gc % 2 === 0;
-  return [
-    [gc+1, even ? gr-1 : gr], [gc+1, even ? gr : gr+1],
-    [gc-1, even ? gr-1 : gr], [gc-1, even ? gr : gr+1],
-    [gc, gr-1], [gc, gr+1],
-  ].map(([c, r]) => `${c},${r}`);
-};
-
 // ---- AI Turn as sequential steps (for real-time visualization) ----
 export const getAiTurnSteps = (gameState) => {
   const steps = [];
-  let state = { ...gameState, hexes: { ...gameState.hexes } };
-  const ai = state.players[state.currentPlayerIndex];
+  let state = { ...gameState, hexes: { ...gameState.hexes }, players: gameState.players.map(p => ({ ...p, resources: { ...p.resources } })) };
+  const aiIndex = state.currentPlayerIndex;
+  const ai = state.players[aiIndex];
   if (!ai?.isAI) return [];
 
   const difficulty = ai.difficulty || 'normal';
-  const attackBonusVal = difficulty === 'hard' ? 1 : 0;
-  const minAdvantage = difficulty === 'easy' ? 3 : difficulty === 'hard' ? 1.3 : 2;
   const skipChance = difficulty === 'easy' ? 0.35 : 0;
+  const attackBonus = difficulty === 'hard' ? 1 : 0;
   const maxAttacks = difficulty === 'hard' ? 3 : 1;
+  const minAdvantage = difficulty === 'easy' ? 3 : difficulty === 'hard' ? 1.3 : 2;
 
-  // Step 1: Deploy pending units to the best hex
-  const pendingUnits = ai.pendingUnits || [];
+  // Helper to get current AI player from state
+  const getAI = () => state.players[aiIndex];
+
+  // STEP 1: Recruit infantry if resources allow
+  const recruitCandidates = ['infantry', 'infantry', 'cavalry'];
+  const recruits = [];
+  for (const unitId of recruitCandidates) {
+    const def = UNIT_DEFS[unitId];
+    if (!def) continue;
+    const cost = def.cost || {};
+    const currentAi = getAI();
+    let canAfford = true;
+    for (const [k, v] of Object.entries(cost)) {
+      if ((currentAi.resources?.[k] ?? 0) < v) { canAfford = false; break; }
+    }
+    if (!canAfford) continue;
+    // Deduct cost
+    const newResources = { ...currentAi.resources };
+    for (const [k, v] of Object.entries(cost)) { newResources[k] = (newResources[k] || 0) - v; }
+    const newPending = [...(currentAi.pendingUnits || []), unitId];
+    state = { ...state, players: state.players.map((p, i) => i === aiIndex ? { ...p, resources: newResources, pendingUnits: newPending } : p) };
+    recruits.push(unitId);
+  }
+  if (recruits.length > 0) {
+    steps.push({ state: JSON.parse(JSON.stringify(state)), message: `🎖️ ${ai.name} recruited ${recruits.length} unit(s)` });
+  }
+
+  // STEP 2: Deploy all pending units to the best hex
+  const pendingUnits = getAI().pendingUnits || [];
   if (pendingUnits.length > 0) {
+    // Find best hex: owned, prioritize those with enemy neighbors
     let bestHex = null, bestScore = -1;
-    Object.entries(state.hexes).forEach(([id, h]) => {
+    Object.entries(state.hexes).forEach(([hexId, h]) => {
       if (h.owner !== ai.id) return;
-      const enemyNeighbors = getHexNeighborIds(id).filter(nid => {
+      const neighbors = getHexNeighborIds(hexId);
+      const enemyNeighbors = neighbors.filter(nid => {
         const nh = state.hexes[nid];
         return nh && nh.owner && nh.owner !== ai.id;
       }).length;
-      if (enemyNeighbors > bestScore) { bestScore = enemyNeighbors; bestHex = id; }
+      if (enemyNeighbors > bestScore) { bestScore = enemyNeighbors; bestHex = hexId; }
     });
-    if (!bestHex) bestHex = Object.keys(state.hexes).find(id => state.hexes[id].owner === ai.id);
+    if (!bestHex) {
+      bestHex = Object.keys(state.hexes).find(id => state.hexes[id].owner === ai.id);
+    }
     if (bestHex) {
-      const hex = state.hexes[bestHex];
-      const hexUnits = [...(hex.units || [])];
-      pendingUnits.forEach(unitType => {
-        const existing = hexUnits.find(u => u.type === unitType);
+      let newHexes = { ...state.hexes };
+      const unitsToPlace = [...pendingUnits];
+      unitsToPlace.forEach(unitId => {
+        const hex = newHexes[bestHex] || {};
+        const hexUnits = (hex.units || []).map(u => ({ ...u }));
+        const existing = hexUnits.find(u => u.type === unitId);
         if (existing) existing.count += 1;
-        else hexUnits.push({ type: unitType, count: 1 });
+        else hexUnits.push({ type: unitId, count: 1 });
+        newHexes[bestHex] = { ...hex, units: hexUnits, owner: ai.id };
       });
-      state = {
-        ...state,
-        hexes: { ...state.hexes, [bestHex]: { ...hex, units: hexUnits } },
-        players: state.players.map(p => p.id === ai.id ? { ...p, pendingUnits: [] } : p),
-      };
-      steps.push({ state: { ...state, hexes: { ...state.hexes } }, message: `🤖 ${ai.name} deploys troops` });
+      state = { ...state, hexes: newHexes, players: state.players.map((p, i) => i === aiIndex ? { ...p, pendingUnits: [] } : p) };
+      steps.push({ state: JSON.parse(JSON.stringify(state)), message: `🚖 ${ai.name} deployed ${unitsToPlace.length} unit(s)` });
     }
   }
 
-  // Step 2: Attack adjacent enemy hexes
+  // STEP 3: Attack adjacent enemy hexes
   if (Math.random() >= skipChance) {
     const aiHexes = Object.entries(state.hexes)
       .filter(([, h]) => h.owner === ai.id)
-      .sort((a, b) => {
-        const au = b[1].units?.reduce((s, u) => s + u.count, 0) || 0;
-        const bu = a[1].units?.reduce((s, u) => s + u.count, 0) || 0;
-        return au - bu;
-      });
+      .sort((a, b) => (b[1].units?.reduce((s, u) => s + u.count, 0) || 0) - (a[1].units?.reduce((s, u) => s + u.count, 0) || 0));
 
     let attacksDone = 0;
     for (const [fromId, fromHex] of aiHexes) {
@@ -786,7 +802,8 @@ export const getAiTurnSteps = (gameState) => {
       const fromCount = fromHex.units?.reduce((s, u) => s + u.count, 0) || 0;
       if (fromCount < 2) continue;
 
-      const targets = getHexNeighborIds(fromId)
+      const neighbors = getHexNeighborIds(fromId);
+      const targets = neighbors
         .map(nid => [nid, state.hexes[nid]])
         .filter(([, nh]) => nh && nh.owner && nh.owner !== ai.id)
         .filter(([, nh]) => {
@@ -799,34 +816,25 @@ export const getAiTurnSteps = (gameState) => {
         const defCount = targetHex.units?.reduce((s, u) => s + u.count, 0) || 0;
         const fromUnits = fromHex.units?.length > 0 ? fromHex.units : [{ type: 'infantry', count: fromCount }];
         const defUnits = targetHex.units?.length > 0 ? targetHex.units : [{ type: 'infantry', count: Math.max(1, defCount) }];
-        const result = resolveBattle(fromUnits, defUnits, targetHex.buildings?.fortress, { attackBonus: attackBonusVal });
+        const result = resolveBattle(fromUnits, defUnits, targetHex.buildings?.fortress, { attackBonus });
         const conquered = result.defenderLosses >= defCount || defCount === 0;
 
-        let newHexes = { ...state.hexes };
-        const newFromUnits = fromUnits
-          .map(u => ({ ...u, count: Math.max(0, u.count - result.attackerLosses) }))
-          .filter(u => u.count > 0);
+        const newHexes = { ...state.hexes };
+        const newFromUnits = fromUnits.map(u => ({ ...u, count: Math.max(0, u.count - result.attackerLosses) })).filter(u => u.count > 0);
 
         if (conquered) {
-          const movedCount = Math.max(1, Math.floor((newFromUnits.reduce((s, u) => s + u.count, 0)) / 2));
-          const movedUnits = [{ type: (newFromUnits[0]?.type || 'infantry'), count: movedCount }];
-          const remainUnits = newFromUnits.map(u => ({ ...u, count: Math.max(1, u.count - movedCount) }));
-          newHexes[targetId] = { ...targetHex, units: movedUnits, owner: ai.id };
-          newHexes[fromId] = { ...fromHex, units: remainUnits };
+          const movedCount = Math.max(1, Math.floor(newFromUnits.reduce((s, u) => s + u.count, 0) / 2));
+          newHexes[targetId] = { ...targetHex, units: [{ type: (newFromUnits[0]?.type || 'infantry'), count: movedCount }], owner: ai.id };
+          newHexes[fromId] = { ...fromHex, units: newFromUnits.map(u => ({ ...u, count: Math.max(1, u.count - movedCount) })) };
         } else {
-          const newDefUnits = defUnits
-            .map(u => ({ ...u, count: Math.max(0, u.count - result.defenderLosses) }))
-            .filter(u => u.count > 0);
+          const newDefUnits = defUnits.map(u => ({ ...u, count: Math.max(0, u.count - result.defenderLosses) })).filter(u => u.count > 0);
           newHexes[targetId] = { ...targetHex, units: newDefUnits };
           newHexes[fromId] = { ...fromHex, units: newFromUnits };
         }
-
         state = { ...state, hexes: newHexes };
         steps.push({
-          state: { ...state },
-          message: conquered
-            ? `⚔️ ${ai.name} conquered a territory!`
-            : `⚔️ ${ai.name} attacked (A:-${result.attackerLosses} D:-${result.defenderLosses})`,
+          state: JSON.parse(JSON.stringify(state)),
+          message: conquered ? `⚔️ ${ai.name} conquered a hex!` : `⚔️ ${ai.name} attacked (A:-${result.attackerLosses} D:-${result.defenderLosses})`
         });
         attacksDone++;
       }
@@ -835,6 +843,16 @@ export const getAiTurnSteps = (gameState) => {
 
   return steps;
 };
+
+const getHexNeighborIds = (hexId) => {
+  const [col, row] = hexId.split(',').map(Number);
+  const even = col % 2 === 0;
+  return [
+    [col + 1, even ? row - 1 : row], [col + 1, even ? row : row + 1],
+    [col - 1, even ? row - 1 : row], [col - 1, even ? row : row + 1],
+    [col, row - 1], [col, row + 1],
+  ].map(([c, r]) => `${c},${r}`);
+}
 
 export const getTerritoryCount = (territories, playerId) =>
   Object.values(territories).filter(t => t.owner === playerId).length;
