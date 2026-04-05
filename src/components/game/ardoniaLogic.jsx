@@ -119,16 +119,16 @@ export const createGameState = (mode, playersArr = null) => {  let players;
 
     // Find first non-water hex per faction (capital) — use nation_id -> faction mapping
     // Find capital: the center hex of each nation's LAND territory
+    // Only include true land hexes: plains, forest, mountain, hills, desert, swamp, tundra, scorched
+    const PLAYABLE_LAND_TYPES = new Set(['plains', 'forest', 'mountain', 'hills', 'desert', 'swamp', 'tundra', 'scorched']);
     const capitalsByFaction = {};
     players.forEach(p => {
       if (!p.factionId) return;
       const nationId = factionToNation[p.factionId];
-      const allNationHexes = Object.entries(generatedHexWorld).filter(([, h]) => h.nation_id === nationId);
-      console.log(`[DEBUG] Nation '${nationId}' has ${allNationHexes.length} hexes. Types:`, allNationHexes.slice(0, 5).map(([id, h]) => `${id}(${h.type})`));
-      const landHexes = allNationHexes.filter(
-        ([, h]) => h.type && h.type !== 'water' && h.type !== 'coastal'
+      const landHexes = Object.entries(generatedHexWorld).filter(
+        ([, h]) => h.nation_id === nationId && PLAYABLE_LAND_TYPES.has(h.type)
       );
-      console.log(`[DEBUG] Nation '${nationId}' has ${landHexes.length} land hexes after filtering`);
+      console.log(`[DEBUG] Faction '${p.factionId}' (nation ${nationId}): found ${landHexes.length} playable land hexes`);
       if (landHexes.length === 0) return;
       
       // Find center: land hex closest to average position of all land hexes
@@ -167,7 +167,7 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       const neighbors = getHexNeighbors(capitalId);
       neighbors.forEach(nId => {
         const nHex = generatedHexWorld[nId];
-        if (nHex && nHex.type !== 'water' && nHex.nation_id === expectedNation) {
+        if (nHex && PLAYABLE_LAND_TYPES.has(nHex.type) && nHex.nation_id === expectedNation) {
           playerStartingHexes[owner].add(nId);
         }
       });
