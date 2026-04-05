@@ -107,6 +107,9 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
               {player.factionId === 'gojeon' && (
                 <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/d68a471ae_photo-output672.png" alt="Gojeon" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} />
               )}
+              {player.factionId === 'sultanate' && (
+                <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/08a33f4a8_bluemoo.png" alt="Blue Moon Sultanate" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} />
+              )}
               {player.faction?.emoji} {player.faction?.name}
             </div>
           </div>

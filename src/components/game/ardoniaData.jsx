@@ -265,6 +265,7 @@ export const FACTIONS = {
   },
   sultanate: {
     id: 'sultanate', name: 'Blue Moon Sultanate', color: '#1a5a8b', emoji: '🌙', playable: true,
+    logo: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/08a33f4a8_bluemoo.png',
     continent: 'Sharqian',
     description: 'A holy theocratic state founded by the prophet-commander Ashur as a sanctuary for believers of the One God. A center for enlightenment, justice, and pre-cataclysmic knowledge.',
     specialRule: 'Cannot hold Military objectives. +1 SP per turn from divine devotion.',
