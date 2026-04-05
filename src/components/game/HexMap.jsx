@@ -267,10 +267,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
               <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#d4a853" floodOpacity="1" />
               <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#f0c040" floodOpacity="0.5" />
             </filter>
-            <filter id="fogFilter">
-              <feGaussianBlur stdDeviation="1.5" />
-              <feColorMatrix type="saturate" values="0.3" />
-            </filter>
+
 
             {/* ── Animated water gradient ── */}
             <radialGradient id="waterGrad" cx="40%" cy="35%" r="70%">
