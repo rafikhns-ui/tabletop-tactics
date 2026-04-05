@@ -13,16 +13,17 @@ function FactionCard({ faction, selected, disabled, onClick }) {
       onClick={onClick}
       className="text-left px-4 py-4 rounded-sm transition-all"
       style={{
-        background: selected ? '#2a2a2a' : '#1a1a1a',
+        background: selected ? `${faction.color}22` : '#1a1a1a',
         borderWidth: '2px',
         borderStyle: 'solid',
-        borderColor: selected ? '#ffffff' : disabled ? '#444444' : '#666666',
+        borderColor: selected ? faction.color : disabled ? '#444444' : '#666666',
         opacity: disabled ? 0.5 : 1,
+        boxShadow: selected ? `0 0 14px ${faction.color}66` : 'none',
       }}
     >
       <div className="flex items-center gap-2 mb-1">
         {faction.logo && <img src={faction.logo} alt={faction.name} style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />}
-        <div className="font-black text-sm">{faction.emoji} {faction.name}</div>
+        <div className="font-black text-sm" style={{ color: selected ? faction.color : 'inherit' }}>{faction.emoji} {faction.name}</div>
       </div>
       <div className="text-xs opacity-40 mb-2 truncate">{faction.continent}</div>
       <div className="text-xs leading-relaxed opacity-60">{faction.specialRule}</div>
@@ -168,18 +169,35 @@ export default function FactionSelectStep({ mode, playerCount = 2, onNext, onBac
 
 
 
-        <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(humanCount + aiCount, 3)}, 1fr)` }}>
-           {players.map((p, i) => (
+        {/* Player 1 centered at top */}
+        <div className="flex justify-center mb-4">
+          <div className="w-full max-w-xl">
             <PlayerSlot
-              key={p.id}
-              index={i}
-              factionId={p.factionId}
-              onChange={(factionId) => updatePlayer(i, factionId)}
-              takenFactionIds={takenFactionIds.filter(id => id !== p.factionId)}
-              isAI={p.isAI}
+              key={players[0].id}
+              index={0}
+              factionId={players[0].factionId}
+              onChange={(factionId) => updatePlayer(0, factionId)}
+              takenFactionIds={takenFactionIds.filter(id => id !== players[0].factionId)}
+              isAI={players[0].isAI}
             />
-          ))}
+          </div>
         </div>
+
+        {/* Remaining players below in a grid */}
+        {players.length > 1 && (
+          <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: `repeat(${Math.min(players.length - 1, 3)}, 1fr)` }}>
+            {players.slice(1).map((p, i) => (
+              <PlayerSlot
+                key={p.id}
+                index={i + 1}
+                factionId={p.factionId}
+                onChange={(factionId) => updatePlayer(i + 1, factionId)}
+                takenFactionIds={takenFactionIds.filter(id => id !== p.factionId)}
+                isAI={p.isAI}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="flex gap-4 justify-center pb-12">
           <button onClick={onBack}
