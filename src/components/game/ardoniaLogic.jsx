@@ -123,8 +123,12 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       const sf = hex.sourceFaction;
       if (sf && !capitalsByFaction[sf] && hex.type !== 'water' && hex.nation_id === factionToNation[sf]) {
         capitalsByFaction[sf] = id;
+        console.log(`[DEBUG] Capital for faction '${sf}' (nation_id='${factionToNation[sf]}'): ${id}`);
       }
     });
+    console.log('[DEBUG] factionToNation map:', factionToNation);
+    console.log('[DEBUG] capitalsByFaction:', capitalsByFaction);
+    console.log('[DEBUG] Sample hex entries:', Object.entries(generatedHexWorld).slice(0, 20).map(([id, h]) => ({id, sourceFaction: h.sourceFaction, nation_id: h.nation_id, type: h.type})));
 
     // Helper: get neighbors of a hex
     const getHexNeighbors = (hexId) => {
