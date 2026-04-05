@@ -617,7 +617,6 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
              { id: 'selected', icon: '🗺️', label: 'Territory' },
              { id: 'units', icon: '⚔️', label: 'Units' },
              { id: 'buildings', icon: '🏛️', label: 'Structures' },
-             { id: 'nation', icon: '269c', label: 'Nation' },
            ].map(t => (
             <button key={t} onClick={() => setPanelTab(t)} style={{
               flex: 1, padding: '10px 0', fontSize: 11,
@@ -837,27 +836,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             </div>
           )}
 
-          {panelTab === 'nation' && currentPlayer && (
-            <div>
-              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
-                {currentPlayer.name}
-              </div>
-              {currentPlayer.faction && (
-                <div style={{ fontSize: 13, color: currentPlayer.color, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
-                  {currentPlayer.faction.emoji} {currentPlayer.faction.name}
-                </div>
-              )}
-              <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
-                <span style={{ color: '#d4a853' }}>Gold:</span> {currentPlayer.resources?.gold ?? 0}
-              </div>
-              <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
-                <span style={{ color: '#7a6aed' }}>Influence:</span> {currentPlayer.ip ?? 0}
-              </div>
-              <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
-                <span style={{ color: '#2e9e9e' }}>Faith:</span> {currentPlayer.sp ?? 0}
-              </div>
-              </div>
-              )}
+
 
 
 
