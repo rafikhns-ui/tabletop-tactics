@@ -85,6 +85,25 @@ export const TERRAIN_STATS = {
   scorched: { income: 0, defense: 0, moveCost: 0 },
 };
 
+// Mapping from map nation_id to game factionId
+const NATION_ID_TO_FACTION = {
+  gojeon: 'gojeon',
+  inuvak: 'inuvak',
+  ruskel: 'ruskel',
+  icebound: 'icebound',
+  oakhaven: 'oakhaven',
+  shadowsfall: 'shadowfell',
+  onishiman: 'onishiman',
+  silver: 'silver_union',
+  kadjimaran: 'kadjimaran',
+  nimrudan: 'nimrudan',
+  kinetic: 'kintei',
+  ilalocatotlan: 'tlalocayotlan',
+  hestia: 'republic',
+  azure: 'sultanate',
+  scorched: null, // neutral
+};
+
 // ════ PROVINCE STATE CREATION ════
 export const createInitialProvinceState = (gameState) => {
   const provinces = {};
@@ -104,11 +123,11 @@ export const createInitialProvinceState = (gameState) => {
         totalIncome += TERRAIN_STATS[h.terrain]?.income || 0;
       });
 
-      // Find owner from gameState
-      const owner = gameState?.players?.find(p => {
-        const nationId = p.factionId; // Assume factionId matches nation_id
-        return nationId === nation.id;
-      })?.id || null;
+      // Find owner from gameState using the nation→faction mapping
+      const factionId = NATION_ID_TO_FACTION[nation.id];
+      const owner = factionId
+        ? gameState?.players?.find(p => p.factionId === factionId)?.id || null
+        : null;
 
       // National capital gets fortified_city
       const isNatCap = prov.is_national_capital;
