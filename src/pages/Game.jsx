@@ -106,6 +106,7 @@ export default function Game() {
   const [turnLog, setTurnLog] = useState([]);
   const hexMapRef = useRef(null);
   const [mapZoomTransform, setMapZoomTransform] = useState(null);
+  const isAiRunningRef = useRef(false);
 
   // Initialize provinces on game start
   useEffect(() => {
@@ -947,8 +948,10 @@ export default function Game() {
   useEffect(() => {
     if (!gameState || winner) return;
     const cp = gameState.players[gameState.currentPlayerIndex];
-    if (!cp.isAI) return;
+    if (!cp?.isAI) return;
+    if (isAiRunningRef.current) return;
 
+    isAiRunningRef.current = true;
     const timeouts = [];
     const schedule = (fn, delay) => { const t = setTimeout(fn, delay); timeouts.push(t); return t; };
 
@@ -966,6 +969,7 @@ export default function Game() {
         setPhase('deploy');
         addMessage(`🔄 ${cp.name} ended their turn`);
         setTurnLog(prev => [...prev, { type: 'default', text: `${cp.name} ended their turn`, detail: null, phase: 'AI Turn', playerName: cp.name, playerColor: cp.color }]);
+        isAiRunningRef.current = false;
       };
 
       if (steps.length === 0) {
@@ -987,7 +991,10 @@ export default function Game() {
       });
     }, 600);
 
-    return () => timeouts.forEach(clearTimeout);
+    return () => {
+      timeouts.forEach(clearTimeout);
+      isAiRunningRef.current = false;
+    };
   }, [gameState?.currentPlayerIndex, gameState?.turn, gameMode, winner]);
 
   if (onlineSession) return <OnlineGame session={onlineSession} onLeave={() => { setOnlineSession(null); setShowLobby(false); }} />;
