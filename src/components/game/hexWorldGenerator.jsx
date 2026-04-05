@@ -953,7 +953,7 @@ export const generateWorldMap = () => {
   MAP_DATA.forEach((cell) => {
     const { col, row, faction, is_coastal, terrain } = cell;
     const { q, r } = offsetToAxial(col, row);
-    const hexId = `hex_${q}_${r}`;
+    const hexId = `${col},${row}`;
     const isWater = terrain === 'water' || faction === 'ocean';
     const playableFaction = remapFaction(faction, row);
     const resolvedTerrain = isWater
@@ -966,6 +966,7 @@ export const generateWorldMap = () => {
       r,
       col,
       row,
+      hexId: hexId,
       type: isWater ? 'water' : 'land',
       terrain: resolvedTerrain,
       is_coastal,
