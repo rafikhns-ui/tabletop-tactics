@@ -1,4 +1,4 @@
-import { TERRITORIES, ADJACENCY, FACTIONS, LEADERS, HEROES, OBJECTIVES, BUILDING_DEFS, TERRAIN_MOVEMENT_COSTS, UNIT_DEFS } from './ardoniaData';
+import { TERRITORIES, ADJACENCY, FACTIONS, LEADERS, HEROES, OBJECTIVES, BUILDING_DEFS, TERRAIN_MOVEMENT_COSTS, UNIT_DEFS, FACTION_TO_NATION_ID } from './ardoniaData';
 import { generateWorldMap } from './hexWorldGenerator';
 
 // ---- Hero passive bonus helpers ----
@@ -107,15 +107,21 @@ export const createGameState = (mode, playersArr = null) => {  let players;
   // Initialize hexes from the JSON map, assigning ownership by sourceFaction
   const generatedHexWorld = generateWorldMap();
 
-    // Build a map from factionId -> playerId
+    // Build a map from factionId -> playerId & expected nationId
     const factionToPlayer = {};
-    players.forEach(p => { if (p.factionId) factionToPlayer[p.factionId] = p.id; });
+    const factionToNation = {};
+    players.forEach(p => { 
+      if (p.factionId) {
+        factionToPlayer[p.factionId] = p.id;
+        factionToNation[p.factionId] = FACTION_TO_NATION_ID[p.factionId] || p.factionId;
+      }
+    });
 
-    // Find first non-water hex per faction (capital)
+    // Find first non-water hex per faction (capital) — must match nation_id
     const capitalsByFaction = {};
     Object.entries(generatedHexWorld).forEach(([id, hex]) => {
       const sf = hex.sourceFaction;
-      if (sf && !capitalsByFaction[sf] && hex.type !== 'water') {
+      if (sf && !capitalsByFaction[sf] && hex.type !== 'water' && hex.nation_id === factionToNation[sf]) {
         capitalsByFaction[sf] = id;
       }
     });
@@ -131,15 +137,17 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       ].map(([c, r]) => `${c},${r}`);
     };
 
-    // Assign starting hexes: capital + immediate neighbors only
+    // Assign starting hexes: capital + immediate neighbors only (must be in same nation)
     const playerStartingHexes = {};
     Object.entries(capitalsByFaction).forEach(([faction, capitalId]) => {
       const owner = factionToPlayer[faction];
+      const expectedNation = factionToNation[faction];
       if (!owner) return;
       playerStartingHexes[owner] = new Set([capitalId]);
       const neighbors = getHexNeighbors(capitalId);
       neighbors.forEach(nId => {
-        if (generatedHexWorld[nId] && generatedHexWorld[nId].type !== 'water') {
+        const nHex = generatedHexWorld[nId];
+        if (nHex && nHex.type !== 'water' && nHex.nation_id === expectedNation) {
           playerStartingHexes[owner].add(nId);
         }
       });
