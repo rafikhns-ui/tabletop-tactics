@@ -592,6 +592,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                     {selectedNation.id === 'azure' && (
                       <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/08a33f4a8_bluemoo.png" alt="Blue Moon Sultanate" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                     )}
+                    {selectedNation.id === 'icebound' && (
+                      <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/011bfc403_thehorde.png" alt="Icebound Horde" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                    )}
                     <span style={{ fontSize: 14, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{NATION_LABEL_MAP[selectedNation.id]?.name || selectedNation.name}</span>
                   </div>
                 )}

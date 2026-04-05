@@ -273,6 +273,7 @@ export const FACTIONS = {
   },
   icebound: {
     id: 'icebound', name: 'Icebound Horde', color: '#aed6f1', emoji: '🌨️', playable: true,
+    logo: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/011bfc403_thehorde.png',
     continent: 'Sharqian',
     description: 'A nomadic confederation that views struggle as sacred trial, driven by the Cult of the Eternal Blizzard. Recently fallen under dark influence of the Order of Shadowfell from the far east.',
     specialRule: 'Units never retreat — fight to the last. Tundra movement costs 0 extra.',
