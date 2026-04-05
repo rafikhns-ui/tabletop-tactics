@@ -571,7 +571,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 {selectedNation && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <div style={{ width: 14, height: 14, borderRadius: 3, background: NATION_COLORS[selectedNation.id], border: '1px solid #ffffff20' }} />
-                    <span style={{ fontSize: 14, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{selectedNation.name}</span>
+                    <span style={{ fontSize: 14, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{NATION_LABEL_MAP[selectedNation.id]?.name || selectedNation.name}</span>
                   </div>
                 )}
 
@@ -641,9 +641,14 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
           {panelTab === 'nation' && currentPlayer && (
             <div>
-              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
+              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
                 {currentPlayer.name}
               </div>
+              {currentPlayer.faction && (
+                <div style={{ fontSize: 13, color: currentPlayer.color, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
+                  {currentPlayer.faction.emoji} {currentPlayer.faction.name}
+                </div>
+              )}
               <div style={{ fontSize: 14, marginBottom: 6, color: '#c8c0b0' }}>
                 <span style={{ color: '#d4a853' }}>Gold:</span> {currentPlayer.resources?.gold ?? 0}
               </div>
