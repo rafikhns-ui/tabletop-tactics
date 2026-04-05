@@ -188,6 +188,7 @@ export const FACTIONS = {
   // ── Western Continent (Mangian) ──
   gojeon: {
     id: 'gojeon', name: 'Gojeon Kingdom', color: '#7b5ea7', emoji: '🌸', playable: true,
+    logo: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d68a471ae_photo-output672.png',
     continent: 'Mangian',
     description: 'A jewel of cultural refinement ruled by the Jeon Dynasty, custodians of the Purple Lotus. Protected by the Hwrogan — elite mounted soldiers who are also guardians of art and intellect.',
     specialRule: 'Hwrogan cavalry cost 1 less Gold. +1 IP per turn from cultural prestige.',
