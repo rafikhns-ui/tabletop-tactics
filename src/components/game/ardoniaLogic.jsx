@@ -171,6 +171,7 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     });
 
     const hexes = {};
+    const capitalHexIds = Object.values(capitalsByFaction); // list of capital hex IDs
     Object.entries(generatedHexWorld).forEach(([id, hex]) => {
       let owner = null;
       let isCapital = false;
@@ -178,7 +179,7 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       for (const [playerId, hexSet] of Object.entries(playerStartingHexes)) {
         if (hexSet.has(id)) {
           owner = playerId;
-          isCapital = capitalsByFaction[hex.sourceFaction] === id;
+          isCapital = capitalHexIds.includes(id);
           break;
         }
       }
