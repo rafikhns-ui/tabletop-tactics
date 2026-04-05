@@ -118,11 +118,12 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     });
 
     // Find first non-water hex per faction (capital) — use nation_id -> faction mapping
-    // Reverse: nation_id -> faction, then find first non-water hex for each nation
+    console.log('[DEBUG] FACTION_TO_NATION_ID:', factionToNation);
     const nationToFaction = {};
     Object.entries(factionToNation).forEach(([faction, nation]) => {
       nationToFaction[nation] = faction;
     });
+    console.log('[DEBUG] nationToFaction (reverse):', nationToFaction);
     
     const capitalsByFaction = {};
     const hexesByNation = {};
@@ -137,11 +138,14 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     Object.entries(hexesByNation).forEach(([nationId, hexList]) => {
       const faction = nationToFaction[nationId];
       if (faction && !capitalsByFaction[faction]) {
-        // Pick the first hex (or you could pick centroid-closest)
-        capitalsByFaction[faction] = hexList[0].id;
-        console.log(`[DEBUG] Nation '${nationId}' -> Faction '${faction}', Capital hex: ${hexList[0].id}`);
+        const cap = hexList[0];
+        capitalsByFaction[faction] = cap.id;
+        console.log(`[DEBUG] Nation '${nationId}' -> Faction '${faction}', Capital hex: ${cap.id} (grid: ${cap.hex.col},${cap.hex.row}, nation_id: ${cap.hex.nation_id})`);
+      } else if (!faction) {
+        console.log(`[DEBUG] Nation '${nationId}' has no faction mapping! Hexes: ${hexList.slice(0, 3).map(h => h.id).join(', ')}`);
       }
     });
+    console.log('[DEBUG] Final capitalsByFaction:', capitalsByFaction);
 
     // Helper: get neighbors of a hex
     const getHexNeighbors = (hexId) => {
