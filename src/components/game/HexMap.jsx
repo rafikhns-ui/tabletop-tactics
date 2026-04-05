@@ -623,7 +623,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
              { id: 'units', icon: '⚔️', label: 'Units' },
              { id: 'buildings', icon: '🏛️', label: 'Structures' },
            ].map(t => (
-            <button key={t} onClick={() => setPanelTab(t)} style={{
+            <button key={t.id} onClick={() => setPanelTab(t.id)} style={{
               flex: 1, padding: '10px 0', fontSize: 11,
               fontFamily: "'Cinzel', serif",
               background: panelTab === t ? '#1e1a12' : 'transparent',
