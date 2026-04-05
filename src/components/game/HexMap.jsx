@@ -454,10 +454,15 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   <g style={{ pointerEvents: 'none' }}>
                     {units.map((u, i) => {
                       const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
+                      const xPos = cx - 12 + (i % 2) * 18;
+                      const yPos = cy - 12 + Math.floor(i / 2) * 14;
                       return (
-                        <text key={i} x={cx - 10 + (i % 2) * 12} y={cy - 10 + Math.floor(i / 2) * 10} fontSize={9} style={{ pointerEvents: 'none' }}>
-                          {icons[u.type] || '⚔️'}
-                        </text>
+                        <g key={i}>
+                          <circle cx={xPos} cy={yPos} r={7} fill="#1a1a1a" stroke="#d4a853" strokeWidth={1} style={{ pointerEvents: 'none' }} />
+                          <text x={xPos} y={yPos + 4} textAnchor="middle" fontSize={13} style={{ pointerEvents: 'none', fontWeight: 'bold' }}>
+                            {icons[u.type] || '⚔️'}
+                          </text>
+                        </g>
                       );
                     })}
                   </g>
