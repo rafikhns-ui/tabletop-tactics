@@ -36,7 +36,10 @@ const TERRAIN_COLORS = {
   desert: '#6a5020', swamp: '#2a3a1a', tundra: '#5a6a7a', scorched: '#2a1000',
 };
 
-export default function MiniMap({ gameState, onPanTo }) {
+const SVG_W = 1200;
+const SVG_H = 900;
+
+export default function MiniMap({ gameState, onPanTo, zoomTransform }) {
   const nationOwnerMap = useMemo(() => {
     const map = {};
     if (gameState?.players) {
@@ -116,6 +119,37 @@ export default function MiniMap({ gameState, onPanTo }) {
             <circle cx={6 + i * 18} cy={H - 6} r={4} fill={p.color} stroke="#000" strokeWidth={0.5} />
           </g>
         ))}
+        {zoomTransform && (() => {
+          const { tx, ty, scale } = zoomTransform;
+          const pad = 4;
+          const viewW = SVG_W;
+          const viewH = SVG_H;
+          // Visible SVG region in SVG-space
+          const x0svg = -tx / scale;
+          const y0svg = -ty / scale;
+          const wSvg = viewW / scale;
+          const hSvg = viewH / scale;
+          // HexMap uses viewBox "-120 -80 {SVG_W+240} {SVG_H+160}"
+          const vbX = -120, vbY = -80, vbW = SVG_W + 240, vbH = SVG_H + 160;
+          // Convert to fraction of viewBox
+          const fx = (x0svg - vbX) / vbW;
+          const fy = (y0svg - vbY) / vbH;
+          const fw = wSvg / vbW;
+          const fh = hSvg / vbH;
+          // Scale to minimap pixels
+          const rx = fx * W;
+          const ry = fy * H;
+          const rw = fw * W;
+          const rh = fh * H;
+          return (
+            <rect
+              key="viewport"
+              x={rx} y={ry} width={rw} height={rh}
+              fill="rgba(255,255,255,0.08)" stroke="white" strokeWidth={1.5}
+              strokeDasharray="3,2"
+            />
+          );
+        })()}
       </svg>
     </div>
   );

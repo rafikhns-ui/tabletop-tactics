@@ -145,12 +145,12 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
       scale,
     };
     setZoomTransform(zt);
-    if (onZoomChange) onZoomChange(true);
+    if (onZoomChange) onZoomChange(zt);
   };
 
   const handleZoomOut = () => {
     setZoomTransform(null);
-    if (onZoomChange) onZoomChange(false);
+    if (onZoomChange) onZoomChange(null);
   };
 
 
