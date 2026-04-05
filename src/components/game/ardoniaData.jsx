@@ -203,6 +203,7 @@ export const FACTIONS = {
   },
   tlalocayotlan: {
     id: 'tlalocayotlan', name: 'Tlalocayotlan League', color: '#c0392b', emoji: '🦎', playable: true,
+    logo: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/75e3d6016_photo-output3.png',
     continent: 'Mangian',
     description: 'A confederation of city-states inspired by Mesoamerican civilizations, ruled by a divinely-chosen council. They revere the Great Lizard and use ritual reality-bending concoctions in battle.',
     specialRule: 'Ritual cards cost 1 less SP. +1 SP per turn from ceremonial rites.',
