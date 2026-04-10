@@ -300,7 +300,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               p.id === currentPlayer.id ? { ...p, pendingUnits: newPending } : p
             ),
           };
-          return checkObjectives(next);
+                      return next;
         });
         addMessage(`🏰 Deployed ${unitType} to hex`);
         addLog('deploy', `Deployed ${unitType} to the map`, null, 'Deploy');
