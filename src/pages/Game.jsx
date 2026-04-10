@@ -216,11 +216,11 @@ export default function Game() {
       player.objectives.forEach(obj => {
         if (!newCompleted.includes(obj.id) && checkObjective(obj, player, state)) {
           newCompleted.push(obj.id);
-          addMessage(`🏆 ${player.name} completed objective: ${obj.category}!`);
+setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.category}`), 0);
         }
       });
       if (newCompleted.length >= 2 && !winner) {
-        setWinner(player);
+        setTimeout(() => setWinner(player), 0);
       }
       return { ...player, completedObjectives: newCompleted };
     });
