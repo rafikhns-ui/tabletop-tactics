@@ -389,15 +389,19 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         }
       } else if (hexId !== selectedTerritory) {
         if (hex.owner === currentPlayer.id) {
-          setGameState(prev => checkObjectives({
-            ...prev,
-            hexes: {
-              ...prev.hexes,
-              [selectedTerritory]: { ...prev.hexes[selectedTerritory], units: [] },
-              [hexId]: { ...hex, units: [...(hex.units || []), { type: 'infantry', count: 1 }] },
-            },
-          }));
-          setSelectedTerritory(null);
+          setGameState(prev => {
+            const srcHex = prev.hexes[selectedTerritory];
+            const dstHex = prev.hexes[hexId];
+            const movedUnits = srcHex?.units || [];
+            return {
+              ...prev,
+              hexes: {
+                ...prev.hexes,
+                [selectedTerritory]: { ...srcHex, units: [] },
+                [hexId]: { ...dstHex, units: [...(dstHex?.units || []), ...movedUnits] },
+              },
+            };
+          });          setSelectedTerritory(null);
           addMessage(`🛡️ Moved troops to hex`);
         } else if (hex.owner === currentPlayer.id) {
           setSelectedTerritory(hexId);
