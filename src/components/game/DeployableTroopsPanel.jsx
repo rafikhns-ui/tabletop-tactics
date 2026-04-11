@@ -4,7 +4,7 @@ import { UNIT_DEFS } from './ardoniaData';
 export default function DeployableTroopsPanel({ phase }) {
   if (phase !== 'deploy') return null;
 
-  const unitTypes = ['infantry', 'cavalry', 'ranged', 'siege'];
+  const unitTypes = ['infantry', 'cavalry', 'ranged', 'siege', 'elite', 'magic'];
 
   return (
     <div className="border-t border-border p-2">
