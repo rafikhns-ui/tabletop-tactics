@@ -965,18 +965,17 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
 
       const endAiTurn = (finalState) => {
         try {
-          const nextIndex = (finalState.currentPlayerIndex + 1) % (finalState.players?.length || 1);
-          const baseState = { ...finalState, currentPlayerIndex: nextIndex, turn: finalState.turn + (nextIndex === 0 ? 1 : 0) };
-          const nextState = collectIncome(baseState);
-          setGameState(checkObjectives(nextState));
-          setPhase('deploy');
-          addMessage(`🌟 ${cp.name} ended their turn`);
-          setTurnLog(prev => [...prev, { type: 'default', text: `${cp.name} ended their turn` }]);
-        } catch (err) {
-          console.error('AI endTurn error:', err);
-        } finally {
-          isAiRunningRef.current = false;
-        }
+      const nextIndex = (finalState.currentPlayerIndex + 1) % (finalState.players?.length || 1);
+      const nextState = collectIncome({ ...finalState, currentPlayerIndex: nextIndex, turn: finalState.turn + (nextIndex === 0 ? 1 : 0) });
+      setGameState(checkObjectives(nextState));
+      setPhase('deploy');
+      addMessage(`🌟 ${cp.name} ended their turn`);
+      setTurnLog(prev => [...prev, { type: 'default', text: `${cp.name} ended their turn` }]);
+    } catch (e) {
+      console.error('AI endTurn error:', e);
+    } finally {
+      isAiRunningRef.current = false;
+    }
       };
 
       if (steps.length === 0) {
