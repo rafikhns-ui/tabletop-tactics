@@ -75,7 +75,8 @@ import DiplomacyLog from '../components/game/DiplomacyLog';
 import EffectsPanel from '../components/game/EffectsPanel';
 import TurnLog from '../components/game/TurnLog';
 import MiniMap from '../components/game/MiniMap';
-import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar } from '../components/game/aiPersonalities';
+import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar, initializeSentiment, decaySentiment, applyEventSentiment, executeInfluenceAction, tickInfluenceModifiers, getSentimentLabel } from '../components/game/aiPersonalities';
+import DiplomacyInfluencePanel from '../components/game/DiplomacyInfluencePanel';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
@@ -104,6 +105,7 @@ export default function Game() {
   const [highlightedPlayerId, setHighlightedPlayerId] = useState(null);
   const [provinces, setProvinces] = useState(null);
   const [buildingPlacementMode, setBuildingPlacementMode] = useState(null); // 'fortress' | 'port' | null
+  const [sentiment, setSentiment] = useState(null); // sentiment[fromId][toId] = number
   const [turnLog, setTurnLog] = useState([]);
   const hexMapRef = useRef(null);
   const [mapZoomTransform, setMapZoomTransform] = useState(null);
@@ -204,6 +206,7 @@ export default function Game() {
     setTradeOffers([]);
     setTurnLog([]);
     setBottomTab('action');
+    setSentiment(initializeSentiment(playersWithLeaders));
   };
 
   const currentPlayer = gameState?.players[gameState?.currentPlayerIndex];
@@ -711,6 +714,43 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
 
 
 
+  // Handle influence action spending
+  const handleInfluenceAction = (actionId, targetPlayerId, rivalPlayerId) => {
+    if (!gameState || !currentPlayer) return null;
+    const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+    if (!targetPlayer) return null;
+
+    const gsWithSentiment = { ...gameState, sentiment };
+    const result = executeInfluenceAction(actionId, currentPlayer, targetPlayerId, rivalPlayerId, gsWithSentiment);
+
+    if (!result.success) {
+      addMessage(`⛔ ${result.message}`);
+      return result;
+    }
+
+    // Apply resource deductions to player
+    setGameState(prev => ({
+      ...prev,
+      players: prev.players.map(p => {
+        if (p.id !== currentPlayer.id) {
+          // Apply influence modifier to target AI
+          if (p.id === targetPlayerId && result.modifier) {
+            return { ...p, influenceModifiers: [...(p.influenceModifiers || []), result.modifier] };
+          }
+          return p;
+        }
+        return { ...p, ...result.newPlayerState, resources: result.newPlayerState.resources };
+      }),
+    }));
+
+    // Apply sentiment changes
+    if (result.newSentiment) setSentiment(result.newSentiment);
+
+    addMessage(result.message);
+    addLog('diplomacy', result.message, null, 'Influence');
+    return result;
+  };
+
   // Called when user selects units from the side panel to move
   const handlePanelUnitSelect = (fromHexId, selectedUnits) => {
     if (!selectedUnits || selectedUnits.length === 0) return;
@@ -920,6 +960,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       };
     });
     setTradeOffers(prev => prev.filter(o => o.id !== offer.id));
+    setSentiment(prev => prev ? applyEventSentiment(prev, 'trade_accepted', offer.fromId, offer.toId) : prev);
     addMessage(`✅ Trade accepted!`);
   };
 
@@ -935,6 +976,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       }],
     }));
     setTradeOffers(prev => prev.filter(o => o.id !== offer.id));
+    setSentiment(prev => prev ? applyEventSentiment(prev, 'trade_declined', offer.fromId, offer.toId) : prev);
     addMessage(`❌ Trade declined.`);
   };
 
@@ -979,10 +1021,14 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       };
 
       state = collectIncome(state);
+      state = { ...state, players: tickInfluenceModifiers(state.players) };
 
       if (eventTrigger) {
         setTimeout(() => setActiveEvent(eventTrigger), 0);
       }
+
+      // Decay sentiment toward neutral each turn
+      setSentiment(prev => prev ? decaySentiment(prev, state.players) : prev);
 
       return checkObjectives(state);
     });
@@ -1027,8 +1073,11 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         }
       };
 
-      if (steps.length === 0) {
-        endAiTurn(gameState);
+      // Inject current sentiment into gameState for AI decisions
+    const gsWithSentiment = { ...gameState, sentiment };
+
+    if (steps.length === 0) {
+        endAiTurn(gsWithSentiment);
         return;
       }
 
@@ -1237,6 +1286,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
              { id: 'effects', icon: '📊', label: 'Effects' },
              { id: 'turnlog', icon: '📜', label: 'Turn Log' },
              { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
+             { id: 'influence', icon: '🎭', label: 'Influence' },
              { id: 'diplog', icon: '📋', label: 'Dip Log' },
              { id: 'log', icon: '📜', label: 'Battle Log' },
              { id: 'advisor', icon: '⚜️', label: 'Advisor' },
@@ -1342,6 +1392,18 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
             {bottomTab === 'diplomacy' && currentPlayer?.isAI && (
               <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
                 Diplomacy available during your turn
+              </div>
+            )}
+            {bottomTab === 'influence' && gameState && currentPlayer && !currentPlayer.isAI && (
+              <DiplomacyInfluencePanel
+                gameState={{ ...gameState, sentiment }}
+                currentPlayer={currentPlayer}
+                onInfluenceAction={handleInfluenceAction}
+              />
+            )}
+            {bottomTab === 'influence' && currentPlayer?.isAI && (
+              <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
+                Influence available during your turn
               </div>
             )}
             {bottomTab === 'diplog' && gameState && (
