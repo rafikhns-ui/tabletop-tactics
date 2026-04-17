@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GameMenu from '../components/game/GameMenu';
 import Lobby from '../components/game/Lobby';
 import OnlineGame from './OnlineGame';
-import BattleLog from '../components/game/BattleLog';
 import DiplomacyPanel from '../components/game/DiplomacyPanel';
 import HeroPanel from '../components/game/HeroPanel';
 import DeployableTroopsPanel from '../components/game/DeployableTroopsPanel';
@@ -22,6 +21,7 @@ import EventModal from '../components/game/EventModal';
 import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn, getAiTurnSteps, checkObjective, calculateUnitBonuses, applyEventEffect } from '../components/game/ardoniaLogic';
 import mapData from '../components/game/ardonia_game_map.json';
 import { FACTION_TO_NATION_ID } from '../components/game/ardoniaData';
+import UnifiedLog from '../components/game/UnifiedLog';
 
 // Build a lookup: hexId ("col,row") -> nation_id and terrain from map data
 const HEX_NATION_LOOKUP = {};
@@ -71,9 +71,7 @@ import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, AVATARS, ACTION_CARDS } from '..
 import AvatarPanel from '../components/game/AvatarPanel';
 import AiSetupModal from '../components/game/AiSetupModal';
 import AdvisorPanel from '../components/game/AdvisorPanel';
-import DiplomacyLog from '../components/game/DiplomacyLog';
 import EffectsPanel from '../components/game/EffectsPanel';
-import TurnLog from '../components/game/TurnLog';
 import MiniMap from '../components/game/MiniMap';
 import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar, initializeSentiment, decaySentiment, applyEventSentiment, executeInfluenceAction, tickInfluenceModifiers, getSentimentLabel } from '../components/game/aiPersonalities';
 import DiplomacyInfluencePanel from '../components/game/DiplomacyInfluencePanel';
@@ -1479,17 +1477,15 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           {/* Tab bar */}
           <div className="flex border-b border-border flex-shrink-0" style={{ background: 'hsl(35,22%,13%)' }}>
             {[
-             { id: 'action', icon: '⚔️', label: 'Action' },
-             { id: 'build', icon: '🏗️', label: 'Build' },
-             { id: 'recruit', icon: '⚔️', label: 'Recruit' },
-             { id: 'heroes', icon: '⭐', label: 'Heroes' },
-             { id: 'avatars', icon: '👹', label: 'Avatars' },
-             { id: 'effects', icon: '📊', label: 'Effects' },
-             { id: 'turnlog', icon: '📜', label: 'Turn Log' },
-             { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy & Influence', action: () => setShowDiplomacyInfluenceModal(true) },
-             { id: 'diplog', icon: '📋', label: 'Dip Log' },
-             { id: 'log', icon: '📜', label: 'Battle Log' },
-             { id: 'advisor', icon: '⚜️', label: 'Advisor' },
+              { id: 'action', icon: '⚔️', label: 'Action' },
+              { id: 'build', icon: '🏗️', label: 'Build' },
+              { id: 'recruit', icon: '⚔️', label: 'Recruit' },
+              { id: 'heroes', icon: '⭐', label: 'Heroes' },
+              { id: 'avatars', icon: '👹', label: 'Avatars' },
+              { id: 'effects', icon: '📊', label: 'Effects' },
+              { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy & Influence', action: () => setShowDiplomacyInfluenceModal(true) },
+              { id: 'unifiedlog', icon: '📜', label: '📋 Logs' },
+              { id: 'advisor', icon: '⚜️', label: 'Advisor' },
             ].map(t => (
               <button key={t.id} onClick={() => {
                 if (t.action) t.action();
@@ -1577,19 +1573,17 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                </div>
              )}
              {bottomTab === 'effects' && gameState && currentPlayer && (
-               <EffectsPanel currentPlayer={currentPlayer} gameState={gameState} />
+                <EffectsPanel currentPlayer={currentPlayer} gameState={gameState} />
+              )}
+             {bottomTab === 'unifiedlog' && gameState && (
+               <UnifiedLog
+                 entries={turnLog}
+                 battleEntries={battleLog}
+                 diplomaticEvents={gameState.diplomaticEvents || []}
+                 currentTurn={gameState?.turn}
+               />
              )}
-             {bottomTab === 'turnlog' && (
-               <TurnLog entries={turnLog} currentTurn={gameState?.turn} />
-             )}
- 
-            {bottomTab === 'diplog' && gameState && (
-              <DiplomacyLog gameState={gameState} />
-            )}
-            {bottomTab === 'log' && (
-              <BattleLog entries={battleLog} />
-            )}
-            {bottomTab === 'advisor' && gameState && currentPlayer && !currentPlayer.isAI && (
+             {bottomTab === 'advisor' && gameState && currentPlayer && !currentPlayer.isAI && (
               <AdvisorPanel
                 gameState={gameState}
                 currentPlayer={currentPlayer}
