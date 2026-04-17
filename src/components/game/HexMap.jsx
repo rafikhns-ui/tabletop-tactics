@@ -1,6 +1,41 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import mapData from './ardonia_game_map.json';
 import { FACTIONS, FACTION_TO_NATION_ID } from './ardoniaData';
+
+// ══════ WEATHER SYSTEM ══════
+// Deterministically assign weather to terrain regions based on turn
+const WEATHER_TYPES = {
+  tundra:   ['blizzard', 'snowfall', 'clear'],
+  mountain: ['fog', 'snowfall', 'clear'],
+  desert:   ['sandstorm', 'heatwave', 'clear'],
+  swamp:    ['rain', 'fog', 'clear'],
+  forest:   ['rain', 'mist', 'clear'],
+  coastal:  ['storm', 'breeze', 'clear'],
+  plains:   ['clear', 'breeze', 'rain'],
+  hills:    ['fog', 'clear', 'breeze'],
+  scorched: ['ashfall', 'clear', 'heatwave'],
+  water:    ['storm', 'breeze', 'clear'],
+};
+const WEATHER_COLORS = {
+  blizzard: '#aed6f1cc', snowfall: '#d6eaf8aa', fog: '#bdc3c799',
+  sandstorm: '#d4ac0d99', heatwave: '#e74c3c66', rain: '#2e86c188',
+  mist: '#85c1e966', storm: '#1a5276aa', breeze: 'transparent',
+  clear: 'transparent', ashfall: '#784212aa',
+};
+const WEATHER_ICONS = {
+  blizzard: '❄️', snowfall: '🌨️', fog: '🌫️', sandstorm: '🌪️',
+  heatwave: '🔥', rain: '🌧️', mist: '🌁', storm: '⛈️',
+  breeze: '🌬️', clear: '', ashfall: '🌋',
+};
+
+// Special event locations pinned to specific nation centroids
+const SPECIAL_EVENTS = [
+  { id: 'ancient_ruin', label: 'Ancient Ruin', icon: '🏛️', color: '#9b59b6', desc: 'Mysterious power lingers here' },
+  { id: 'sacred_spring', label: 'Sacred Spring', icon: '💧', color: '#3498db', desc: 'SP regeneration aura' },
+  { id: 'battlefield', label: 'Cursed Battlefield', icon: '💀', color: '#e74c3c', desc: 'Combat power +1 for attackers' },
+  { id: 'trade_nexus', label: 'Trade Nexus', icon: '💰', color: '#f39c12', desc: 'Gold income bonus nearby' },
+  { id: 'dark_portal', label: 'Dark Portal', icon: '🌀', color: '#8e44ad', desc: 'Avatar summoning discounted' },
+];
 
 // Legacy nation_id aliases from the map JSON
 const NATION_ID_ALIASES = {
@@ -142,16 +177,42 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
   const [panelTab, setPanelTab] = useState('selected');
   const [hoveredBorder, setHoveredBorder] = useState(null);
   const [tooltipPos, setTooltipPos] = useState(null);
-  const [selectedPanelUnits, setSelectedPanelUnits] = useState(new Set()); // Set of unit type indices
-  const [combatTooltip, setCombatTooltip] = useState(null); // { hexId, svgX, svgY, estimate }
+  const [selectedPanelUnits, setSelectedPanelUnits] = useState(new Set());
+  const [combatTooltip, setCombatTooltip] = useState(null);
+  const [weatherTick, setWeatherTick] = useState(0); // drives animation pulse
+  const [combatFlashes, setCombatFlashes] = useState([]); // [{hexId, key}]
+  const [hoveredSpecialEvent, setHoveredSpecialEvent] = useState(null);
 
   const SVG_W = 1200;
   const SVG_H = 900;
   const HEX_SIZE = 2.5;
   const HEX_PX = HEX_SIZE * (SVG_W / 100);
-  const [zoomTransform, setZoomTransform] = useState(null); // { tx, ty, scale }
-  const [movingUnits, setMovingUnits] = useState([]); // [{id, fromX, fromY, toX, toY, type, color, key}]
+  const [zoomTransform, setZoomTransform] = useState(null);
+  const [movingUnits, setMovingUnits] = useState([]);
   const prevHexesRef = useRef(null);
+
+  // Slow weather animation tick
+  useEffect(() => {
+    const t = setInterval(() => setWeatherTick(n => n + 1), 3000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Deterministic weather per terrain type (rotates slowly by turn)
+  const turn = gameState?.turn || 1;
+  const getWeatherForTerrain = useCallback((terrain) => {
+    const opts = WEATHER_TYPES[terrain] || ['clear'];
+    return opts[(turn + Math.floor(weatherTick / 4)) % opts.length];
+  }, [turn, weatherTick]);
+
+  // Assign special event locations to stable map positions (seeded by turn cycle)
+  const specialEventLocations = useMemo(() => {
+    const slots = mapData.nations.filter(n => n.centroid).slice(0, SPECIAL_EVENTS.length);
+    return SPECIAL_EVENTS.map((ev, i) => {
+      const nation = slots[(i + Math.floor(turn / 5)) % slots.length];
+      if (!nation) return null;
+      return { ...ev, x: nation.centroid[0], y: nation.centroid[1] };
+    }).filter(Boolean);
+  }, [turn]);
 
   const toSVG = (px, py) => ({ cx: (px / 100) * SVG_W, cy: (py / 100) * SVG_H });
 
@@ -217,8 +278,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
     if (animations.length > 0) {
       setMovingUnits(animations);
-      // Clear after animation completes
-      const timer = setTimeout(() => setMovingUnits([]), 900);
+      // Add combat flash for destinations that are enemy-contested
+      const flashes = animations.map(a => ({ hexId: a.toHexId || '', key: a.key + '-flash', color: a.color }));
+      setCombatFlashes(flashes);
+      const timer = setTimeout(() => { setMovingUnits([]); setCombatFlashes([]); }, 1100);
       return () => clearTimeout(timer);
     }
   }, [gameState?.hexes]);
@@ -490,6 +553,32 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             </pattern>
 
 
+            {/* ── Weather blur filter ── */}
+            <filter id="weatherBlur">
+              <feGaussianBlur stdDeviation="3" />
+            </filter>
+            <filter id="eventGlow">
+              <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#9b59b6" floodOpacity="0.9" />
+              <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor="#8e44ad" floodOpacity="0.4" />
+            </filter>
+            <filter id="combatFlash">
+              <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#ff4444" floodOpacity="1" />
+            </filter>
+            <filter id="moveGlow">
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#d4a853" floodOpacity="0.9" />
+            </filter>
+            <radialGradient id="snowOverlay" cx="50%" cy="50%" r="60%">
+              <stop offset="0%" stopColor="#d6eaf8" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="#aed6f1" stopOpacity="0.06" />
+            </radialGradient>
+            <radialGradient id="sandOverlay" cx="50%" cy="50%" r="60%">
+              <stop offset="0%" stopColor="#d4ac0d" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#b7950b" stopOpacity="0.08" />
+            </radialGradient>
+            <radialGradient id="rainOverlay" cx="50%" cy="50%" r="60%">
+              <stop offset="0%" stopColor="#2e86c1" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#1a5276" stopOpacity="0.06" />
+            </radialGradient>
           </defs>
 
           {zoomTransform && (
@@ -591,19 +680,72 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   <polygon points={ptsInner} fill={nationColor} fillOpacity={0.28} style={{ pointerEvents: 'none' }} />
                 )}
 
-                {/* Unit icons */}
+                {/* ── Weather overlay per hex ── */}
+                {!isWater && !isSelected && !isReachable && !dimmed && (() => {
+                  const weather = getWeatherForTerrain(terrain);
+                  if (weather === 'clear' || weather === 'breeze') return null;
+                  const wColor = WEATHER_COLORS[weather] || 'transparent';
+                  if (wColor === 'transparent') return null;
+                  return (
+                    <g style={{ pointerEvents: 'none' }}>
+                      <polygon points={pts} fill={wColor} style={{ pointerEvents: 'none' }} />
+                      {/* Animated weather shimmer */}
+                      {(weather === 'snowfall' || weather === 'blizzard') && (
+                        <polygon points={pts} fill="url(#snowOverlay)" style={{ pointerEvents: 'none' }}>
+                          <animate attributeName="fillOpacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite" />
+                        </polygon>
+                      )}
+                      {(weather === 'sandstorm' || weather === 'heatwave') && (
+                        <polygon points={pts} fill="url(#sandOverlay)" style={{ pointerEvents: 'none' }}>
+                          <animate attributeName="fillOpacity" values="0.3;0.7;0.3" dur="1.8s" repeatCount="indefinite" />
+                        </polygon>
+                      )}
+                      {(weather === 'rain' || weather === 'storm' || weather === 'mist' || weather === 'fog') && (
+                        <polygon points={pts} fill="url(#rainOverlay)" style={{ pointerEvents: 'none' }}>
+                          <animate attributeName="fillOpacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite" />
+                        </polygon>
+                      )}
+                      {/* Weather icon at hex center */}
+                      {WEATHER_ICONS[weather] && (
+                        <text x={cx + HEX_PX * 0.55} y={cy - HEX_PX * 0.5} textAnchor="middle" fontSize={8} style={{ pointerEvents: 'none', opacity: 0.7 }}>
+                          {WEATHER_ICONS[weather]}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })()}
+
+                {/* Unit icons — enhanced with player color ring + count badge */}
                 {units.length > 0 && (
                   <g style={{ pointerEvents: 'none' }}>
                     {units.map((u, i) => {
-                      const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
-                      const xPos = cx - 12 + (i % 2) * 18;
-                      const yPos = cy - 12 + Math.floor(i / 2) * 14;
+                      const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '⚙️', naval: '⚓' };
+                      const xPos = cx - 10 + (i % 2) * 20;
+                      const yPos = cy - 10 + Math.floor(i / 2) * 16;
+                      const ringColor = playerColor || '#d4a853';
+                      const isElite = u.type === 'elite';
                       return (
                         <g key={i}>
-                          <circle cx={xPos} cy={yPos} r={7} fill="#1a1a1a" stroke="#d4a853" strokeWidth={1} style={{ pointerEvents: 'none' }} />
-                          <text x={xPos} y={yPos + 4} textAnchor="middle" fontSize={13} style={{ pointerEvents: 'none', fontWeight: 'bold' }}>
+                          {/* Outer glow ring for elite */}
+                          {isElite && <circle cx={xPos} cy={yPos} r={10} fill="none" stroke="#f0c040" strokeWidth={1.5} strokeOpacity={0.6}>
+                            <animate attributeName="strokeOpacity" values="0.3;0.9;0.3" dur="1.5s" repeatCount="indefinite" />
+                            <animate attributeName="r" values="9;11;9" dur="1.5s" repeatCount="indefinite" />
+                          </circle>}
+                          {/* Background circle */}
+                          <circle cx={xPos} cy={yPos} r={8} fill="#111827" stroke={ringColor} strokeWidth={1.5} />
+                          {/* Unit emoji */}
+                          <text x={xPos} y={yPos + 4} textAnchor="middle" fontSize={11} style={{ pointerEvents: 'none' }}>
                             {icons[u.type] || '⚔️'}
                           </text>
+                          {/* Count badge */}
+                          {u.count > 1 && (
+                            <g>
+                              <circle cx={xPos + 6} cy={yPos - 6} r={5} fill="#dc2626" stroke="#111" strokeWidth={0.8} />
+                              <text x={xPos + 6} y={yPos - 3} textAnchor="middle" fontSize={6} fill="#fff" fontWeight="bold" style={{ pointerEvents: 'none' }}>
+                                {u.count > 9 ? '9+' : u.count}
+                              </text>
+                            </g>
+                          )}
                         </g>
                       );
                     })}
@@ -746,40 +888,111 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             );
           })()}
 
-          {/* ── Unit movement animations ── */}
+          {/* ── Unit movement animations (enhanced) ── */}
           {movingUnits.map(anim => {
-            const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
-            const dx = anim.toX - anim.fromX;
-            const dy = anim.toY - anim.fromY;
+            const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '⚙️', naval: '⚓' };
+            // Arc control point — lift midpoint upward for curved path
+            const mx = (anim.fromX + anim.toX) / 2;
+            const my = (anim.fromY + anim.toY) / 2 - 40;
+            const arcPath = `M${anim.fromX},${anim.fromY} Q${mx},${my} ${anim.toX},${anim.toY}`;
+            const isElite = anim.type === 'elite';
+            const isCavalry = anim.type === 'cavalry';
+            const dur = isCavalry ? '0.5s' : isElite ? '0.6s' : '0.75s';
+            // Spark positions around destination
+            const sparks = [0, 60, 120, 180, 240, 300].map(deg => ({
+              dx: Math.cos(deg * Math.PI / 180) * 14,
+              dy: Math.sin(deg * Math.PI / 180) * 14,
+            }));
             return (
               <g key={anim.key} style={{ pointerEvents: 'none' }}>
-                {/* Trail line */}
-                <line
-                  x1={anim.fromX} y1={anim.fromY}
-                  x2={anim.toX} y2={anim.toY}
+                {/* Curved trail path */}
+                <path
+                  d={arcPath}
+                  fill="none"
                   stroke={anim.color}
-                  strokeWidth={2}
-                  strokeOpacity={0.5}
-                  strokeDasharray="6,3"
-                  style={{ pointerEvents: 'none' }}
+                  strokeWidth={2.5}
+                  strokeDasharray="8,4"
+                  filter="url(#moveGlow)"
                 >
-                  <animate attributeName="strokeOpacity" from="0.7" to="0" dur="0.8s" fill="freeze" />
-                </line>
-                {/* Moving unit dot */}
-                <circle r={8} fill="#1a1a1a" stroke={anim.color} strokeWidth={2}>
-                  <animateMotion dur="0.7s" fill="freeze"
-                    path={`M${anim.fromX},${anim.fromY} L${anim.toX},${anim.toY}`} />
+                  <animate attributeName="strokeOpacity" values="0.8;0.6;0" dur={dur} fill="freeze" />
+                  <animate attributeName="strokeDashoffset" from="0" to="-40" dur={dur} fill="freeze" />
+                </path>
+                {/* Moving unit — outer glow circle */}
+                <circle r={isElite ? 13 : 10} fill={anim.color} fillOpacity={0.25} stroke={anim.color} strokeWidth={1.5}>
+                  <animateMotion dur={dur} fill="freeze" path={arcPath} />
                 </circle>
-                <text textAnchor="middle" fontSize={13} dy="4">
+                {/* Moving unit — inner dark circle */}
+                <circle r={8} fill="#0d1117" stroke={anim.color} strokeWidth={2}>
+                  <animateMotion dur={dur} fill="freeze" path={arcPath} />
+                </circle>
+                {/* Unit icon */}
+                <text textAnchor="middle" fontSize={13} dy="4" style={{ pointerEvents: 'none' }}>
                   {icons[anim.type] || '⚔️'}
-                  <animateMotion dur="0.7s" fill="freeze"
-                    path={`M${anim.fromX},${anim.fromY} L${anim.toX},${anim.toY}`} />
+                  <animateMotion dur={dur} fill="freeze" path={arcPath} />
                 </text>
-                {/* Arrival pulse ring */}
-                <circle cx={anim.toX} cy={anim.toY} r={4} fill="none" stroke={anim.color} strokeWidth={2}>
-                  <animate attributeName="r" from="4" to="18" dur="0.8s" fill="freeze" />
-                  <animate attributeName="strokeOpacity" from="0.9" to="0" dur="0.8s" fill="freeze" />
+                {/* Arrival burst ring 1 */}
+                <circle cx={anim.toX} cy={anim.toY} r={6} fill="none" stroke={anim.color} strokeWidth={3}>
+                  <animate attributeName="r" values="6;22;28" dur="0.7s" begin={dur} fill="freeze" />
+                  <animate attributeName="strokeOpacity" values="1;0.5;0" dur="0.7s" begin={dur} fill="freeze" />
+                  <animate attributeName="strokeWidth" values="3;1.5;0.5" dur="0.7s" begin={dur} fill="freeze" />
                 </circle>
+                {/* Arrival burst ring 2 (delayed) */}
+                <circle cx={anim.toX} cy={anim.toY} r={4} fill="none" stroke="#ffffff" strokeWidth={2} strokeOpacity={0}>
+                  <animate attributeName="r" values="4;16" dur="0.5s" begin={dur} fill="freeze" />
+                  <animate attributeName="strokeOpacity" values="0.8;0" dur="0.5s" begin={dur} fill="freeze" />
+                </circle>
+                {/* Spark particles at destination */}
+                {sparks.map((s, si) => (
+                  <circle key={si}
+                    cx={anim.toX} cy={anim.toY} r={2}
+                    fill={isElite ? '#f0c040' : anim.color}
+                    fillOpacity={0}>
+                    <animate attributeName="cx" values={`${anim.toX};${anim.toX + s.dx}`} dur="0.6s" begin={dur} fill="freeze" />
+                    <animate attributeName="cy" values={`${anim.toY};${anim.toY + s.dy}`} dur="0.6s" begin={dur} fill="freeze" />
+                    <animate attributeName="fillOpacity" values="0;1;0" dur="0.6s" begin={dur} fill="freeze" />
+                    <animate attributeName="r" values="1;3;1" dur="0.6s" begin={dur} fill="freeze" />
+                  </circle>
+                ))}
+              </g>
+            );
+          })}
+
+          {/* ── Special event location markers ── */}
+          {specialEventLocations.map((ev, i) => {
+            const { cx, cy } = toSVG(ev.x, ev.y);
+            const isHovered = hoveredSpecialEvent === ev.id;
+            return (
+              <g key={`ev-${ev.id}`}
+                style={{ pointerEvents: 'all', cursor: 'help' }}
+                onMouseEnter={() => setHoveredSpecialEvent(ev.id)}
+                onMouseLeave={() => setHoveredSpecialEvent(null)}>
+                {/* Outer pulsing ring */}
+                <circle cx={cx} cy={cy} r={18} fill="none" stroke={ev.color} strokeWidth={1.5} strokeOpacity={0.6}>
+                  <animate attributeName="r" values="16;22;16" dur="2.5s" repeatCount="indefinite" />
+                  <animate attributeName="strokeOpacity" values="0.3;0.8;0.3" dur="2.5s" repeatCount="indefinite" />
+                </circle>
+                {/* Inner glow background */}
+                <circle cx={cx} cy={cy} r={13} fill={ev.color} fillOpacity={0.18} filter="url(#eventGlow)" />
+                <circle cx={cx} cy={cy} r={13} fill="#0d1117" fillOpacity={0.8} stroke={ev.color} strokeWidth={1.5} />
+                {/* Event icon */}
+                <text x={cx} y={cy + 5} textAnchor="middle" fontSize={14} style={{ pointerEvents: 'none' }}>
+                  {ev.icon}
+                </text>
+                {/* Tooltip on hover */}
+                {isHovered && (
+                  <g style={{ pointerEvents: 'none' }}>
+                    <rect x={cx - 60} y={cy - 52} width={120} height={44} rx={4}
+                      fill="#0d1117" fillOpacity={0.97} stroke={ev.color} strokeWidth={1.5} />
+                    <text x={cx} y={cy - 36} textAnchor="middle" fontSize={8}
+                      fill={ev.color} fontFamily="'Cinzel',serif" fontWeight="700">
+                      {ev.label.toUpperCase()}
+                    </text>
+                    <text x={cx} y={cy - 22} textAnchor="middle" fontSize={7} fill="#aaa">
+                      {ev.desc}
+                    </text>
+                    <polygon points={`${cx - 5},${cy - 8} ${cx + 5},${cy - 8} ${cx},${cy - 2}`} fill={ev.color} />
+                  </g>
+                )}
               </g>
             );
           })}
@@ -846,10 +1059,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             <button key={t.id} onClick={() => setPanelTab(t.id)} style={{
               flex: 1, padding: '10px 0', fontSize: 11,
               fontFamily: "'Cinzel', serif",
-              background: panelTab === t ? '#1e1a12' : 'transparent',
-              color: panelTab === t ? '#d4a853' : '#666',
+              background: panelTab === t.id ? '#1e1a12' : 'transparent',
+              color: panelTab === t.id ? '#d4a853' : '#666',
               border: 'none',
-              borderBottom: panelTab === t ? '2px solid #d4a853' : '2px solid transparent',
+              borderBottom: panelTab === t.id ? '2px solid #d4a853' : '2px solid transparent',
               cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 1,
             }}>{t.icon} {t.label}</button>
           ))}
