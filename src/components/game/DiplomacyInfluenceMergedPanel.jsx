@@ -79,8 +79,12 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
 
   const otherPlayers = gameState.players.filter(p => p.id !== currentPlayer.id);
   const humanPlayers = otherPlayers.filter(p => !p.isAI);
+  const aiPlayers = otherPlayers.filter(p => p.isAI);
   const incomingOffers = tradeOffers ? tradeOffers.filter(o => o.toId === currentPlayer.id) : [];
   const outgoingOffers = tradeOffers ? tradeOffers.filter(o => o.fromId === currentPlayer.id) : [];
+  const [tradeTarget, setTradeTarget] = React.useState(null);
+  const [tradeOffer, setTradeOffer] = React.useState({});
+  const [tradeRequest, setTradeRequest] = React.useState({});
 
   return (
     <div style={{ color: '#c8c0b0', fontSize: 13 }}>
@@ -157,8 +161,63 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
         </div>
       )}
 
+      {/* Create Trade Offer */}
+      {humanPlayers.length > 0 && (
+        <div style={{ marginBottom: 24, padding: 12, background: 'rgba(212,168,83,0.08)', border: '1px solid #2a2520', borderRadius: 6 }}>
+          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
+            💼 Create Trade Offer
+          </h3>
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 4 }}>Recipient:</label>
+            <select value={tradeTarget || ''} onChange={(e) => setTradeTarget(e.target.value)}
+              style={{
+                width: '100%', padding: '8px', background: '#0d0f14', border: '1px solid #2a2520',
+                color: '#c8c0b0', borderRadius: 4, fontSize: 12,
+              }}>
+              <option value="">Select player...</option>
+              {humanPlayers.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div>
+              <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>You Offer:</label>
+              <input type="number" placeholder="Gold" value={tradeOffer.gold || 0}
+                onChange={(e) => setTradeOffer({...tradeOffer, gold: parseInt(e.target.value) || 0})}
+                style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11, marginBottom: 6 }} />
+              <input type="number" placeholder="Wood" value={tradeOffer.wood || 0}
+                onChange={(e) => setTradeOffer({...tradeOffer, wood: parseInt(e.target.value) || 0})}
+                style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11 }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>You Want:</label>
+              <input type="number" placeholder="Gold" value={tradeRequest.gold || 0}
+                onChange={(e) => setTradeRequest({...tradeRequest, gold: parseInt(e.target.value) || 0})}
+                style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11, marginBottom: 6 }} />
+              <input type="number" placeholder="Wood" value={tradeRequest.wood || 0}
+                onChange={(e) => setTradeRequest({...tradeRequest, wood: parseInt(e.target.value) || 0})}
+                style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11 }} />
+            </div>
+          </div>
+          <button onClick={() => {
+            if (!tradeTarget) return;
+            onDiplomacyAction({ type: 'trade_offer', fromId: currentPlayer.id, toId: tradeTarget, offer: tradeOffer, request: tradeRequest });
+            setTradeTarget(null);
+            setTradeOffer({});
+            setTradeRequest({});
+          }}
+            style={{
+              width: '100%', padding: '8px', background: '#2a5a2a', border: '1px solid #5a9a5a',
+              color: '#9afa9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
+            }}>
+            📤 Send Trade Offer
+          </button>
+        </div>
+      )}
+
       {/* Diplomacy Actions */}
-      <div>
+      <div style={{ marginBottom: 24 }}>
         <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
           ⚔️ Diplomatic Relations
         </h3>
@@ -200,6 +259,28 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
           ))
         )}
       </div>
+
+      {/* Chat with Players */}
+      {otherPlayers.length > 0 && (
+        <div style={{ marginTop: 24, paddingTop: 12, borderTop: '1px solid #2a2520' }}>
+          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
+            💬 Diplomacy Chat
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
+            {otherPlayers.map(player => (
+              <button key={player.id}
+                style={{
+                  padding: '12px', background: 'rgba(100,100,100,0.1)', border: '1px solid #2a2520',
+                  color: '#c8c0b0', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                  textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4,
+                }}>
+                <span><span style={{ color: player.color }}>●</span> {player.name}</span>
+                <span style={{ fontSize: 10, color: '#888' }}>{player.isAI ? '🤖 AI Opponent' : '👤 Human Player'}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -257,6 +338,28 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
             </div>
           );
         })
+      )}
+
+      {/* Chat with AI */}
+      {aiPlayers.length > 0 && (
+        <div style={{ marginTop: 24, paddingTop: 12, borderTop: '1px solid #2a2520' }}>
+          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
+            💬 Influence Chat
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
+            {aiPlayers.map(player => (
+              <button key={player.id}
+                style={{
+                  padding: '12px', background: 'rgba(100,100,100,0.1)', border: '1px solid #2a2520',
+                  color: '#c8c0b0', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                  textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4,
+                }}>
+                <span><span style={{ color: player.color }}>●</span> {player.name}</span>
+                <span style={{ fontSize: 10, color: '#888' }}>🤖 AI - Influence: {player.influenceLevel ?? 0}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
