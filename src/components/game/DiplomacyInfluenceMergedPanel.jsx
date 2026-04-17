@@ -31,11 +31,11 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
         </div>
 
         {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #2a2520', background: '#0d0f14' }}>
-          {[
-            { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
-            { id: 'influence', icon: '🎭', label: 'Influence' },
-          ].map(t => (
+         <div style={{ display: 'flex', borderBottom: '1px solid #2a2520', background: '#0d0f14' }}>
+           {[
+             { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy & Trade' },
+             { id: 'influence', icon: '🎭', label: 'Influence' },
+           ].map(t => (
             <button key={t.id} onClick={() => setActiveTab(t.id)}
               style={{
                 flex: 1, padding: '12px', fontSize: 12, fontFamily: "'Cinzel', serif", fontWeight: 600,
@@ -79,17 +79,21 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
   if (!gameState || !currentPlayer) return null;
 
   const otherPlayers = gameState.players.filter(p => p.id !== currentPlayer.id);
-  const incomingOffers = tradeOffers.filter(o => o.toId === currentPlayer.id);
-  const outgoingOffers = tradeOffers.filter(o => o.fromId === currentPlayer.id);
+  const humanPlayers = otherPlayers.filter(p => !p.isAI);
+  const incomingOffers = tradeOffers ? tradeOffers.filter(o => o.toId === currentPlayer.id) : [];
+  const outgoingOffers = tradeOffers ? tradeOffers.filter(o => o.fromId === currentPlayer.id) : [];
 
   return (
     <div style={{ color: '#c8c0b0', fontSize: 13 }}>
-      {/* Incoming Trade Offers */}
-      {incomingOffers.length > 0 && (
+      {/* Trade Section - only with human players */}
+      {humanPlayers.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
-            📥 Incoming Trade Offers
-          </h3>
+          {/* Incoming Trade Offers */}
+          {incomingOffers.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
+                📥 Incoming Trade Offers
+              </h3>
           {incomingOffers.map(offer => {
             const fromPlayer = gameState.players.find(p => p.id === offer.fromId);
             return (
@@ -122,16 +126,15 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
                 </div>
               </div>
             );
-          })}
-        </div>
-      )}
+            </div>
+          )}
 
-      {/* Outgoing Trade Offers */}
-      {outgoingOffers.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
-            📤 Sent Trade Offers
-          </h3>
+          {/* Outgoing Trade Offers */}
+          {outgoingOffers.length > 0 && (
+            <div>
+              <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
+                📤 Sent Trade Offers
+              </h3>
           {outgoingOffers.map(offer => {
             const toPlayer = gameState.players.find(p => p.id === offer.toId);
             return (
@@ -148,7 +151,8 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
                 </div>
               </div>
             );
-          })}
+            </div>
+          )}
         </div>
       )}
 
@@ -214,9 +218,11 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
 
   return (
     <div style={{ color: '#c8c0b0', fontSize: 13 }}>
-      <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
-        Your Influence Points: <span style={{ color: '#f0c040' }}>{currentPlayer.ip ?? 0}</span>
-      </h3>
+      <div style={{ marginBottom: 16, padding: '12px', background: 'rgba(212,168,83,0.1)', borderRadius: 6, border: '1px solid #8a6a30' }}>
+        <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, margin: 0 }}>
+          💫 Your Influence Points: <span style={{ color: '#f0c040', fontSize: 18 }}>{currentPlayer.ip ?? 0}</span>
+        </h3>
+      </div>
 
       {aiPlayers.length === 0 ? (
         <div style={{ color: '#555', fontStyle: 'italic' }}>No AI opponents to influence</div>
