@@ -1731,7 +1731,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       </div>
 
       {/* Bottom Menu Bar */}
-      <div className="flex gap-1 border-t border-border flex-shrink-0 overflow-x-auto" style={{ background: 'hsl(35,22%,12%)', padding: '6px', position: 'relative', zIndex: 50, pointerEvents: 'auto' }}>
+      <div className="flex gap-1 border-t border-border flex-shrink-0 overflow-x-auto" style={{ background: 'hsl(35,22%,12%)', padding: '6px', position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999, pointerEvents: 'auto' }}>
         {[
           { id: 'action', icon: '⚔️', label: 'Action' },
           { id: 'build', icon: '🏗️', label: 'Build' },
