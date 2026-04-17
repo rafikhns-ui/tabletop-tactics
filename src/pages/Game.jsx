@@ -1695,6 +1695,16 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           onAcceptTrade={handleAcceptTrade}
           onDeclineTrade={handleDeclineTrade}
           onClose={() => setShowDiplomacyInfluenceModal(false)}
+          onSentimentChange={(fromId, toId, shift) => {
+            setSentiment(prev => {
+              if (!prev) return prev;
+              const newVal = Math.max(0, Math.min(100, (prev[fromId]?.[toId] ?? 50) + shift));
+              return {
+                ...prev,
+                [fromId]: { ...prev[fromId], [toId]: newVal }
+              };
+            });
+          }}
         />
       )}
 

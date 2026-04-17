@@ -1,18 +1,35 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
-export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer, onDiplomacyAction, onInfluenceAction, tradeOffers, onAcceptTrade, onDeclineTrade, onClose }) {
+export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer, onDiplomacyAction, onInfluenceAction, tradeOffers, onAcceptTrade, onDeclineTrade, onClose, onSentimentChange }) {
   const [activeTab, setActiveTab] = useState('diplomacy');
   const [chatWithPlayer, setChatWithPlayer] = useState(null);
   const [chatMessages, setChatMessages] = useState({});
   const [chatInput, setChatInput] = useState('');
   const [aiResponding, setAiResponding] = useState(false);
 
+  const analyzeSentimentShift = (message) => {
+    const positiveWords = ['ally', 'peace', 'friend', 'trade', 'together', 'help', 'support', 'honor', 'respect', 'alliance', 'cooperate', 'benefit', 'prosper', 'grateful', 'pleased'];
+    const negativeWords = ['war', 'enemy', 'hate', 'attack', 'destroy', 'betray', 'insult', 'threaten', 'weak', 'coward', 'fool', 'despise', 'contempt', 'hostile'];
+    
+    const lowerMsg = message.toLowerCase();
+    const posCount = positiveWords.filter(w => lowerMsg.includes(w)).length;
+    const negCount = negativeWords.filter(w => lowerMsg.includes(w)).length;
+    
+    return Math.max(-15, Math.min(15, (posCount - negCount) * 5));
+  };
+
   const handleSendMessage = async (message, selectedPlayer, convKey) => {
     setChatMessages(prev => ({
       ...prev,
       [convKey]: [...(prev[convKey] || []), { from: currentPlayer.id, text: message, isUser: true }]
     }));
+
+    // Apply sentiment shift based on message content
+    const sentimentShift = analyzeSentimentShift(message);
+    if (sentimentShift !== 0 && onSentimentChange) {
+      onSentimentChange(currentPlayer.id, selectedPlayer.id, sentimentShift);
+    }
 
     if (!selectedPlayer.isAI) return;
 
