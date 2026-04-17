@@ -144,7 +144,7 @@ function estimateCombat(attackerUnits, defenderUnits, hasFortress) {
   };
 }
 
-export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit }) {
+export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit, showInfluenceOverlay, sentiment }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -628,6 +628,35 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const pts = flatHexCorners(cx, cy, HEX_PX);
             const ptsInner = flatHexCorners(cx, cy, HEX_PX * 0.92);
 
+            // Calculate influence overlay color if enabled
+            let influenceColor = null;
+            let influenceOpacity = 0;
+            if (showInfluenceOverlay && owner && owner === currentPlayer?.id && sentiment) {
+              // Color neighboring hexes based on sentiment with current player
+              const neighbors = hexNeighborKeys(hex.col, hex.row);
+              neighbors.forEach(([nc, nr]) => {
+                const nHex = hexLookup[`${nc},${nr}`];
+                if (!nHex) return;
+                const nOwner = getOwner(`${nc},${nr}`, normNationId(nHex.nation_id));
+                if (nOwner && nOwner !== currentPlayer.id && nOwner !== owner) {
+                  const neighborPlayer = gameState?.players?.find(p => p.id === nOwner);
+                  if (neighborPlayer) {
+                    const neighborSentiment = sentiment[currentPlayer.id]?.[nOwner] ?? 50;
+                    if (neighborSentiment > 65) {
+                      influenceColor = '#4ade80'; // Green for friendly
+                      influenceOpacity = 0.25;
+                    } else if (neighborSentiment < 35) {
+                      influenceColor = '#ff6b6b'; // Red for hostile
+                      influenceOpacity = 0.25;
+                    } else {
+                      influenceColor = '#fbbf24'; // Amber for neutral
+                      influenceOpacity = 0.15;
+                    }
+                  }
+                }
+              });
+            }
+
             const handleHexMouseEnter = () => {
               if (isAttackable && selectedHex) {
                 const attackerHex = gameState?.hexes?.[selectedHex];
@@ -673,6 +702,11 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                       <polygon points={pts} fill={`url(#${patId})`} fillOpacity={0.55} style={{ pointerEvents: 'none' }} />
                     )}
                   </>
+                )}
+
+                {/* Influence overlay (colored based on sentiment) */}
+                {showInfluenceOverlay && influenceColor && (
+                  <polygon points={pts} fill={influenceColor} fillOpacity={influenceOpacity} style={{ pointerEvents: 'none' }} />
                 )}
 
                 {/* Player ownership overlay */}

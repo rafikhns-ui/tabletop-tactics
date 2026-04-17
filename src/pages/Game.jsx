@@ -117,6 +117,7 @@ export default function Game() {
   const menuAudioRef = useRef(null);
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [showDiplomacyInfluenceModal, setShowDiplomacyInfluenceModal] = useState(false);
+  const [showInfluenceOverlay, setShowInfluenceOverlay] = useState(false);
 
   const toggleMusic = () => {
     const audio = menuAudioRef.current;
@@ -1364,6 +1365,17 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                 }}>
                 {highlightMyTerritories ? '✦ My Territories (ON)' : '◇ My Territories'}
               </button>
+              <button
+                onClick={() => setShowInfluenceOverlay(h => !h)}
+                className="text-xs px-3 py-1 rounded font-bold transition-all"
+                style={{
+                  fontFamily: "'Cinzel',serif",
+                  background: showInfluenceOverlay ? 'rgba(212,168,83,0.2)' : 'hsl(35,20%,22%)',
+                  border: `1px solid ${showInfluenceOverlay ? 'hsl(43,80%,50%)' : 'hsl(35,20%,35%)'}`,
+                  color: showInfluenceOverlay ? 'hsl(43,90%,70%)' : 'hsl(40,20%,65%)',
+                }}>
+                {showInfluenceOverlay ? '📊 Influence Map (ON)' : '📊 Influence Map'}
+              </button>
               <span className="text-xs" style={{ color: 'hsl(40,20%,50%)' }}>
                 {gameState.territories && currentPlayer ? 
                   `${Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id).length} territories owned` : ''}
@@ -1396,6 +1408,8 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               })() : null}
               onZoomChange={setMapZoomTransform}
               onSelectPanelUnit={handlePanelUnitSelect}
+              showInfluenceOverlay={showInfluenceOverlay}
+              sentiment={sentiment}
             />
             {mapZoomTransform && (
               <MiniMap
