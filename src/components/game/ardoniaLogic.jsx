@@ -799,11 +799,12 @@ export const getAiTurnSteps = (gameState) => {
     const currentAi = getAI();
     const hasBarracks = !!currentAi.buildings?.barracks;
     const hasStables = !!currentAi.buildings?.stables;
-    // Candidates: always try infantry (available with mine/farm), cavalry if stables
-    const recruitCandidates = [];
-    if (hasBarracks) recruitCandidates.push('infantry', 'infantry', 'elite');
-    else recruitCandidates.push('infantry', 'infantry'); // infantry only needs gold+wheat
+    // Infantry is always recruitable (basic unit, no building required for AI)
+    // Cavalry needs stables, elite needs barracks
+    const recruitCandidates = ['infantry', 'infantry'];
+    if (hasBarracks) recruitCandidates.push('infantry'); // extra infantry with barracks
     if (hasStables) recruitCandidates.push('cavalry');
+    if (hasBarracks && currentAi.resources?.gold >= 5) recruitCandidates.push('elite');
 
     const recruits = [];
     for (const unitId of recruitCandidates) {
@@ -829,24 +830,29 @@ export const getAiTurnSteps = (gameState) => {
 
   // ── STEP 4: Deploy all pending units to best frontline hex ──
   {
-    const pendingUnits = getAI().pendingUnits || [];
+    const currentAiForDeploy = getAI();
+    const pendingUnits = currentAiForDeploy.pendingUnits || [];
     if (pendingUnits.length > 0) {
+      // Collect all hexes owned by this AI player
+      const ownedHexEntries = Object.entries(state.hexes).filter(([, h]) => h.owner === currentAiForDeploy.id);
+
       let bestHex = null, bestScore = -1;
-      Object.entries(state.hexes).forEach(([hexId, h]) => {
-        if (h.owner !== ai.id) return;
+      ownedHexEntries.forEach(([hexId, h]) => {
         const neighbors = getHexNeighborIds(hexId);
         const enemyNeighbors = neighbors.filter(nid => {
           const nh = state.hexes[nid];
-          return nh && nh.owner && nh.owner !== ai.id;
+          return nh && nh.owner && nh.owner !== currentAiForDeploy.id;
         }).length;
-        // also score by total units already there (reinforce strong positions)
         const unitCount = (h.units || []).reduce((s, u) => s + u.count, 0);
         const score = enemyNeighbors * 3 + unitCount;
         if (score > bestScore) { bestScore = score; bestHex = hexId; }
       });
-      if (!bestHex) {
-        bestHex = Object.keys(state.hexes).find(id => state.hexes[id].owner === ai.id);
+
+      // Fallback: just pick any owned hex
+      if (!bestHex && ownedHexEntries.length > 0) {
+        bestHex = ownedHexEntries[0][0];
       }
+
       if (bestHex) {
         let newHexes = { ...state.hexes };
         const unitsToPlace = [...pendingUnits];
@@ -856,7 +862,7 @@ export const getAiTurnSteps = (gameState) => {
           const existing = hexUnits.find(u => u.type === unitId);
           if (existing) existing.count += 1;
           else hexUnits.push({ type: unitId, count: 1 });
-          newHexes[bestHex] = { ...hex, units: hexUnits, owner: ai.id };
+          newHexes[bestHex] = { ...hex, units: hexUnits, owner: currentAiForDeploy.id };
         });
         state = { ...state, hexes: newHexes, players: state.players.map((p, i) => i === aiIndex ? { ...p, pendingUnits: [] } : p) };
         pushStep(`🚩 ${ai.name} deployed ${unitsToPlace.length} unit(s) to the frontline`);
