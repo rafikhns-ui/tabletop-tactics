@@ -995,6 +995,69 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     addLog('card', `Played card: ${card.name}`, card.effect, 'Action');
   };
 
+  // AI evaluates relationships and takes proactive diplomacy actions
+  const generateAiDiplomacyActions = useCallback((aiPlayer, gameStateSnap) => {
+    if (!gameStateSnap || !sentiment) return [];
+    const actions = [];
+    const aiPersonality = NATION_PERSONALITIES[aiPlayer.factionId];
+    if (!aiPersonality) return actions;
+
+    // Evaluate each other player
+    gameStateSnap.players.forEach(targetPlayer => {
+      if (targetPlayer.id === aiPlayer.id || !targetPlayer.isAI) return; // Skip self and human players
+
+      const currentSentiment = sentiment[aiPlayer.id]?.[targetPlayer.id] ?? 50;
+      const targetObjectives = targetPlayer.objectives || [];
+      const hasConflictingObjective = targetObjectives.some(o => 
+        o.category === 'Military' && (aiPlayer.objectives || []).some(ao => ao.category === 'Military')
+      );
+
+      // Declare war if very hostile AND personality is aggressive OR conflicting objectives
+      if ((currentSentiment < 25 && aiPersonality.warTendency > 60) || (currentSentiment < 20 && hasConflictingObjective)) {
+        actions.push({
+          type: 'diplomacy',
+          action: { type: 'war', fromId: aiPlayer.id, toId: targetPlayer.id },
+          message: `⚔️ ${aiPlayer.name} declares war on ${targetPlayer.name}!`,
+        });
+      }
+      // Propose alliance if very friendly AND personality is cooperative
+      else if (currentSentiment > 75 && aiPersonality.allianceTendency > 60) {
+        actions.push({
+          type: 'diplomacy',
+          action: { type: 'alliance', fromId: aiPlayer.id, toId: targetPlayer.id },
+          message: `🕊️ ${aiPlayer.name} proposes alliance with ${targetPlayer.name}!`,
+        });
+      }
+      // Propose peace if moderate hostility
+      else if (currentSentiment >= 35 && currentSentiment <= 65 && !gameStateSnap.diplomacy?.[[aiPlayer.id, targetPlayer.id].sort().join('|')]) {
+        actions.push({
+          type: 'diplomacy',
+          action: { type: 'neutral', fromId: aiPlayer.id, toId: targetPlayer.id },
+          message: `🤝 ${aiPlayer.name} proposes peace with ${targetPlayer.name}.`,
+        });
+      }
+      // Initiate trade if favorable AND both have resources
+      else if (currentSentiment > 50 && aiPlayer.resources?.gold > 5 && targetPlayer.resources?.gold > 5) {
+        const hasMarket = aiPlayer.buildings?.market;
+        if (hasMarket) {
+          actions.push({
+            type: 'diplomacy',
+            action: {
+              type: 'trade_offer',
+              fromId: aiPlayer.id,
+              toId: targetPlayer.id,
+              offer: { gold: 3, wood: 1 },
+              request: { gold: 2, wheat: 2 },
+            },
+            message: `📜 ${aiPlayer.name} proposes trade with ${targetPlayer.name}.`,
+          });
+        }
+      }
+    });
+
+    return actions;
+  }, [sentiment]);
+
   const handleDiplomacyAction = ({ type, fromId, toId, offer, request }) => {
     const from = gameState.players.find(p => p.id === fromId);
     const to = gameState.players.find(p => p.id === toId);
@@ -1289,7 +1352,30 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     const schedule = (fn, delay) => { const t = setTimeout(fn, delay); timeouts.push(t); return t; };
 
     schedule(() => {
+      // Generate proactive diplomacy actions first
+      const diplomacyActions = generateAiDiplomacyActions(cp, gameState);
       const steps = getAiTurnSteps(gameState);
+      
+      // Insert diplomacy steps at the beginning
+      const allSteps = [
+        ...diplomacyActions.map(action => ({
+          type: 'diplomacy',
+          state: gameState,
+          message: action.message,
+          action: action.action,
+        })),
+        ...steps
+      ];
+
+      if (allSteps.length === 0) {
+        const nextIndex = (gameState.currentPlayerIndex + 1) % (gameState.players?.length || 1);
+        const nextState = collectIncome({ ...gameState, currentPlayerIndex: nextIndex, turn: gameState.turn + (nextIndex === 0 ? 1 : 0) });
+        setGameState(checkObjectives(nextState));
+        setPhase('deploy');
+        addMessage(`🌟 ${cp.name} ended their turn`);
+        isAiRunningRef.current = false;
+        return;
+      }
 
       const endAiTurn = (finalState) => {
         try {
@@ -1317,8 +1403,13 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         return;
       }
 
-      steps.forEach((step, i) => {
+      allSteps.forEach((step, i) => {
         schedule(() => {
+          // Handle diplomacy action execution
+          if (step.type === 'diplomacy' && step.action) {
+            handleDiplomacyAction(step.action);
+          }
+          
           setGameState(checkObjectives(step.state));
           if (step.message) {
             addMessage(step.message);
@@ -1340,12 +1431,12 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               : step.message.startsWith('🏗️') || step.message.startsWith('⬆️') ? 'build'
               : step.message.startsWith('🎖️') ? 'recruit'
               : step.message.startsWith('🚩') || step.message.startsWith('🚶') ? 'move'
-              : step.message.startsWith('📜') ? 'diplomacy'
+              : step.message.startsWith('📜') || step.message.startsWith('🕊️') || step.message.startsWith('🤝') ? 'diplomacy'
               : step.message.startsWith('🃏') ? 'card'
               : 'default';
             setTurnLog(prev => [...prev, { type: logType, text: step.message, detail: null, phase: 'AI Turn', playerName: cp.name, playerColor: cp.color }]);
           }
-          if (i === steps.length - 1) {
+          if (i === allSteps.length - 1) {
             schedule(() => endAiTurn(step.state), 600);
           }
         }, i * 700);
