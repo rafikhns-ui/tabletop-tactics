@@ -67,7 +67,7 @@ function computeReachableHexes(fromHexId, speed) {
 }
 import BuildRecruitPanel from '../components/game/BuildRecruitPanel';
 import RecruitPanel from '../components/game/RecruitPanel';
-import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, AVATARS } from '../components/game/ardoniaData';
+import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, AVATARS, ACTION_CARDS } from '../components/game/ardoniaData';
 import AvatarPanel from '../components/game/AvatarPanel';
 import AiSetupModal from '../components/game/AiSetupModal';
 import AdvisorPanel from '../components/game/AdvisorPanel';
@@ -77,6 +77,7 @@ import TurnLog from '../components/game/TurnLog';
 import MiniMap from '../components/game/MiniMap';
 import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar, initializeSentiment, decaySentiment, applyEventSentiment, executeInfluenceAction, tickInfluenceModifiers, getSentimentLabel } from '../components/game/aiPersonalities';
 import DiplomacyInfluencePanel from '../components/game/DiplomacyInfluencePanel';
+import CardPlayOverlay from '../components/game/CardPlayOverlay';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
@@ -110,6 +111,7 @@ export default function Game() {
   const hexMapRef = useRef(null);
   const [mapZoomTransform, setMapZoomTransform] = useState(null);
   const isAiRunningRef = useRef(false);
+  const [cardPlayAnnouncement, setCardPlayAnnouncement] = useState(null); // { card, playerName, playerColor }
 
   // Initialize provinces on game start
   useEffect(() => {
@@ -873,6 +875,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       const newPlayer = { ...player, resources: newResources, ip: newIp, sp: newSp, actionCards: newCards, cardEffects };
       return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
     });
+    setCardPlayAnnouncement({ card, playerName: currentPlayer.name, playerColor: currentPlayer.color });
     addMessage(`🃏 Played ${card.name}: ${card.effect}`);
     addLog('card', `Played card: ${card.name}`, card.effect, 'Action');
   };
@@ -1086,6 +1089,19 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           setGameState(checkObjectives(step.state));
           if (step.message) {
             addMessage(step.message);
+            // Show card play overlay for AI card plays
+            if (step.type === 'card' || step.message.startsWith('🃏')) {
+              const aiCardMsg = step.message;
+              const found = ACTION_CARDS.find(c =>
+                aiCardMsg.toLowerCase().includes(c.name?.toLowerCase()) ||
+                aiCardMsg.includes(c.id?.replace(/_/g, ' '))
+              );
+              setCardPlayAnnouncement({
+                card: found || { name: 'Action Card', emoji: '🃏', effect: aiCardMsg, category: 'Military' },
+                playerName: cp.name,
+                playerColor: cp.color,
+              });
+            }
             // Map step type to log entry type
             const logType = step.message.startsWith('⚔️') ? 'attack'
               : step.message.startsWith('🏗️') || step.message.startsWith('⬆️') ? 'build'
@@ -1449,6 +1465,14 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           }}
         />
       )}
+
+      {/* Card play cinematic overlay */}
+      <CardPlayOverlay
+        playedCard={cardPlayAnnouncement?.card}
+        playerName={cardPlayAnnouncement?.playerName}
+        playerColor={cardPlayAnnouncement?.playerColor}
+        onDone={() => setCardPlayAnnouncement(null)}
+      />
     </div>
   );
 }
