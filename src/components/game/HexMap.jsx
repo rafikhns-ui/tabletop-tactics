@@ -102,7 +102,40 @@ function hexNeighborKeys(gc, gr) {
 }
 
 // ══════ COMPONENT ══════
-export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, highlightPlayerId, reachableHexes, onZoomChange, onSelectPanelUnit }) {
+// Quick combat estimate: returns { winChance, attackerLosses, defenderLosses }
+function estimateCombat(attackerUnits, defenderUnits, hasFortress) {
+  if (!attackerUnits?.length || !defenderUnits?.length) return null;
+  const atkCount = attackerUnits.reduce((s, u) => s + u.count, 0);
+  const defCount = defenderUnits.reduce((s, u) => s + u.count, 0);
+  const atkDice = Math.min(3, Math.max(1, atkCount - 1));
+  const defDice = Math.min(2, defCount);
+  // Monte Carlo — 200 simulations
+  let wins = 0, totalAtkLoss = 0, totalDefLoss = 0;
+  const SIMS = 200;
+  for (let s = 0; s < SIMS; s++) {
+    let a = atkCount, d = defCount;
+    let aLoss = 0, dLoss = 0;
+    for (let r = 0; r < 3 && a > 1 && d > 0; r++) {
+      const aRolls = Array.from({length: Math.min(3, a-1)}, () => Math.floor(Math.random()*6)+1).sort((x,y)=>y-x);
+      const dRolls = Array.from({length: Math.min(2, d)}, () => Math.floor(Math.random()*6)+(hasFortress?4:1)).sort((x,y)=>y-x);
+      const pairs = Math.min(aRolls.length, dRolls.length);
+      for (let p = 0; p < pairs; p++) {
+        if (aRolls[p] > dRolls[p]) { d--; dLoss++; } else { a--; aLoss++; }
+      }
+    }
+    if (d <= 0) wins++;
+    totalAtkLoss += aLoss;
+    totalDefLoss += dLoss;
+  }
+  return {
+    winChance: Math.round((wins / SIMS) * 100),
+    attackerLosses: (totalAtkLoss / SIMS).toFixed(1),
+    defenderLosses: (totalDefLoss / SIMS).toFixed(1),
+    atkCount, defCount,
+  };
+}
+
+export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -110,6 +143,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
   const [hoveredBorder, setHoveredBorder] = useState(null);
   const [tooltipPos, setTooltipPos] = useState(null);
   const [selectedPanelUnits, setSelectedPanelUnits] = useState(new Set()); // Set of unit type indices
+  const [combatTooltip, setCombatTooltip] = useState(null); // { hexId, svgX, svgY, estimate }
 
   const SVG_W = 1200;
   const SVG_H = 900;
@@ -486,6 +520,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const nationColor = hex.nation_id ? (NATION_COLORS[hex.nation_id] || '#666') : null;
             const isMyHighlighted = highlightPlayerId && owner === highlightPlayerId;
             const isReachable = reachableHexes && reachableHexes.has(hexId);
+            const isAttackable = attackableHexes && attackableHexes.has(hexId);
             const isInSelectedProvince = selectedProvince && hex.nation_id === selectedProvince.nation_id && hex.province === selectedProvince.province_id;
             const highlightMode = !!highlightPlayerId;
             const dimmed = highlightMode && !isMyHighlighted;
@@ -500,15 +535,33 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const pts = flatHexCorners(cx, cy, HEX_PX);
             const ptsInner = flatHexCorners(cx, cy, HEX_PX * 0.92);
 
+            const handleHexMouseEnter = () => {
+              if (isAttackable && selectedHex) {
+                const attackerHex = gameState?.hexes?.[selectedHex];
+                const defenderHexData = gameState?.hexes?.[hexId];
+                const attackerUnits = attackerHex?.units?.length ? attackerHex.units : [{ type: 'infantry', count: attackerHex?.units?.reduce((s,u)=>s+u.count,0) || 1 }];
+                const defenderUnits = defenderHexData?.units?.length ? defenderHexData.units : [{ type: 'infantry', count: defenderHexData?.units?.reduce((s,u)=>s+u.count,0) || 1 }];
+                const estimate = estimateCombat(attackerUnits, defenderUnits, defenderHexData?.buildings?.fortress);
+                setCombatTooltip({ hexId, svgX: cx, svgY: cy - HEX_PX * 1.4, estimate });
+              }
+            };
+            const handleHexMouseLeave = () => {
+              if (combatTooltip?.hexId === hexId) setCombatTooltip(null);
+            };
+
             return (
-              <g key={hexId} onClick={() => {
-                if (!isWater) {
-                  handleHexClick(hex);
-                  if (hex.nation_id && hex.province && onProvincClick) {
-                    onProvincClick({ nation_id: hex.nation_id, province_id: hex.province });
+              <g key={hexId}
+                onClick={() => {
+                  if (!isWater) {
+                    handleHexClick(hex);
+                    if (hex.nation_id && hex.province && onProvincClick) {
+                      onProvincClick({ nation_id: hex.nation_id, province_id: hex.province });
+                    }
                   }
-                }
-              }} style={{ cursor: isWater ? 'default' : 'pointer' }}>
+                }}
+                onMouseEnter={handleHexMouseEnter}
+                onMouseLeave={handleHexMouseLeave}
+                style={{ cursor: isWater ? 'default' : 'pointer' }}>
 
                 {/* Base: water animated or terrain gradient */}
                 {isWater ? (
@@ -517,10 +570,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   <>
                     {/* Elevation gradient base */}
                     <polygon points={pts}
-                      fill={isSelected ? '#d4a853' : isInSelectedProvince ? '#9370db' : isReachable ? '#4a9e6a' : isMyHighlighted ? playerColor : (elevGradId ? `url(#${elevGradId})` : fillColor)}
-                      fillOpacity={isSelected ? 0.9 : isInSelectedProvince ? 0.65 : isReachable ? 0.6 : dimmed ? 0.15 : 0.85}
-                      stroke={isReachable ? '#6dffaa' : isInSelectedProvince ? '#9370db' : isMyHighlighted ? playerColor : '#00000030'}
-                      strokeWidth={isReachable ? 2 : isInSelectedProvince ? 2.5 : isMyHighlighted ? 3 : 0.5}
+                      fill={isSelected ? '#d4a853' : isAttackable ? '#c0392b' : isInSelectedProvince ? '#9370db' : isReachable ? '#4a9e6a' : isMyHighlighted ? playerColor : (elevGradId ? `url(#${elevGradId})` : fillColor)}
+                      fillOpacity={isSelected ? 0.9 : isAttackable ? 0.55 : isInSelectedProvince ? 0.65 : isReachable ? 0.6 : dimmed ? 0.15 : 0.85}
+                      stroke={isAttackable ? '#ff4444' : isReachable ? '#6dffaa' : isInSelectedProvince ? '#9370db' : isMyHighlighted ? playerColor : '#00000030'}
+                      strokeWidth={isAttackable ? 2.5 : isReachable ? 2 : isInSelectedProvince ? 2.5 : isMyHighlighted ? 3 : 0.5}
                     />
                     {/* Texture pattern overlay */}
                     {patId && !isSelected && !isInSelectedProvince && !isReachable && !dimmed && (
@@ -652,6 +705,46 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
               </text>
             </g>
           )}
+
+          {/* ── Attackable hex pulse rings ── */}
+          {attackableHexes && [...attackableHexes].map(hexId => {
+            const hd = hexLookup[hexId];
+            if (!hd) return null;
+            const { cx, cy } = toSVG(hd.x, hd.y);
+            return (
+              <polygon key={`ap-${hexId}`}
+                points={flatHexCorners(cx, cy, HEX_PX * 1.08)}
+                fill="none" stroke="#ff4444" strokeWidth={2} strokeOpacity={0.7}
+                strokeDasharray="5,3"
+                style={{ pointerEvents: 'none' }}>
+                <animate attributeName="stroke-dashoffset" from="0" to="16" dur="0.8s" repeatCount="indefinite" />
+                <animate attributeName="strokeOpacity" values="0.4;0.9;0.4" dur="1s" repeatCount="indefinite" />
+              </polygon>
+            );
+          })}
+
+          {/* ── Combat preview tooltip ── */}
+          {combatTooltip?.estimate && (() => {
+            const { svgX, svgY, estimate } = combatTooltip;
+            const w = 140, h = 80, pad = 8;
+            const x = svgX - w / 2;
+            const y = svgY - h;
+            const winColor = estimate.winChance >= 60 ? '#4ade80' : estimate.winChance >= 40 ? '#facc15' : '#f87171';
+            return (
+              <g style={{ pointerEvents: 'none' }}>
+                <rect x={x} y={y} width={w} height={h} rx={4} fill="#0d1117" fillOpacity={0.95} stroke="#d4a853" strokeWidth={1.5} />
+                <text x={svgX} y={y + pad + 10} textAnchor="middle" fontSize={9} fill="#d4a853" fontFamily="'Cinzel',serif" fontWeight="700">COMBAT ESTIMATE</text>
+                <text x={svgX} y={y + pad + 26} textAnchor="middle" fontSize={14} fill={winColor} fontFamily="'Cinzel',serif" fontWeight="900">{estimate.winChance}% WIN</text>
+                <text x={svgX} y={y + pad + 42} textAnchor="middle" fontSize={8} fill="#aaa">
+                  {`Atk: ${estimate.atkCount} units  vs  Def: ${estimate.defCount} units`}
+                </text>
+                <text x={svgX} y={y + pad + 56} textAnchor="middle" fontSize={8} fill="#f87171">
+                  {`Est. losses: A -${estimate.attackerLosses}  /  D -${estimate.defenderLosses}`}
+                </text>
+                <polygon points={`${svgX - 6},${y + h} ${svgX + 6},${y + h} ${svgX},${y + h + 8}`} fill="#d4a853" />
+              </g>
+            );
+          })()}
 
           {/* ── Unit movement animations ── */}
           {movingUnits.map(anim => {

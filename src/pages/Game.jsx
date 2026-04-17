@@ -1196,6 +1196,18 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               movementState={movementState}
               highlightPlayerId={highlightedPlayerId || (highlightMyTerritories ? currentPlayer?.id : null)}
               reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
+              attackableHexes={phase === 'attack' && selectedTerritory ? (() => {
+                const attackerHex = gameState.hexes[selectedTerritory];
+                if (!attackerHex) return null;
+                const reachable = computeReachableHexes(selectedTerritory, 1);
+                const attackable = new Set();
+                reachable.forEach((_, nId) => {
+                  const nh = gameState.hexes[nId];
+                  const nhOwner = nh?.owner || null;
+                  if (nhOwner && nhOwner !== currentPlayer.id) attackable.add(nId);
+                });
+                return attackable;
+              })() : null}
               onZoomChange={setMapZoomTransform}
               onSelectPanelUnit={handlePanelUnitSelect}
             />
