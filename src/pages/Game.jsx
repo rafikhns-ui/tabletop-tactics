@@ -1731,7 +1731,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       </div>
 
       {/* Bottom Menu Bar */}
-      <div className="flex gap-1 border-t border-border flex-shrink-0 overflow-x-auto" style={{ background: 'hsl(35,22%,12%)', padding: '6px' }}>
+      <div className="flex gap-1 border-t border-border flex-shrink-0 overflow-x-auto" style={{ background: 'hsl(35,22%,12%)', padding: '6px', position: 'relative', zIndex: 50, pointerEvents: 'auto' }}>
         {[
           { id: 'action', icon: '⚔️', label: 'Action' },
           { id: 'build', icon: '🏗️', label: 'Build' },
@@ -1744,7 +1744,9 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy & Influence' },
           { id: 'unifiedlog', icon: '📋', label: 'Logs' },
         ].map(t => (
-          <button key={t.id} onClick={() => {
+          <button key={t.id} onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             if (t.id === 'diplomacy-influence') setShowDiplomacyInfluenceModal(true);
             else if (t.id === 'silver-union') setShowSilverUnionMenu(true);
             else setOpenModal(t.id);
