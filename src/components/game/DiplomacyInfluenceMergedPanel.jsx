@@ -291,7 +291,7 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
         )}
       </div>
 
-      {/* Chat with Players */}
+      {/* Chat with Players (including AI) */}
       {otherPlayers.length > 0 && (
         <div style={{ marginTop: 24, paddingTop: 12, borderTop: '1px solid #2a2520' }}>
           <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
@@ -383,27 +383,7 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
         })
       )}
 
-      {/* Chat with AI */}
-      {aiPlayers.length > 0 && (
-        <div style={{ marginTop: 24, paddingTop: 12, borderTop: '1px solid #2a2520' }}>
-          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
-            💬 Influence Chat
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
-            {aiPlayers.map(player => (
-              <button key={player.id}
-                style={{
-                  padding: '12px', background: 'rgba(100,100,100,0.1)', border: '1px solid #2a2520',
-                  color: '#c8c0b0', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                  textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4,
-                }}>
-                <span><span style={{ color: player.color }}>●</span> {player.name}</span>
-                <span style={{ fontSize: 10, color: '#888' }}>🤖 AI - Influence: {player.influenceLevel ?? 0}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
