@@ -113,6 +113,20 @@ export default function Game() {
   const [mapZoomTransform, setMapZoomTransform] = useState(null);
   const isAiRunningRef = useRef(false);
   const [cardPlayAnnouncement, setCardPlayAnnouncement] = useState(null); // { card, playerName, playerColor }
+  const menuAudioRef = useRef(null);
+
+  // Play menu music when not in-game, stop when game starts
+  useEffect(() => {
+    const audio = menuAudioRef.current;
+    if (!audio) return;
+    if (!gameMode) {
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }, [gameMode]);
 
   // Initialize provinces on game start
   useEffect(() => {
@@ -1220,40 +1234,42 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     };
   }, [gameState?.currentPlayerIndex, gameState?.turn, gameMode, winner]);
 
+  const menuAudio = <audio ref={menuAudioRef} src="https://drive.google.com/uc?export=download&id=1DhnA4TinThSDIRFfqOKAuv5ZxHIJxgKQ" loop style={{ display: 'none' }} />;
+
   if (onlineSession) return <OnlineGame session={onlineSession} onLeave={() => { setOnlineSession(null); setShowLobby(false); }} />;
-  if (showLobby) return <Lobby onStartOnline={(s) => setOnlineSession(s)} onBack={() => setShowLobby(false)} />;
-  if (showAiSetup) return <AiSetupModal onStart={handleAiSetupComplete} onBack={() => { setShowAiSetup(false); setPendingMode(null); setGameStartMode(null); }} />;
-  if (!gameMode && !pendingMode) return <GameMenu onStart={handleMenuStart} onOnline={() => setShowLobby(true)} />;
+  if (showLobby) return <>{menuAudio}<Lobby onStartOnline={(s) => setOnlineSession(s)} onBack={() => setShowLobby(false)} /></>;
+  if (showAiSetup) return <>{menuAudio}<AiSetupModal onStart={handleAiSetupComplete} onBack={() => { setShowAiSetup(false); setPendingMode(null); setGameStartMode(null); }} /></>;
+  if (!gameMode && !pendingMode) return <>{menuAudio}<GameMenu onStart={handleMenuStart} onOnline={() => setShowLobby(true)} /></>;
   
   if (pendingMode && setupStep === 'faction') {
     return (
-      <FactionSelectStep
+      <>{menuAudio}<FactionSelectStep
         mode={pendingMode.mode}
         playerCount={pendingMode.playerCount}
         setupPlayers={setupPlayers}
         onNext={handleFactionSelectComplete}
         onBack={() => { setPendingMode(null); setSetupStep(null); setShowAiSetup(false); setSetupPlayers(null); }}
-      />
+      /></>
     );
   }
 
   if (setupStep === 'objectives' && setupPlayers) {
     return (
-      <ObjectivesStep
+      <>{menuAudio}<ObjectivesStep
         players={setupPlayers}
         onNext={handleObjectivesComplete}
         onBack={() => setSetupStep('faction')}
-      />
+      /></>
     );
   }
 
   if (setupStep === 'leader' && setupPlayers) {
     return (
-      <LeaderSelectStep
+      <>{menuAudio}<LeaderSelectStep
         players={setupPlayers}
         onConfirm={handleLeaderSelectComplete}
         onBack={() => setSetupStep('objectives')}
-      />
+      /></>
     );
   }
 
