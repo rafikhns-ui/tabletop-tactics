@@ -92,8 +92,8 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
 
   return (
     <div style={{ color: '#c8c0b0', fontSize: 13 }}>
-      {/* Trade Section - only with human players */}
-      {humanPlayers.length > 0 && (
+      {/* Trade Section */}
+      {otherPlayers.length > 0 && (
         <div style={{ marginBottom: 24 }}>
           {/* Incoming Trade Offers */}
           {incomingOffers.length > 0 && (
