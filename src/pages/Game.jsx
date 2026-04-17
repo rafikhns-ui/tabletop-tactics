@@ -77,6 +77,7 @@ import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDecl
 import DiplomacyInfluencePanel from '../components/game/DiplomacyInfluencePanel';
 import DiplomacyInfluenceMergedPanel from '../components/game/DiplomacyInfluenceMergedPanel';
 import CardPlayOverlay from '../components/game/CardPlayOverlay';
+import MarketPanel from '../components/game/MarketPanel';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
@@ -112,11 +113,12 @@ export default function Game() {
   const [mapZoomTransform, setMapZoomTransform] = useState(null);
   const isAiRunningRef = useRef(false);
   const [cardPlayAnnouncement, setCardPlayAnnouncement] = useState(null); // { card, playerName, playerColor }
+  const [marketOrders, setMarketOrders] = useState([]);
   const menuAudioRef = useRef(null);
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [showDiplomacyInfluenceModal, setShowDiplomacyInfluenceModal] = useState(false);
   const [showInfluenceOverlay, setShowInfluenceOverlay] = useState(false);
-  const [openModal, setOpenModal] = useState(null); // 'action' | 'build' | 'recruit' | 'heroes' | 'avatars' | 'effects' | 'unifiedlog' | 'advisor' | null
+  const [openModal, setOpenModal] = useState(null); // 'action' | 'build' | 'recruit' | 'heroes' | 'avatars' | 'effects' | 'unifiedlog' | 'advisor' | 'market' | null
 
   const toggleMusic = () => {
     const audio = menuAudioRef.current;
@@ -156,6 +158,102 @@ export default function Game() {
 
   const addLog = (type, text, detail, phase, playerName) => {
     setTurnLog(prev => [...prev, { type, text, detail, phase, playerName: playerName || currentPlayer?.name, playerColor: currentPlayer?.color, turn: null }]);
+  };
+
+  // Market operations
+  const handlePlaceMarketOrder = (order) => {
+    const orderId = Date.now();
+    setMarketOrders(prev => [...prev, { ...order, id: orderId, completed: false }]);
+    
+    if (order.type === 'buy') {
+      setGameState(prev => ({
+        ...prev,
+        players: prev.players.map(p => p.id === currentPlayer.id 
+          ? { ...p, resources: { ...p.resources, gold: (p.resources.gold || 0) - (order.quantity * order.price) } }
+          : p
+        ),
+      }));
+      addMessage(`📥 Buy order placed: ${order.quantity}x ${order.resource} @ ${order.price.toFixed(2)} each`);
+    } else {
+      setGameState(prev => ({
+        ...prev,
+        players: prev.players.map(p => p.id === currentPlayer.id 
+          ? { ...p, resources: { ...p.resources, [order.resource]: (p.resources[order.resource] || 0) - order.quantity } }
+          : p
+        ),
+      }));
+      addMessage(`📤 Sell order placed: ${order.quantity}x ${order.resource} @ ${order.price.toFixed(2)} each`);
+    }
+  };
+
+  const handleCancelMarketOrder = (orderId) => {
+    const order = marketOrders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    setMarketOrders(prev => prev.filter(o => o.id !== orderId));
+    
+    if (order.type === 'buy') {
+      setGameState(prev => ({
+        ...prev,
+        players: prev.players.map(p => p.id === order.playerId 
+          ? { ...p, resources: { ...p.resources, gold: (p.resources.gold || 0) + (order.quantity * order.price) } }
+          : p
+        ),
+      }));
+    } else {
+      setGameState(prev => ({
+        ...prev,
+        players: prev.players.map(p => p.id === order.playerId 
+          ? { ...p, resources: { ...p.resources, [order.resource]: (p.resources[order.resource] || 0) + order.quantity } }
+          : p
+        ),
+      }));
+    }
+    addMessage(`❌ Order cancelled`);
+  };
+
+  const handleExecuteMarketOrder = (orderId) => {
+    const order = marketOrders.find(o => o.id === orderId);
+    if (!order || order.type !== 'sell' || order.playerId === currentPlayer.id) return;
+    
+    const seller = gameState.players.find(p => p.id === order.playerId);
+    const totalCost = order.quantity * order.price;
+    
+    if ((currentPlayer.resources?.gold || 0) < totalCost) {
+      addMessage(`⛔ Insufficient gold to execute order`);
+      return;
+    }
+    
+    setMarketOrders(prev => prev.map(o => o.id === orderId ? { ...o, completed: true } : o));
+    
+    setGameState(prev => ({
+      ...prev,
+      players: prev.players.map(p => {
+        if (p.id === currentPlayer.id) {
+          return {
+            ...p,
+            resources: {
+              ...p.resources,
+              gold: (p.resources.gold || 0) - totalCost,
+              [order.resource]: (p.resources[order.resource] || 0) + order.quantity,
+            }
+          };
+        }
+        if (p.id === order.playerId) {
+          return {
+            ...p,
+            resources: {
+              ...p.resources,
+              gold: (p.resources.gold || 0) + totalCost,
+              [order.resource]: (p.resources[order.resource] || 0) - order.quantity,
+            }
+          };
+        }
+        return p;
+      }),
+    }));
+    
+    addMessage(`✅ Purchased ${order.quantity}x ${order.resource} from ${seller?.name}!`);
   };
 
   // Called from GameMenu — go to AI setup or faction select
@@ -1642,6 +1740,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           { id: 'heroes', icon: '⭐', label: 'Heroes' },
           { id: 'avatars', icon: '👹', label: 'Avatars' },
           { id: 'effects', icon: '📊', label: 'Effects' },
+          { id: 'market', icon: '💹', label: 'Market' },
           { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy & Influence' },
           { id: 'unifiedlog', icon: '📋', label: 'Logs' },
         ].map(t => (
@@ -1753,13 +1852,14 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               fontFamily: "'Cinzel', serif",
             }}>
               <h2 style={{ color: 'hsl(43,80%,60%)', fontSize: 18, fontWeight: 700, margin: 0 }}>
-                {openModal === 'action' && '⚔️ Action'}
-                {openModal === 'build' && '🏗️ Build'}
-                {openModal === 'recruit' && '⚔️ Recruit'}
-                {openModal === 'heroes' && '⭐ Heroes'}
-                {openModal === 'avatars' && '👹 Avatars'}
-                {openModal === 'effects' && '📊 Effects'}
-                {openModal === 'unifiedlog' && '📋 Logs'}
+               {openModal === 'action' && '⚔️ Action'}
+               {openModal === 'build' && '🏗️ Build'}
+               {openModal === 'recruit' && '⚔️ Recruit'}
+               {openModal === 'heroes' && '⭐ Heroes'}
+               {openModal === 'avatars' && '👹 Avatars'}
+               {openModal === 'effects' && '📊 Effects'}
+               {openModal === 'market' && '💹 Market'}
+               {openModal === 'unifiedlog' && '📋 Logs'}
               </h2>
               <button onClick={() => setOpenModal(null)} style={{
                 background: 'none', border: 'none', color: 'hsl(43,80%,60%)', fontSize: 24,
@@ -1842,6 +1942,15 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                   battleEntries={battleLog}
                   diplomaticEvents={gameState.diplomaticEvents || []}
                   currentTurn={gameState?.turn}
+                />
+              )}
+              {openModal === 'market' && gameState && currentPlayer && (
+                <MarketPanel
+                  currentPlayer={currentPlayer}
+                  gameState={{ ...gameState, marketOrders }}
+                  onPlaceOrder={handlePlaceMarketOrder}
+                  onCancelOrder={handleCancelMarketOrder}
+                  onExecuteOrder={handleExecuteMarketOrder}
                 />
               )}
             </div>
