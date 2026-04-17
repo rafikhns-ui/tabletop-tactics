@@ -1,36 +1,65 @@
 // ============================================================
 // HEX WORLD GENERATOR - JSON Map Data
 // ============================================================
-// Uses a fixed map definition from JSON (col/row grid)
-// converted to axial (q, r) hex coordinates.
+// Reads directly from ardonia_game_map.json so hex IDs match
+// the HexMap renderer perfectly.
 
-import { HexUtils } from './hexGridSystem';
+import mapData from './ardonia_game_map.json';
 
-// Offset hex: col/row -> axial q/r
-// Using "odd-r" offset: q = col - (row - (row & 1)) / 2, r = row
-const offsetToAxial = (col, row) => {
-  const q = col - Math.floor((row - (row & 1)) / 2);
-  const r = row;
-  return { q, r };
+// ---- FACTION_TO_NATION_ID alignment ----
+// Nation ID remapping: the JSON uses nation_id values like 'gojeon',
+// 'ilalocatotlan', etc. Map them to playable faction IDs.
+const NATION_TO_FACTION = {
+  gojeon:        'gojeon',
+  inuvak:        'inuvak',
+  ruskel:        'ruskel',
+  icebound:      'icebound',
+  oakhaven:      'oakhaven',
+  onishiman:     'onishiman',
+  kadjimaran:    'kadjimaran',
+  nimrudan:      'nimrudan',
+  kinetic:       'kintei',
+  ilalocatotlan: 'tlalocayotlan',
+  hestia:        'republic',
+  azure:         'sultanate',
+  silver:        'silverunion',
+  shadowsfall:   'shadowfell',
+  scorched:      'scorched',
 };
 
-const FACTION_TERRAIN_MAP = {
-  ocean: 'ocean',
-  water: 'ocean',
-  '': 'plains',
-  gejeon: 'forest',
-  inuvak: 'tundra',
-  ruskel: 'plains',
-  shadefell: 'wasteland',
-  onishiman: 'plains',
-  kadjimaran: 'desert',
-  silverunion: 'plains',
-  greenheart: 'forest',
-  shadowsfall: 'wasteland',
-  nimrudan: 'mountain',
+// ---- CONVERT JSON MAP TO HEX OBJECTS ----
+export const generateWorldMap = () => {
+  const hexes = {};
+
+  mapData.hex_grid.forEach((cell) => {
+    const { col, row, terrain, nation_id } = cell;
+    const hexId = `${col},${row}`;
+    const isWater = !nation_id || terrain === 'water';
+    const factionId = nation_id ? (NATION_TO_FACTION[nation_id] || nation_id) : null;
+
+    hexes[hexId] = {
+      id: hexId,
+      col,
+      row,
+      hexId,
+      type: isWater ? 'water' : 'land',
+      terrain: isWater ? 'water' : (terrain || 'plains'),
+      nation_id: factionId,
+      sourceFaction: factionId,
+      region: factionId,
+      owner: null,
+      units: [],
+      hasFortress: false,
+      isCapital: false,
+    };
+  });
+
+  return hexes;
 };
 
-// Paste new map data here
+export const WORLD_MAP = generateWorldMap();
+
+// Legacy MAP_DATA stub (unused — kept to avoid breaking anything that imports it)
 const MAP_DATA = [
   {"col":0,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
   {"col":1,"row":0,"faction":"ocean","is_coastal":false,"terrain":"water"},
@@ -933,54 +962,4 @@ const MAP_DATA = [
   {"col":29,"row":18,"faction":"silverunion","is_coastal":false,"terrain":"land"},
 ];
 
-// Maps map faction names → playable faction IDs
-const remapFaction = (faction, row) => {
-  if (faction === 'ocean') return faction;
-  if (faction === 'gejeon') return 'gojeon';
-  if (faction === 'greenheart') return 'oakhaven';
-  if (faction === 'silverunion') return 'republic';
-  // shadefell split: upper rows → tlalocayotlan, lower → sultanate
-  if (faction === 'shadefell') return row <= 6 ? 'tlalocayotlan' : 'sultanate';
-  // shadowsfall split: upper rows → kintei, lower → icebound
-  if (faction === 'shadowsfall') return row <= 12 ? 'kintei' : 'icebound';
-  return faction;
-};
-
-// ---- CONVERT JSON MAP TO HEX OBJECTS ----
-export const generateWorldMap = () => {
-  const hexes = {};
-
-  MAP_DATA.forEach((cell) => {
-    const { col, row, faction, is_coastal, terrain } = cell;
-    const { q, r } = offsetToAxial(col, row);
-    const hexId = `${col},${row}`;
-    const isWater = terrain === 'water' || faction === 'ocean';
-    const playableFaction = remapFaction(faction, row);
-    const resolvedTerrain = isWater
-      ? 'ocean'
-      : (FACTION_TERRAIN_MAP[faction] || 'plains');
-
-    hexes[hexId] = {
-      id: hexId,
-      q,
-      r,
-      col,
-      row,
-      hexId: hexId,
-      type: isWater ? 'water' : 'land',
-      terrain: resolvedTerrain,
-      is_coastal,
-      sourceFaction: isWater ? null : playableFaction,
-      nation_id: isWater ? null : playableFaction,
-      region: isWater ? null : playableFaction,
-      owner: null,
-      units: [],
-      hasFortress: false,
-      isCapital: false,
-    };
-  });
-
-  return hexes;
-};
-
-export const WORLD_MAP = generateWorldMap();
+// (Legacy MAP_DATA and old generateWorldMap removed — now uses ardonia_game_map.json directly)

@@ -166,7 +166,8 @@ export const TERRAIN_MOVEMENT_COSTS = {
 
 // ---- Factions ----
 // playable: true = selectable by human/AI players; false = neutral territory holder only
-// Maps faction IDs (game logic) → nation_id in the hex_grid JSON
+// Maps faction IDs (game logic) → nation_id values as stored in gameState.hexes
+// (after NATION_TO_FACTION remapping in hexWorldGenerator)
 export const FACTION_TO_NATION_ID = {
   gojeon:        'gojeon',
   onishiman:     'onishiman',
@@ -176,12 +177,13 @@ export const FACTION_TO_NATION_ID = {
   kadjimaran:    'kadjimaran',
   oakhaven:      'oakhaven',
   nimrudan:      'nimrudan',
-  kintei:        'kintei',
-  republic:      'republic',
-  sultanate:     'sultanate',
-  tlalocayotlan: 'tlalocayotlan',
-  silver_union:  'silver_union',
-  shadowfell:    'shadowfell',
+  kintei:        'kintei',        // JSON 'kinetic' → remapped to 'kintei'
+  republic:      'republic',       // JSON 'hestia'  → remapped to 'republic'
+  sultanate:     'sultanate',      // JSON 'azure'   → remapped to 'sultanate'
+  tlalocayotlan: 'tlalocayotlan',  // JSON 'ilalocatotlan' → remapped
+  silverunion:   'silverunion',    // JSON 'silver'  → remapped to 'silverunion'
+  silver_union:  'silverunion',
+  shadowfell:    'shadowfell',     // JSON 'shadowsfall' → remapped to 'shadowfell'
 };
 
 // Hardcoded capital hex IDs (col,row) per faction, derived from MAP_DATA geography
