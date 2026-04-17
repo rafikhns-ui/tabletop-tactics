@@ -1422,13 +1422,15 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
              { id: 'avatars', icon: '👹', label: 'Avatars' },
              { id: 'effects', icon: '📊', label: 'Effects' },
              { id: 'turnlog', icon: '📜', label: 'Turn Log' },
-             { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
-             { id: 'influence', icon: '🎭', label: 'Influence' },
+             { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy', action: () => setShowDiplomacyInfluenceModal(true) },
              { id: 'diplog', icon: '📋', label: 'Dip Log' },
              { id: 'log', icon: '📜', label: 'Battle Log' },
              { id: 'advisor', icon: '⚜️', label: 'Advisor' },
             ].map(t => (
-              <button key={t.id} onClick={() => setBottomTab(t.id)}
+              <button key={t.id} onClick={() => {
+                if (t.action) t.action();
+                else setBottomTab(t.id);
+              }}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold transition-all"
                 style={{
                   fontFamily: "'Cinzel',serif",
@@ -1437,7 +1439,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                   borderBottom: bottomTab === t.id ? '2px solid hsl(43,80%,55%)' : '2px solid transparent',
                 }}>
                 {t.icon} {t.label}
-                {t.id === 'diplomacy' && tradeOffers.filter(o => o.toId === currentPlayer?.id).length > 0 && (
+                {t.id === 'diplomacy-influence' && tradeOffers.filter(o => o.toId === currentPlayer?.id).length > 0 && (
                   <span className="ml-1 px-1 rounded-full text-xs font-bold"
                     style={{ background: 'hsl(0,65%,45%)', color: 'white', fontSize: '10px' }}>
                     {tradeOffers.filter(o => o.toId === currentPlayer?.id).length}
@@ -1516,34 +1518,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
              {bottomTab === 'turnlog' && (
                <TurnLog entries={turnLog} currentTurn={gameState?.turn} />
              )}
-             {bottomTab === 'diplomacy' && gameState && currentPlayer && !currentPlayer.isAI && (
-              <div className="flex items-center justify-center h-full">
-                <button onClick={() => setShowDiplomacyInfluenceModal(true)}
-                  className="px-6 py-3 rounded-lg font-bold text-center"
-                  style={{ fontFamily: "'Cinzel', serif", background: 'linear-gradient(135deg, hsl(210,50%,30%), hsl(210,50%,20%))', border: '1px solid hsl(210,60%,50%)', color: 'hsl(40,30%,95%)', cursor: 'pointer' }}>
-                  🕊️ Open Diplomacy & Influence Window
-                </button>
-              </div>
-            )}
-            {bottomTab === 'diplomacy' && currentPlayer?.isAI && (
-              <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
-                Diplomacy available during your turn
-              </div>
-            )}
-            {bottomTab === 'influence' && gameState && currentPlayer && !currentPlayer.isAI && (
-              <div className="flex items-center justify-center h-full">
-                <button onClick={() => setShowDiplomacyInfluenceModal(true)}
-                  className="px-6 py-3 rounded-lg font-bold text-center"
-                  style={{ fontFamily: "'Cinzel', serif", background: 'linear-gradient(135deg, hsl(260,40%,30%), hsl(260,40%,20%))', border: '1px solid hsl(260,50%,50%)', color: 'hsl(40,30%,95%)', cursor: 'pointer' }}>
-                  🎭 Open Diplomacy & Influence Window
-                </button>
-              </div>
-            )}
-            {bottomTab === 'influence' && currentPlayer?.isAI && (
-              <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
-                Influence available during your turn
-              </div>
-            )}
+ 
             {bottomTab === 'diplog' && gameState && (
               <DiplomacyLog gameState={gameState} />
             )}
