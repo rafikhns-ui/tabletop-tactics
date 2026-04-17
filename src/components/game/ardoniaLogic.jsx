@@ -831,42 +831,56 @@ export const getAiTurnSteps = (gameState) => {
   // ── STEP 4: Deploy all pending units to best frontline hex ──
   {
     const currentAiForDeploy = getAI();
-    const pendingUnits = currentAiForDeploy.pendingUnits || [];
-    if (pendingUnits.length > 0) {
-      // Collect all hexes owned by this AI player
-      const ownedHexEntries = Object.entries(state.hexes).filter(([, h]) => h.owner === currentAiForDeploy.id);
+    // Always give AI at least 1 free infantry to deploy each turn
+    const pendingUnits = currentAiForDeploy.pendingUnits?.length > 0
+      ? currentAiForDeploy.pendingUnits
+      : ['infantry'];
 
-      let bestHex = null, bestScore = -1;
-      ownedHexEntries.forEach(([hexId, h]) => {
-        const neighbors = getHexNeighborIds(hexId);
-        const enemyNeighbors = neighbors.filter(nid => {
-          const nh = state.hexes[nid];
-          return nh && nh.owner && nh.owner !== currentAiForDeploy.id;
-        }).length;
-        const unitCount = (h.units || []).reduce((s, u) => s + u.count, 0);
-        const score = enemyNeighbors * 3 + unitCount;
-        if (score > bestScore) { bestScore = score; bestHex = hexId; }
+    // Collect all hexes owned by this AI player from state.hexes
+    const allOwnedHexIds = new Set(
+      Object.entries(state.hexes)
+        .filter(([, h]) => h.owner === currentAiForDeploy.id)
+        .map(([id]) => id)
+    );
+
+    // If still empty, fallback to capital hex
+    if (allOwnedHexIds.size === 0) {
+      const capEntry = Object.entries(state.hexes).find(([, h]) => h.isCapital && h.owner === currentAiForDeploy.id);
+      if (capEntry) allOwnedHexIds.add(capEntry[0]);
+    }
+
+    // Score each owned hex: prefer hexes adjacent to enemies
+    let bestHex = null, bestScore = -1;
+    allOwnedHexIds.forEach(hexId => {
+      const h = state.hexes[hexId] || {};
+      const neighbors = getHexNeighborIds(hexId);
+      const enemyNeighbors = neighbors.filter(nid => {
+        const nh = state.hexes[nid];
+        return nh && nh.owner && nh.owner !== currentAiForDeploy.id;
+      }).length;
+      const unitCount = (h.units || []).reduce((s, u) => s + u.count, 0);
+      const score = enemyNeighbors * 3 + unitCount;
+      if (score > bestScore) { bestScore = score; bestHex = hexId; }
+    });
+
+    // Fallback: first owned hex
+    if (!bestHex && allOwnedHexIds.size > 0) bestHex = [...allOwnedHexIds][0];
+
+    if (bestHex) {
+      const newHexes = { ...state.hexes };
+      pendingUnits.forEach(unitId => {
+        const hex = newHexes[bestHex] || { owner: currentAiForDeploy.id, units: [] };
+        const hexUnits = (hex.units || []).map(u => ({ ...u }));
+        const existing = hexUnits.find(u => u.type === unitId);
+        if (existing) existing.count += 1;
+        else hexUnits.push({ type: unitId, count: 1 });
+        newHexes[bestHex] = { ...hex, units: hexUnits, owner: currentAiForDeploy.id };
       });
-
-      // Fallback: just pick any owned hex
-      if (!bestHex && ownedHexEntries.length > 0) {
-        bestHex = ownedHexEntries[0][0];
-      }
-
-      if (bestHex) {
-        let newHexes = { ...state.hexes };
-        const unitsToPlace = [...pendingUnits];
-        unitsToPlace.forEach(unitId => {
-          const hex = newHexes[bestHex] || {};
-          const hexUnits = (hex.units || []).map(u => ({ ...u }));
-          const existing = hexUnits.find(u => u.type === unitId);
-          if (existing) existing.count += 1;
-          else hexUnits.push({ type: unitId, count: 1 });
-          newHexes[bestHex] = { ...hex, units: hexUnits, owner: currentAiForDeploy.id };
-        });
-        state = { ...state, hexes: newHexes, players: state.players.map((p, i) => i === aiIndex ? { ...p, pendingUnits: [] } : p) };
-        pushStep(`🚩 ${ai.name} deployed ${unitsToPlace.length} unit(s) to the frontline`);
-      }
+      state = { ...state, hexes: newHexes, players: state.players.map((p, i) => i === aiIndex ? { ...p, pendingUnits: [] } : p) };
+      pushStep(`🚩 ${ai.name} deployed ${pendingUnits.length} unit(s) to the frontline`);
+    } else {
+      // Clear pending so AI doesn't accumulate forever
+      state = { ...state, players: state.players.map((p, i) => i === aiIndex ? { ...p, pendingUnits: [] } : p) };
     }
   }
 
@@ -874,21 +888,39 @@ export const getAiTurnSteps = (gameState) => {
   if (Math.random() > 0.3) {
     const aiHexes = Object.entries(state.hexes).filter(([, h]) => h.owner === ai.id && (h.units || []).reduce((s, u) => s + u.count, 0) >= 2);
     for (const [fromId, fromHex] of aiHexes.slice(0, 2)) {
-      // Find a neighbor that is either unowned or owned by someone else (expand/advance)
       const neighbors = getHexNeighborIds(fromId);
+      // Find a passable neighbor that isn't already AI-owned (expand into neutral/unregistered territory)
       const moveTarget = neighbors.find(nid => {
         const nh = state.hexes[nid];
-        if (!nh) return false;
-        // Move into unowned hexes in the same nation or neutral
-        return nh.owner !== ai.id && nh.type !== 'water' && !nh.owner;
+        // If hex is in state, it must be unowned and not water
+        if (nh) return nh.owner !== ai.id && nh.type !== 'water' && !nh.owner;
+        // If hex is NOT in state yet, check map data — treat as passable neutral
+        const parts = nid.split(',').map(Number);
+        if (parts.length < 2) return false;
+        // We allow moving into any non-water hex from map
+        return true; // will be added to state.hexes on move
       });
       if (moveTarget) {
         const newHexes = { ...state.hexes };
-        const movedUnits = [...(fromHex.units || [])];
-        newHexes[fromId] = { ...fromHex, units: [] };
-        const destHex = newHexes[moveTarget] || {};
+        const movedUnits = (fromHex.units || []).map(u => ({ ...u }));
+        const halfCount = Math.max(1, Math.floor(movedUnits.reduce((s, u) => s + u.count, 0) / 2));
+        // Only move half the units so source hex isn't left empty
+        let moved = 0;
+        const unitsToMove = [];
+        const remainingUnits = movedUnits.map(u => ({ ...u }));
+        for (const u of remainingUnits) {
+          const canMove = Math.min(u.count, halfCount - moved);
+          if (canMove <= 0) break;
+          unitsToMove.push({ type: u.type, count: canMove });
+          u.count -= canMove;
+          moved += canMove;
+          if (moved >= halfCount) break;
+        }
+        const fromRemaining = remainingUnits.filter(u => u.count > 0);
+        newHexes[fromId] = { ...fromHex, units: fromRemaining };
+        const destHex = newHexes[moveTarget] || { owner: null, units: [] };
         const destUnits = [...(destHex.units || [])];
-        movedUnits.forEach(mu => {
+        unitsToMove.forEach(mu => {
           const ex = destUnits.find(u => u.type === mu.type);
           if (ex) ex.count += mu.count;
           else destUnits.push({ ...mu });
