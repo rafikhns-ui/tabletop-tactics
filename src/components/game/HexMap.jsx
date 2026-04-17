@@ -1,32 +1,6 @@
-import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import mapData from './ardonia_game_map.json';
 import { FACTIONS, FACTION_TO_NATION_ID } from './ardoniaData';
-
-// ══════ WEATHER SYSTEM ══════
-// Deterministically assign weather to terrain regions based on turn
-const WEATHER_TYPES = {
-  tundra:   ['blizzard', 'snowfall', 'clear'],
-  mountain: ['fog', 'snowfall', 'clear'],
-  desert:   ['sandstorm', 'heatwave', 'clear'],
-  swamp:    ['rain', 'fog', 'clear'],
-  forest:   ['rain', 'mist', 'clear'],
-  coastal:  ['storm', 'breeze', 'clear'],
-  plains:   ['clear', 'breeze', 'rain'],
-  hills:    ['fog', 'clear', 'breeze'],
-  scorched: ['ashfall', 'clear', 'heatwave'],
-  water:    ['storm', 'breeze', 'clear'],
-};
-const WEATHER_COLORS = {
-  blizzard: '#aed6f1cc', snowfall: '#d6eaf8aa', fog: '#bdc3c799',
-  sandstorm: '#d4ac0d99', heatwave: '#e74c3c66', rain: '#2e86c188',
-  mist: '#85c1e966', storm: '#1a5276aa', breeze: 'transparent',
-  clear: 'transparent', ashfall: '#784212aa',
-};
-const WEATHER_ICONS = {
-  blizzard: '❄️', snowfall: '🌨️', fog: '🌫️', sandstorm: '🌪️',
-  heatwave: '🔥', rain: '🌧️', mist: '🌁', storm: '⛈️',
-  breeze: '🌬️', clear: '', ashfall: '🌋',
-};
 
 // Special event locations pinned to specific nation centroids
 const SPECIAL_EVENTS = [
@@ -179,7 +153,6 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
   const [tooltipPos, setTooltipPos] = useState(null);
   const [selectedPanelUnits, setSelectedPanelUnits] = useState(new Set());
   const [combatTooltip, setCombatTooltip] = useState(null);
-  const [weatherTick, setWeatherTick] = useState(0); // drives animation pulse
   const [combatFlashes, setCombatFlashes] = useState([]); // [{hexId, key}]
   const [hoveredSpecialEvent, setHoveredSpecialEvent] = useState(null);
 
@@ -191,20 +164,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
   const [movingUnits, setMovingUnits] = useState([]);
   const prevHexesRef = useRef(null);
 
-  // Slow weather animation tick
-  useEffect(() => {
-    const t = setInterval(() => setWeatherTick(n => n + 1), 3000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Deterministic weather per terrain type (rotates slowly by turn)
-  const turn = gameState?.turn || 1;
-  const getWeatherForTerrain = useCallback((terrain) => {
-    const opts = WEATHER_TYPES[terrain] || ['clear'];
-    return opts[(turn + Math.floor(weatherTick / 4)) % opts.length];
-  }, [turn, weatherTick]);
-
   // Assign special event locations to stable map positions (seeded by turn cycle)
+  const turn = gameState?.turn || 1;
   const specialEventLocations = useMemo(() => {
     const slots = mapData.nations.filter(n => n.centroid).slice(0, SPECIAL_EVENTS.length);
     return SPECIAL_EVENTS.map((ev, i) => {
@@ -553,10 +514,6 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             </pattern>
 
 
-            {/* ── Weather blur filter ── */}
-            <filter id="weatherBlur">
-              <feGaussianBlur stdDeviation="3" />
-            </filter>
             <filter id="eventGlow">
               <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#9b59b6" floodOpacity="0.9" />
               <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor="#8e44ad" floodOpacity="0.4" />
@@ -567,18 +524,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             <filter id="moveGlow">
               <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#d4a853" floodOpacity="0.9" />
             </filter>
-            <radialGradient id="snowOverlay" cx="50%" cy="50%" r="60%">
-              <stop offset="0%" stopColor="#d6eaf8" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#aed6f1" stopOpacity="0.06" />
-            </radialGradient>
-            <radialGradient id="sandOverlay" cx="50%" cy="50%" r="60%">
-              <stop offset="0%" stopColor="#d4ac0d" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="#b7950b" stopOpacity="0.08" />
-            </radialGradient>
-            <radialGradient id="rainOverlay" cx="50%" cy="50%" r="60%">
-              <stop offset="0%" stopColor="#2e86c1" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#1a5276" stopOpacity="0.06" />
-            </radialGradient>
+
           </defs>
 
           {zoomTransform && (
@@ -679,41 +625,6 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 {!owner && nationColor && !highlightMode && (
                   <polygon points={ptsInner} fill={nationColor} fillOpacity={0.28} style={{ pointerEvents: 'none' }} />
                 )}
-
-                {/* ── Weather overlay per hex ── */}
-                {!isWater && !isSelected && !isReachable && !dimmed && (() => {
-                  const weather = getWeatherForTerrain(terrain);
-                  if (weather === 'clear' || weather === 'breeze') return null;
-                  const wColor = WEATHER_COLORS[weather] || 'transparent';
-                  if (wColor === 'transparent') return null;
-                  return (
-                    <g style={{ pointerEvents: 'none' }}>
-                      <polygon points={pts} fill={wColor} style={{ pointerEvents: 'none' }} />
-                      {/* Animated weather shimmer */}
-                      {(weather === 'snowfall' || weather === 'blizzard') && (
-                        <polygon points={pts} fill="url(#snowOverlay)" style={{ pointerEvents: 'none' }}>
-                          <animate attributeName="fillOpacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite" />
-                        </polygon>
-                      )}
-                      {(weather === 'sandstorm' || weather === 'heatwave') && (
-                        <polygon points={pts} fill="url(#sandOverlay)" style={{ pointerEvents: 'none' }}>
-                          <animate attributeName="fillOpacity" values="0.3;0.7;0.3" dur="1.8s" repeatCount="indefinite" />
-                        </polygon>
-                      )}
-                      {(weather === 'rain' || weather === 'storm' || weather === 'mist' || weather === 'fog') && (
-                        <polygon points={pts} fill="url(#rainOverlay)" style={{ pointerEvents: 'none' }}>
-                          <animate attributeName="fillOpacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite" />
-                        </polygon>
-                      )}
-                      {/* Weather icon at hex center */}
-                      {WEATHER_ICONS[weather] && (
-                        <text x={cx + HEX_PX * 0.55} y={cy - HEX_PX * 0.5} textAnchor="middle" fontSize={8} style={{ pointerEvents: 'none', opacity: 0.7 }}>
-                          {WEATHER_ICONS[weather]}
-                        </text>
-                      )}
-                    </g>
-                  );
-                })()}
 
                 {/* Unit icons — enhanced with player color ring + count badge */}
                 {units.length > 0 && (
