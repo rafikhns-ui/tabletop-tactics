@@ -238,6 +238,7 @@ function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers
               🏪 You need to construct a Market to trade with other players.
             </div>
           ) : (
+            <>
           <div style={{ marginBottom: 12 }}>
             <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 4 }}>Recipient:</label>
             <select value={tradeTarget || ''} onChange={(e) => setTradeTarget(e.target.value)}
@@ -305,6 +306,7 @@ function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers
               </button>
             );
           })()}
+            </>
           )}
         </div>
       )}
