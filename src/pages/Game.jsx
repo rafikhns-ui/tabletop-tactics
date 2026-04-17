@@ -1422,7 +1422,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
              { id: 'avatars', icon: '👹', label: 'Avatars' },
              { id: 'effects', icon: '📊', label: 'Effects' },
              { id: 'turnlog', icon: '📜', label: 'Turn Log' },
-             { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy', action: () => setShowDiplomacyInfluenceModal(true) },
+             { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy & Influence', action: () => setShowDiplomacyInfluenceModal(true) },
              { id: 'diplog', icon: '📋', label: 'Dip Log' },
              { id: 'log', icon: '📜', label: 'Battle Log' },
              { id: 'advisor', icon: '⚜️', label: 'Advisor' },
