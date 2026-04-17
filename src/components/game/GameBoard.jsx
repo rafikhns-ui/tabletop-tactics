@@ -21,18 +21,22 @@ export default function GameBoard({ gameState, selectedTerritory, phase, current
   const isAttackable = (id) => {
     if (phase !== 'attack' || !selectedTerritory) return false;
     const t = territories[id];
+    if (!t) return false;
     return t.owner !== currentPlayer.id && (ADJACENCY[selectedTerritory] || []).includes(id);
   };
 
   const isFortifiable = (id) => {
     if (phase !== 'fortify' || !selectedTerritory) return false;
     const t = territories[id];
+    if (!t) return false;
     return t.owner === currentPlayer.id && (ADJACENCY[selectedTerritory] || []).includes(id) && id !== selectedTerritory;
   };
 
   const isDeployable = (id) => {
     if (phase !== 'deploy') return false;
-    return territories[id].owner === currentPlayer.id && currentPlayer.troopsToDeploy > 0;
+    const t = territories[id];
+    if (!t) return false;
+    return t.owner === currentPlayer.id && currentPlayer.troopsToDeploy > 0;
   };
 
   const isMovable = (id) => {
