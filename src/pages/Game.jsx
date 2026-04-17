@@ -121,26 +121,13 @@ export default function Game() {
     if (!audio) return;
     
     if (!gameMode) {
-      audio.volume = 0.5;
-      // Load and attempt to play
-      audio.load();
-      audio.play().catch(err => {
-        // Autoplay blocked — will play on first user click
-        console.log('Autoplay blocked, waiting for user interaction');
-      });
+      audio.volume = 0.3;
+      setTimeout(() => audio.play().catch(() => {}), 100);
     } else {
       audio.pause();
       audio.currentTime = 0;
     }
   }, [gameMode]);
-
-  // Handle click to unmute music (if autoplay was blocked)
-  const handleUnmuteMusic = () => {
-    const audio = menuAudioRef.current;
-    if (audio && !gameMode) {
-      audio.play().catch(() => {});
-    }
-  };
 
   // Initialize provinces on game start
   useEffect(() => {
@@ -1248,12 +1235,12 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     };
   }, [gameState?.currentPlayerIndex, gameState?.turn, gameMode, winner]);
 
-  const menuAudio = <audio ref={menuAudioRef} src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_d3d1b9f4e7.mp3" loop style={{ display: 'none' }} />;
+  const menuAudio = <audio ref={menuAudioRef} src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop style={{ display: 'none' }} crossOrigin="anonymous" />;
 
   if (onlineSession) return <OnlineGame session={onlineSession} onLeave={() => { setOnlineSession(null); setShowLobby(false); }} />;
   if (showLobby) return <>{menuAudio}<Lobby onStartOnline={(s) => setOnlineSession(s)} onBack={() => setShowLobby(false)} /></>;
   if (showAiSetup) return <>{menuAudio}<AiSetupModal onStart={handleAiSetupComplete} onBack={() => { setShowAiSetup(false); setPendingMode(null); setGameStartMode(null); }} /></>;
-  if (!gameMode && !pendingMode) return <div onClick={handleUnmuteMusic}><>{menuAudio}<GameMenu onStart={handleMenuStart} onOnline={() => setShowLobby(true)} /></></div>;
+  if (!gameMode && !pendingMode) return <>{menuAudio}<GameMenu onStart={handleMenuStart} onOnline={() => setShowLobby(true)} /></>;
   
   if (pendingMode && setupStep === 'faction') {
     return (
