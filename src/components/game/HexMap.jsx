@@ -794,11 +794,46 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
           ))}
 
           {/* ── Nation borders (dark embossed) ── */}
-          {natBorderEdges.map((e, i) => (
-            <line key={`nb${i}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-              stroke="#0a0806" strokeWidth={2.5} strokeOpacity={0.9}
-              style={{ pointerEvents: 'none' }} />
-          ))}
+           {natBorderEdges.map((e, i) => (
+             <line key={`nb${i}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+               stroke="#0a0806" strokeWidth={2.5} strokeOpacity={0.9}
+               style={{ pointerEvents: 'none' }} />
+           ))}
+
+          {/* ── Current player territory borders (bright highlight) ── */}
+          {currentPlayer && hexGrid.map(hex => {
+            const hexId = `${hex.col},${hex.row}`;
+            const owner = getOwner(hexId, normNationId(hex.nation_id));
+            if (owner !== currentPlayer.id) return null;
+
+            const { cx, cy } = toSVG(hex.x, hex.y);
+            const nbs = hexNeighborKeys(hex.col, hex.row);
+            const edges = [];
+
+            for (let k = 0; k < 6; k++) {
+              const nb = hexLookup[`${nbs[k][0]},${nbs[k][1]}`];
+              const nbOwner = nb ? getOwner(`${nbs[k][0]},${nbs[k][1]}`, normNationId(nb.nation_id)) : null;
+              // Draw border if neighbor is not owned by current player
+              if (!nb || nbOwner !== currentPlayer.id) {
+                const a1 = (Math.PI / 3) * k;
+                const a2 = (Math.PI / 3) * ((k + 1) % 6);
+                const x1 = cx + HEX_PX * Math.cos(a1);
+                const y1 = cy + HEX_PX * Math.sin(a1);
+                const x2 = cx + HEX_PX * Math.cos(a2);
+                const y2 = cy + HEX_PX * Math.sin(a2);
+                edges.push({ x1, y1, x2, y2 });
+              }
+            }
+
+            return edges.map((e, i) => (
+              <line key={`tb-${hexId}-${i}`}
+                x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+                stroke={currentPlayer.color} strokeWidth={3} strokeOpacity={0.8}
+                style={{ pointerEvents: 'none' }}>
+                <animate attributeName="strokeOpacity" values="0.8;0.5;0.8" dur="2s" repeatCount="indefinite" />
+              </line>
+            ));
+          }).flat()}
 
           {/* ── Selected hex glow ── */}
           {selected && (
