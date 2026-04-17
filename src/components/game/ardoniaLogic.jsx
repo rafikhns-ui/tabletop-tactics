@@ -914,6 +914,7 @@ export const getAiTurnSteps = (gameState) => {
   }
 
   // ── STEP 5: Move units toward enemy/neutral territory ──
+  // Use BFS range=3 to find reachable targets in sparse map
   if (Math.random() > 0.2) {
     const aiHexes = Object.entries(state.hexes)
       .filter(([, h]) => h.owner === ai.id && h.type !== 'water' && (h.units || []).reduce((s, u) => s + u.count, 0) >= 2)
@@ -922,22 +923,45 @@ export const getAiTurnSteps = (gameState) => {
     let movesDone = 0;
     for (const [fromId, fromHex] of aiHexes) {
       if (movesDone >= 3) break;
-      const neighbors = getHexNeighborIds(fromId);
+      // BFS: find all non-water hexes within 3 steps
+      const reachable = getHexesInRange(fromId, 3, state.hexes);
 
-      // Prefer moving into enemy-owned hex, then unowned land
-      const moveTarget = neighbors.find(nid => {
+      // Find best step-1 neighbor toward an enemy or neutral target
+      // First, find any enemy or neutral target in range
+      let moveTarget = null;
+      // Priority 1: adjacent enemy with no units (instant capture)
+      for (const nid of getHexNeighborIds(fromId)) {
         const nh = state.hexes[nid];
-        return nh && nh.type !== 'water' && nh.owner && nh.owner !== ai.id; // enemy
-      }) || neighbors.find(nid => {
-        const nh = state.hexes[nid];
-        return nh && nh.type !== 'water' && !nh.owner; // unowned neutral
-      });
+        if (nh && nh.type !== 'water' && nh.owner && nh.owner !== ai.id && (nh.units || []).reduce((s, u) => s + u.count, 0) === 0) {
+          moveTarget = nid; break;
+        }
+      }
+      // Priority 2: adjacent neutral
+      if (!moveTarget) {
+        for (const nid of getHexNeighborIds(fromId)) {
+          const nh = state.hexes[nid];
+          if (nh && nh.type !== 'water' && !nh.owner) { moveTarget = nid; break; }
+        }
+      }
+      // Priority 3: any reachable neutral within BFS range
+      if (!moveTarget) {
+        for (const [nid] of [...reachable].sort((a, b) => a[1] - b[1])) {
+          const nh = state.hexes[nid];
+          if (nh && !nh.owner) { 
+            // Move toward it: pick the neighbor of fromId that's on the BFS path
+            const step = getHexNeighborIds(fromId).find(mid => {
+              const mh = state.hexes[mid];
+              return mh && mh.type !== 'water' && reachable.has(mid);
+            });
+            if (step) { moveTarget = step; break; }
+          }
+        }
+      }
 
       if (moveTarget) {
         const newHexes = { ...state.hexes };
         const srcUnits = (fromHex.units || []).map(u => ({ ...u }));
         const totalCount = srcUnits.reduce((s, u) => s + u.count, 0);
-        // Move half, keep at least 1
         const moveCount = Math.max(1, Math.floor(totalCount / 2));
 
         let moved = 0;
@@ -952,40 +976,32 @@ export const getAiTurnSteps = (gameState) => {
           if (moved >= moveCount) break;
         }
         const fromRemaining = remainingUnits.filter(u => u.count > 0);
-
         const destHex = newHexes[moveTarget] ? { ...newHexes[moveTarget] } : { owner: null, units: [], type: 'land' };
-        const destUnits = [...(destHex.units || [])];
-        unitsToMove.forEach(mu => {
-          const ex = destUnits.find(u => u.type === mu.type);
-          if (ex) ex.count += mu.count;
-          else destUnits.push({ ...mu });
-        });
-
         const targetIsEnemy = destHex.owner && destHex.owner !== ai.id;
-        if (targetIsEnemy) {
-          // Treat as attack-on-move: auto-conquer if defender has 0 units, else fight
-          const defCount = destHex.units?.reduce((s, u) => s + u.count, 0) || 0;
-          if (defCount === 0) {
-            newHexes[moveTarget] = { ...destHex, units: unitsToMove, owner: ai.id };
-            newHexes[fromId] = { ...fromHex, units: fromRemaining };
-            state = { ...state, hexes: newHexes };
-            pushStep(`⚔️ ${ai.name} captured an undefended hex!`);
-          } else {
-            // Don't overwrite — let attack step handle it
-            continue;
-          }
-        } else {
+
+        if (targetIsEnemy && (destHex.units || []).reduce((s, u) => s + u.count, 0) === 0) {
+          newHexes[moveTarget] = { ...destHex, units: unitsToMove, owner: ai.id };
+          newHexes[fromId] = { ...fromHex, units: fromRemaining };
+          state = { ...state, hexes: newHexes };
+          pushStep(`⚔️ ${ai.name} captured an undefended hex!`);
+          movesDone++;
+        } else if (!targetIsEnemy) {
+          const destUnits = [...(destHex.units || [])];
+          unitsToMove.forEach(mu => {
+            const ex = destUnits.find(u => u.type === mu.type);
+            if (ex) ex.count += mu.count; else destUnits.push({ ...mu });
+          });
           newHexes[moveTarget] = { ...destHex, units: destUnits, owner: ai.id };
           newHexes[fromId] = { ...fromHex, units: fromRemaining };
           state = { ...state, hexes: newHexes };
           pushStep(`🚶 ${ai.name} advanced troops into new territory`);
+          movesDone++;
         }
-        movesDone++;
       }
     }
   }
 
-  // ── STEP 6: Attack adjacent enemy hexes ──
+  // ── STEP 6: Attack enemy hexes within range 2 (BFS) ──
   if (Math.random() >= skipChance) {
     const aiHexes = Object.entries(state.hexes)
       .filter(([, h]) => h.owner === ai.id && h.type !== 'water')
@@ -997,7 +1013,9 @@ export const getAiTurnSteps = (gameState) => {
       const fromCount = fromHex.units?.reduce((s, u) => s + u.count, 0) || 0;
       if (fromCount < 2) continue;
 
-      const neighbors = getHexNeighborIds(fromId);
+      // Use BFS range=2 to find attackable enemies (must be directly adjacent to attack)
+      // But search adjacency in actual hexes
+      const neighbors = getHexNeighborIds(fromId).filter(nid => state.hexes[nid]);
       const targets = neighbors
         .map(nid => [nid, state.hexes[nid]])
         .filter(([, nh]) => nh && nh.type !== 'water' && nh.owner && nh.owner !== ai.id)
@@ -1007,35 +1025,36 @@ export const getAiTurnSteps = (gameState) => {
         })
         .sort((a, b) => (a[1].units?.reduce((s, u) => s + u.count, 0) || 0) - (b[1].units?.reduce((s, u) => s + u.count, 0) || 0));
 
-      if (targets.length > 0) {
-        const [targetId, targetHex] = targets[0];
-        const defCount = targetHex.units?.reduce((s, u) => s + u.count, 0) || 0;
-        const fromUnits = fromHex.units?.length > 0 ? fromHex.units : [{ type: 'infantry', count: fromCount }];
-        const defUnits = defCount > 0
-          ? (targetHex.units?.length > 0 ? targetHex.units : [{ type: 'infantry', count: defCount }])
-          : [{ type: 'infantry', count: 1 }];
-        const result = resolveBattle(fromUnits, defUnits, targetHex.buildings?.fortress, { attackBonus });
-        const conquered = result.defenderLosses >= Math.max(defCount, 1) || defCount === 0;
+      // If no immediate neighbor to attack, try moving closer first (skip to next hex)
+      if (targets.length === 0) continue;
 
-        const newHexes = { ...state.hexes };
-        const newFromUnits = fromUnits.map(u => ({ ...u, count: Math.max(0, u.count - result.attackerLosses) })).filter(u => u.count > 0);
+      const [targetId, targetHex] = targets[0];
+      const defCount = targetHex.units?.reduce((s, u) => s + u.count, 0) || 0;
+      const fromUnits = fromHex.units?.length > 0 ? fromHex.units : [{ type: 'infantry', count: fromCount }];
+      const defUnits = defCount > 0
+        ? (targetHex.units?.length > 0 ? targetHex.units : [{ type: 'infantry', count: defCount }])
+        : [{ type: 'infantry', count: 1 }];
+      const result = resolveBattle(fromUnits, defUnits, targetHex.buildings?.fortress, { attackBonus });
+      const conquered = result.defenderLosses >= Math.max(defCount, 1) || defCount === 0;
 
-        if (conquered) {
-          const movedCount = Math.max(1, Math.floor(newFromUnits.reduce((s, u) => s + u.count, 0) / 2));
-          const movedUnits = [{ type: (newFromUnits[0]?.type || 'infantry'), count: movedCount }];
-          newHexes[targetId] = { ...targetHex, units: movedUnits, owner: ai.id };
-          newHexes[fromId] = { ...fromHex, units: newFromUnits.map(u => ({ ...u, count: Math.max(1, u.count - movedCount) })).filter(u => u.count > 0) };
-          state = { ...state, hexes: newHexes };
-          pushStep(`⚔️ ${ai.name} conquered a hex! (A:-${result.attackerLosses} D:-${result.defenderLosses})`);
-        } else {
-          const newDefUnits = defUnits.map(u => ({ ...u, count: Math.max(0, u.count - result.defenderLosses) })).filter(u => u.count > 0);
-          newHexes[targetId] = { ...targetHex, units: newDefUnits };
-          newHexes[fromId] = { ...fromHex, units: newFromUnits };
-          state = { ...state, hexes: newHexes };
-          pushStep(`⚔️ ${ai.name} attacked (A:-${result.attackerLosses} D:-${result.defenderLosses})`);
-        }
-        attacksDone++;
+      const newHexes = { ...state.hexes };
+      const newFromUnits = fromUnits.map(u => ({ ...u, count: Math.max(0, u.count - result.attackerLosses) })).filter(u => u.count > 0);
+
+      if (conquered) {
+        const movedCount = Math.max(1, Math.floor(newFromUnits.reduce((s, u) => s + u.count, 0) / 2));
+        const movedUnits = [{ type: (newFromUnits[0]?.type || 'infantry'), count: movedCount }];
+        newHexes[targetId] = { ...targetHex, units: movedUnits, owner: ai.id };
+        newHexes[fromId] = { ...fromHex, units: newFromUnits.map(u => ({ ...u, count: Math.max(1, u.count - movedCount) })).filter(u => u.count > 0) };
+        state = { ...state, hexes: newHexes };
+        pushStep(`⚔️ ${ai.name} conquered a hex! (A:-${result.attackerLosses} D:-${result.defenderLosses})`);
+      } else {
+        const newDefUnits = defUnits.map(u => ({ ...u, count: Math.max(0, u.count - result.defenderLosses) })).filter(u => u.count > 0);
+        newHexes[targetId] = { ...targetHex, units: newDefUnits };
+        newHexes[fromId] = { ...fromHex, units: newFromUnits };
+        state = { ...state, hexes: newHexes };
+        pushStep(`⚔️ ${ai.name} attacked (A:-${result.attackerLosses} D:-${result.defenderLosses})`);
       }
+      attacksDone++;
     }
   }
 
@@ -1096,7 +1115,26 @@ const getHexNeighborIds = (hexId) => {
     [col - 1, even ? row - 1 : row], [col - 1, even ? row : row + 1],
     [col, row - 1], [col, row + 1],
   ].map(([c, r]) => `${c},${r}`);
-}
+};
+
+// BFS to find all land hexes within `range` steps through state.hexes (handles sparse maps)
+const getHexesInRange = (fromHexId, range, stateHexes) => {
+  const visited = new Map([[fromHexId, 0]]);
+  const queue = [{ id: fromHexId, cost: 0 }];
+  while (queue.length > 0) {
+    const { id, cost } = queue.shift();
+    if (cost >= range) continue;
+    for (const nid of getHexNeighborIds(id)) {
+      if (visited.has(nid)) continue;
+      const nh = stateHexes[nid];
+      if (!nh || nh.type === 'water') continue;
+      visited.set(nid, cost + 1);
+      queue.push({ id: nid, cost: cost + 1 });
+    }
+  }
+  visited.delete(fromHexId);
+  return visited; // Map of hexId -> distance
+};
 
 export const getTerritoryCount = (territories, playerId) =>
   Object.values(territories).filter(t => t.owner === playerId).length;
