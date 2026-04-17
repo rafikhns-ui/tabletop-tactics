@@ -635,8 +635,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   <g style={{ pointerEvents: 'none' }}>
                     {units.map((u, i) => {
                        const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '⚙️', naval: '⚓' };
-                       const xPos = cx - 10 + (i % 2) * 20;
-                       const yPos = cy - 10 + Math.floor(i / 2) * 16;
+                       const xPos = cx + (i % 2) * 8;
+                       const yPos = cy + Math.floor(i / 2) * 8;
                        const ringColor = playerColor || (owner?.startsWith('neutral_') ? '#888' : '#d4a853');
                        const isElite = u.type === 'elite';
                        const isRanged = u.type === 'ranged';
