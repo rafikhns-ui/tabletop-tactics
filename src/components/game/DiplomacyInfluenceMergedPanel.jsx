@@ -272,7 +272,9 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
           </div>
           {(() => {
             const hasEnoughResources = Object.entries(tradeOffer).every(([k, v]) => (currentPlayer.resources?.[k] ?? 0) >= v);
-            const isValid = tradeTarget && Object.values(tradeOffer).some(v => v > 0) && hasEnoughResources;
+            const hasOffer = Object.values(tradeOffer).some(v => v > 0);
+            const hasRequest = Object.values(tradeRequest).some(v => v > 0);
+            const isValid = tradeTarget && (hasOffer || hasRequest) && hasEnoughResources;
             return (
               <button onClick={() => {
                 if (!isValid) return;
@@ -286,7 +288,7 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
                   color: isValid ? '#9afa9a' : '#666', borderRadius: 4, cursor: isValid ? 'pointer' : 'not-allowed', fontSize: 11, fontWeight: 600,
                   opacity: isValid ? 1 : 0.6,
                 }}>
-                {!hasEnoughResources ? '⚠️ Insufficient Resources' : '📤 Send Trade Offer'}
+                {!hasEnoughResources && hasOffer ? '⚠️ Insufficient Resources' : !hasOffer && !hasRequest ? '⚠️ Add items to trade' : '📤 Send Trade Offer'}
               </button>
             );
           })()}
