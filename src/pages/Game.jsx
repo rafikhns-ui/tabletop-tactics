@@ -93,6 +93,7 @@ export default function Game() {
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [phase, setPhase] = useState('deploy'); // deploy → move → attack → fortify
   const [battle, setBattle] = useState(null);
+  const [hexBattle, setHexBattle] = useState(null); // { attackerHexId, defenderHexId, pendingMove: { fromHexId, unitsToMove, remainingFromUnits } }
   const [activeEvent, setActiveEvent] = useState(null);
   const [messages, setMessages] = useState([]);
   const [winner, setWinner] = useState(null);
@@ -367,44 +368,66 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
 
         const targetOwner = resolveHexOwner(hexId);
         const panelSelected = movementState.panelSelectedUnits; // may be undefined
+
+        // Compute units to move first (needed to check for battle)
+        const fromHexSnap = gameState.hexes[fromHexId] || {};
+        const toHexSnap = gameState.hexes[hexId] || {};
+        let remainingFromUnitsSnap = [...(fromHexSnap.units || [])];
+        let unitsToMoveSnap;
+
+        if (panelSelected && panelSelected.length > 0) {
+          unitsToMoveSnap = [];
+          const toRemove = [...panelSelected];
+          remainingFromUnitsSnap = remainingFromUnitsSnap.map(u => ({ ...u }));
+          for (const sel of toRemove) {
+            const existing = remainingFromUnitsSnap.find(u => u.type === sel.type && u.count > 0);
+            if (existing) {
+              existing.count -= 1;
+              unitsToMoveSnap.push({ type: sel.type, count: 1 });
+            }
+          }
+          remainingFromUnitsSnap = remainingFromUnitsSnap.filter(u => u.count > 0);
+        } else {
+          unitsToMoveSnap = [...(fromHexSnap.units || [])];
+          remainingFromUnitsSnap = [];
+        }
+
+        // Check if destination has enemy or neutral units — trigger battle
+        const destUnits = toHexSnap.units || [];
+        const destOwner = toHexSnap.owner;
+        const hasHostileUnits = destUnits.length > 0 && destOwner && destOwner !== currentPlayer.id;
+
+        if (hasHostileUnits) {
+          // Stage the move and open battle modal
+          setHexBattle({
+            attackerHexId: fromHexId,
+            defenderHexId: hexId,
+            pendingMove: {
+              fromHexId,
+              unitsToMove: unitsToMoveSnap,
+              remainingFromUnits: remainingFromUnitsSnap,
+            },
+          });
+          setSelectedTerritory(null);
+          setMovementState(null);
+          addMessage(`⚔️ Enemy units blocking the way — battle triggered!`);
+          return;
+        }
+
         setGameState(prev => {
           const fromHex = prev.hexes[fromHexId] || {};
           const toHex = prev.hexes[hexId] || {};
-          let remainingFromUnits = [...(fromHex.units || [])];
-          let unitsToMove;
-
-          if (panelSelected && panelSelected.length > 0) {
-            // Move only the selected unit types (matched by type, one at a time)
-            unitsToMove = [];
-            const toRemove = [...panelSelected];
-            remainingFromUnits = remainingFromUnits.map(u => ({ ...u }));
-            for (const sel of toRemove) {
-              const existing = remainingFromUnits.find(u => u.type === sel.type && u.count > 0);
-              if (existing) {
-                existing.count -= 1;
-                unitsToMove.push({ type: sel.type, count: 1 });
-              }
-            }
-            remainingFromUnits = remainingFromUnits.filter(u => u.count > 0);
-          } else {
-            // Move all units
-            unitsToMove = [...(fromHex.units || [])];
-            remainingFromUnits = [];
-          }
-
-          // Merge moved units into destination
           const mergedToUnits = [...(toHex.units || [])];
-          for (const mu of unitsToMove) {
+          for (const mu of unitsToMoveSnap) {
             const ex = mergedToUnits.find(u => u.type === mu.type);
             if (ex) ex.count += mu.count;
             else mergedToUnits.push({ ...mu });
           }
-
           return {
             ...prev,
             hexes: {
               ...prev.hexes,
-              [fromHexId]: { ...fromHex, units: remainingFromUnits },
+              [fromHexId]: { ...fromHex, units: remainingFromUnitsSnap },
               [hexId]: { ...toHex, units: mergedToUnits, owner: currentPlayer.id },
             },
           };
@@ -625,6 +648,81 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     } else {
       addMessage(`⚔️ Battle at ${defenderTerr.name}: A:${result.attackerLosses} lost, D:${result.defenderLosses} lost`);
       addLog('attack', `Battle at ${defenderTerr.name}`, `Attacker lost ${result.attackerLosses} • Defender lost ${result.defenderLosses}`, 'Attack');
+    }
+  };
+
+  const handleHexBattleResult = (result) => {
+    if (!hexBattle) return;
+    const { attackerHexId, defenderHexId, pendingMove } = hexBattle;
+    const { unitsToMove, remainingFromUnits } = pendingMove;
+
+    const defenderHex = gameState.hexes[defenderHexId] || {};
+    const defenderUnits = defenderHex.units || [];
+    const defenderTotalCount = defenderUnits.reduce((s, u) => s + u.count, 0);
+    const conquered = result.defenderLosses >= defenderTotalCount;
+
+    setGameState(prev => {
+      const fromHex = prev.hexes[attackerHexId] || {};
+      const toHex = prev.hexes[defenderHexId] || {};
+
+      // Apply attacker losses to moving units
+      let remainingAttackers = unitsToMove.map(u => ({ ...u }));
+      let lossesToApply = result.attackerLosses;
+      for (const u of remainingAttackers) {
+        const take = Math.min(u.count, lossesToApply);
+        u.count -= take;
+        lossesToApply -= take;
+        if (lossesToApply <= 0) break;
+      }
+      remainingAttackers = remainingAttackers.filter(u => u.count > 0);
+
+      // Apply defender losses
+      let remainingDefenders = (toHex.units || []).map(u => ({ ...u }));
+      let defLossesToApply = result.defenderLosses;
+      for (const u of remainingDefenders) {
+        const take = Math.min(u.count, defLossesToApply);
+        u.count -= take;
+        defLossesToApply -= take;
+        if (defLossesToApply <= 0) break;
+      }
+      remainingDefenders = remainingDefenders.filter(u => u.count > 0);
+
+      let newHexes;
+      if (conquered && remainingAttackers.length > 0) {
+        // Attacker wins: move surviving attackers into the hex
+        newHexes = {
+          ...prev.hexes,
+          [attackerHexId]: { ...fromHex, units: remainingFromUnits },
+          [defenderHexId]: { ...toHex, units: remainingAttackers, owner: currentPlayer.id },
+        };
+      } else if (conquered && remainingAttackers.length === 0) {
+        // Attacker wiped out too but defender was defeated — hex becomes unclaimed
+        newHexes = {
+          ...prev.hexes,
+          [attackerHexId]: { ...fromHex, units: remainingFromUnits },
+          [defenderHexId]: { ...toHex, units: [], owner: null },
+        };
+      } else {
+        // Defender holds — both sides take losses, nobody moves
+        newHexes = {
+          ...prev.hexes,
+          [attackerHexId]: { ...fromHex, units: [...remainingFromUnits, ...remainingAttackers] },
+          [defenderHexId]: { ...toHex, units: remainingDefenders },
+        };
+      }
+
+      return checkObjectives({ ...prev, hexes: newHexes });
+    });
+
+    setMovedHexes(prev => new Set([...prev, attackerHexId]));
+    setHexBattle(null);
+
+    if (conquered) {
+      addMessage(`🏴 Hex conquered! (A:-${result.attackerLosses} D:-${result.defenderLosses})`);
+      addLog('conquest', `Hex conquered in movement!`, `A:-${result.attackerLosses} D:-${result.defenderLosses}`, 'Move');
+    } else {
+      addMessage(`⚔️ Battle: A:-${result.attackerLosses} D:-${result.defenderLosses} — defender holds`);
+      addLog('attack', `Movement battle`, `A:-${result.attackerLosses} • D:-${result.defenderLosses}`, 'Move');
     }
   };
 
@@ -1453,6 +1551,51 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           onCancel={() => setBattle(null)}
         />
       )}
+
+      {hexBattle && gameState && (() => {
+        // Build a synthetic gameState for BattleModal using hex data
+        const atkHex = gameState.hexes[hexBattle.attackerHexId] || {};
+        const defHex = gameState.hexes[hexBattle.defenderHexId] || {};
+        const atkUnits = hexBattle.pendingMove.unitsToMove;
+        const defOwner = defHex.owner || 'neutral';
+        const defPlayerObj = gameState.players.find(p => p.id === defOwner);
+        const neutralName = defOwner?.startsWith('neutral_') ? defOwner.replace('neutral_', '') : defOwner;
+
+        const syntheticState = {
+          ...gameState,
+          territories: {
+            ...gameState.territories,
+            __hex_attacker__: {
+              id: '__hex_attacker__',
+              name: `Hex ${hexBattle.attackerHexId}`,
+              owner: currentPlayer.id,
+              troops: atkUnits.reduce((s, u) => s + u.count, 0),
+              units: atkUnits,
+              hasFortress: false,
+            },
+            __hex_defender__: {
+              id: '__hex_defender__',
+              name: `Hex ${hexBattle.defenderHexId}`,
+              owner: defOwner,
+              troops: defHex.units?.reduce((s, u) => s + u.count, 0) || 0,
+              units: defHex.units || [],
+              hasFortress: defHex.buildings?.fortress || false,
+            },
+          },
+          players: defPlayerObj ? gameState.players : [
+            ...gameState.players,
+            { id: defOwner, name: neutralName, color: '#888', isAI: true, factionId: null },
+          ],
+        };
+        return (
+          <BattleModal
+            gameState={syntheticState}
+            battle={{ attackerId: '__hex_attacker__', defenderId: '__hex_defender__' }}
+            onResult={handleHexBattleResult}
+            onCancel={() => { setHexBattle(null); setMovementState(null); setSelectedTerritory(null); }}
+          />
+        );
+      })()}
 
       {activeEvent && (
         <EventModal
