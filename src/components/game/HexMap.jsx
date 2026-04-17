@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import mapData from './ardonia_game_map.json';
 import { FACTIONS, FACTION_TO_NATION_ID } from './ardoniaData';
 
@@ -116,8 +116,78 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
   const HEX_SIZE = 2.5;
   const HEX_PX = HEX_SIZE * (SVG_W / 100);
   const [zoomTransform, setZoomTransform] = useState(null); // { tx, ty, scale }
+  const [movingUnits, setMovingUnits] = useState([]); // [{id, fromX, fromY, toX, toY, type, color, key}]
+  const prevHexesRef = useRef(null);
 
   const toSVG = (px, py) => ({ cx: (px / 100) * SVG_W, cy: (py / 100) * SVG_H });
+
+  // Build a hex position lookup: hexId -> {cx, cy}
+  const hexPosByIdRef = useRef({});
+  useEffect(() => {
+    const map = {};
+    mapData.hex_grid.forEach(h => {
+      const { cx, cy } = { cx: (h.x / 100) * SVG_W, cy: (h.y / 100) * SVG_H };
+      map[`${h.col},${h.row}`] = { cx, cy };
+    });
+    hexPosByIdRef.current = map;
+  }, []);
+
+  // Detect unit movements by comparing previous and current hexes
+  useEffect(() => {
+    if (!gameState?.hexes) { prevHexesRef.current = gameState?.hexes; return; }
+    const prev = prevHexesRef.current;
+    if (!prev) { prevHexesRef.current = gameState.hexes; return; }
+
+    const animations = [];
+    const hexPos = hexPosByIdRef.current;
+
+    // Build map: unitSignature -> hexId for previous state
+    const prevUnitMap = {}; // "playerId:unitType" -> [{hexId, count}]
+    Object.entries(prev).forEach(([hexId, hex]) => {
+      if (!hex.units?.length || !hex.owner) return;
+      (hex.units || []).forEach(u => {
+        const key = `${hex.owner}:${u.type}`;
+        if (!prevUnitMap[key]) prevUnitMap[key] = [];
+        prevUnitMap[key].push({ hexId, count: u.count });
+      });
+    });
+
+    // Check current hexes for units that appeared or grew
+    Object.entries(gameState.hexes).forEach(([hexId, hex]) => {
+      if (!hex.units?.length || !hex.owner) return;
+      (hex.units || []).forEach(u => {
+        const key = `${hex.owner}:${u.type}`;
+        const prevEntries = prevUnitMap[key] || [];
+        // If this hexId wasn't in prev for this key, units moved here
+        const wasHere = prevEntries.find(e => e.hexId === hexId);
+        if (!wasHere) {
+          // Find where they came from: any prev hex with same key that no longer has them (or has fewer)
+          const source = prevEntries[0]; // best guess: moved from first source
+          if (source && hexPos[source.hexId] && hexPos[hexId]) {
+            const from = hexPos[source.hexId];
+            const to = hexPos[hexId];
+            const player = gameState.players?.find(p => p.id === hex.owner);
+            animations.push({
+              key: `${Date.now()}-${hexId}-${u.type}`,
+              fromX: from.cx, fromY: from.cy,
+              toX: to.cx, toY: to.cy,
+              type: u.type,
+              color: player?.color || '#d4a853',
+            });
+          }
+        }
+      });
+    });
+
+    prevHexesRef.current = gameState.hexes;
+
+    if (animations.length > 0) {
+      setMovingUnits(animations);
+      // Clear after animation completes
+      const timer = setTimeout(() => setMovingUnits([]), 900);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState?.hexes]);
 
   // ── Game state helpers ──
   // Build a map from nation_id -> owner player id using territories
@@ -582,6 +652,44 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
               </text>
             </g>
           )}
+
+          {/* ── Unit movement animations ── */}
+          {movingUnits.map(anim => {
+            const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
+            const dx = anim.toX - anim.fromX;
+            const dy = anim.toY - anim.fromY;
+            return (
+              <g key={anim.key} style={{ pointerEvents: 'none' }}>
+                {/* Trail line */}
+                <line
+                  x1={anim.fromX} y1={anim.fromY}
+                  x2={anim.toX} y2={anim.toY}
+                  stroke={anim.color}
+                  strokeWidth={2}
+                  strokeOpacity={0.5}
+                  strokeDasharray="6,3"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <animate attributeName="strokeOpacity" from="0.7" to="0" dur="0.8s" fill="freeze" />
+                </line>
+                {/* Moving unit dot */}
+                <circle r={8} fill="#1a1a1a" stroke={anim.color} strokeWidth={2}>
+                  <animateMotion dur="0.7s" fill="freeze"
+                    path={`M${anim.fromX},${anim.fromY} L${anim.toX},${anim.toY}`} />
+                </circle>
+                <text textAnchor="middle" fontSize={13} dy="4">
+                  {icons[anim.type] || '⚔️'}
+                  <animateMotion dur="0.7s" fill="freeze"
+                    path={`M${anim.fromX},${anim.fromY} L${anim.toX},${anim.toY}`} />
+                </text>
+                {/* Arrival pulse ring */}
+                <circle cx={anim.toX} cy={anim.toY} r={4} fill="none" stroke={anim.color} strokeWidth={2}>
+                  <animate attributeName="r" from="4" to="18" dur="0.8s" fill="freeze" />
+                  <animate attributeName="strokeOpacity" from="0.9" to="0" dur="0.8s" fill="freeze" />
+                </circle>
+              </g>
+            );
+          })}
 
           {/* ── Faction labels ── */}
           {FACTION_CENTROIDS.map(fc => {
