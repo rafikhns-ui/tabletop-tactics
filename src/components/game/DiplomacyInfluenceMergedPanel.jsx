@@ -78,6 +78,9 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
   const [tradeTarget, setTradeTarget] = React.useState(null);
   const [tradeOffer, setTradeOffer] = React.useState({});
   const [tradeRequest, setTradeRequest] = React.useState({});
+  const [chatWithPlayer, setChatWithPlayer] = React.useState(null);
+  const [chatMessages, setChatMessages] = React.useState({});
+  const [chatInput, setChatInput] = React.useState('');
 
   if (!gameState || !currentPlayer) return null;
 
@@ -297,19 +300,92 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
           <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
             💬 Diplomacy Chat
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
-            {otherPlayers.map(player => (
-              <button key={player.id}
-                style={{
-                  padding: '12px', background: 'rgba(100,100,100,0.1)', border: '1px solid #2a2520',
-                  color: '#c8c0b0', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                  textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4,
+          {!chatWithPlayer ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
+              {otherPlayers.map(player => (
+                <button key={player.id} onClick={() => setChatWithPlayer(player.id)}
+                  style={{
+                    padding: '12px', background: 'rgba(100,100,100,0.1)', border: '1px solid #2a2520',
+                    color: '#c8c0b0', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                    textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4,
+                  }}>
+                  <span><span style={{ color: player.color }}>●</span> {player.name}</span>
+                  <span style={{ fontSize: 10, color: '#888' }}>{player.isAI ? '🤖 AI Opponent' : '👤 Human Player'}</span>
+                </button>
+              ))}
+            </div>
+          ) : (() => {
+            const selectedPlayer = gameState.players.find(p => p.id === chatWithPlayer);
+            const convKey = [currentPlayer.id, chatWithPlayer].sort().join('-');
+            const messages = chatMessages[convKey] || [];
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#d4a853', marginBottom: 8 }}>
+                  <span style={{ color: selectedPlayer.color }}>●</span> Chat with {selectedPlayer.name}
+                </div>
+                <div style={{
+                  background: '#0d0f14', border: '1px solid #2a2520', borderRadius: 4,
+                  height: 200, overflowY: 'auto', padding: 8, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 6,
                 }}>
-                <span><span style={{ color: player.color }}>●</span> {player.name}</span>
-                <span style={{ fontSize: 10, color: '#888' }}>{player.isAI ? '🤖 AI Opponent' : '👤 Human Player'}</span>
-              </button>
-            ))}
-          </div>
+                  {messages.length === 0 ? (
+                    <div style={{ color: '#555', fontStyle: 'italic', fontSize: 11, textAlign: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
+                      No messages yet. Start the conversation!
+                    </div>
+                  ) : (
+                    messages.map((msg, i) => (
+                      <div key={i} style={{
+                        padding: '6px 8px', background: msg.from === currentPlayer.id ? 'rgba(42,90,42,0.2)' : 'rgba(100,100,100,0.1)',
+                        borderRadius: 4, fontSize: 11, color: '#c8c0b0',
+                      }}>
+                        <div style={{ fontSize: 10, color: '#888', marginBottom: 2 }}>
+                          {msg.from === currentPlayer.id ? 'You' : selectedPlayer.name}
+                        </div>
+                        <div>{msg.text}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && chatInput.trim()) {
+                        setChatMessages(prev => ({
+                          ...prev,
+                          [convKey]: [...(prev[convKey] || []), { from: currentPlayer.id, text: chatInput }]
+                        }));
+                        setChatInput('');
+                      }
+                    }}
+                    placeholder="Type message..." style={{
+                      flex: 1, padding: '6px 8px', background: '#0d0f14', border: '1px solid #2a2520',
+                      color: '#c8c0b0', borderRadius: 4, fontSize: 11,
+                    }} />
+                  <button onClick={() => {
+                    if (chatInput.trim()) {
+                      setChatMessages(prev => ({
+                        ...prev,
+                        [convKey]: [...(prev[convKey] || []), { from: currentPlayer.id, text: chatInput }]
+                      }));
+                      setChatInput('');
+                    }
+                  }}
+                    style={{
+                      padding: '6px 12px', background: '#2a5a2a', border: '1px solid #5a9a5a',
+                      color: '#9afa9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
+                    }}>
+                    Send
+                  </button>
+                  <button onClick={() => setChatWithPlayer(null)}
+                    style={{
+                      padding: '6px 12px', background: '#3a3a3a', border: '1px solid #555',
+                      color: '#999', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
+                    }}>
+                    Back
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
