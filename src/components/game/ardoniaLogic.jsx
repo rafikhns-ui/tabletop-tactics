@@ -719,78 +719,183 @@ export const applyEventEffect = (gameState, event) => {
 // ---- AI Turn as sequential steps (for real-time visualization) ----
 export const getAiTurnSteps = (gameState) => {
   const steps = [];
-  let state = { ...gameState, hexes: { ...gameState.hexes }, players: gameState.players.map(p => ({ ...p, resources: { ...p.resources } })) };
+  let state = {
+    ...gameState,
+    hexes: { ...gameState.hexes },
+    players: gameState.players.map(p => ({ ...p, resources: { ...p.resources }, buildings: { ...p.buildings } })),
+  };
   const aiIndex = state.currentPlayerIndex;
   const ai = state.players[aiIndex];
   if (!ai?.isAI) return [];
 
   const difficulty = ai.difficulty || 'normal';
-  const skipChance = difficulty === 'easy' ? 0.35 : 0;
+  const skipChance = difficulty === 'easy' ? 0.4 : 0;
   const attackBonus = difficulty === 'hard' ? 1 : 0;
-  const maxAttacks = difficulty === 'hard' ? 3 : 1;
-  const minAdvantage = difficulty === 'easy' ? 3 : difficulty === 'hard' ? 1.3 : 2;
+  const maxAttacks = difficulty === 'hard' ? 4 : difficulty === 'normal' ? 2 : 1;
+  const minAdvantage = difficulty === 'easy' ? 2.5 : difficulty === 'hard' ? 1.2 : 1.8;
+  const buildingChance = difficulty === 'hard' ? 0.85 : difficulty === 'normal' ? 0.6 : 0.25;
+  const diplomacyChance = difficulty === 'hard' ? 0.75 : difficulty === 'normal' ? 0.5 : 0.15;
+  const cardChance = difficulty === 'hard' ? 0.7 : difficulty === 'normal' ? 0.45 : 0.1;
 
-  // Helper to get current AI player from state
   const getAI = () => state.players[aiIndex];
+  const pushStep = (message, type = 'ai') => {
+    steps.push({ state: JSON.parse(JSON.stringify(state)), message, type });
+  };
 
-  // STEP 1: Recruit infantry if resources allow
-  const recruitCandidates = ['infantry', 'infantry', 'cavalry'];
-  const recruits = [];
-  for (const unitId of recruitCandidates) {
-    const def = UNIT_DEFS[unitId];
-    if (!def) continue;
-    const cost = def.cost || {};
+  // ── STEP 1: Build a building if affordable ──
+  if (Math.random() < buildingChance) {
     const currentAi = getAI();
-    let canAfford = true;
-    for (const [k, v] of Object.entries(cost)) {
-      if ((currentAi.resources?.[k] ?? 0) < v) { canAfford = false; break; }
+    const gold = currentAi.resources?.gold || 0;
+    const wood = currentAi.resources?.wood || 0;
+    const existingBuildingIds = Object.keys(currentAi.buildings || {});
+
+    // Priority build list (barracks first so AI can recruit)
+    const buildPriority = ['barracks', 'mine', 'farm', 'lumber_mill', 'temple', 'stables', 'market'];
+    for (const bId of buildPriority) {
+      if (existingBuildingIds.includes(bId)) continue;
+      const def = BUILDING_DEFS[bId];
+      if (!def || !def.cost) continue;
+      const bgold = def.cost.gold || 0;
+      const bwood = def.cost.wood || 0;
+      if (gold >= bgold && wood >= bwood) {
+        const newResources = { ...currentAi.resources, gold: gold - bgold, wood: wood - bwood };
+        const newBuildings = { ...currentAi.buildings, [bId]: { ...def, level: 1, disabled: false } };
+        state = { ...state, players: state.players.map((p, i) => i === aiIndex ? { ...p, resources: newResources, buildings: newBuildings } : p) };
+        pushStep(`🏗️ ${ai.name} built a ${def.name || bId}`);
+        break;
+      }
     }
-    if (!canAfford) continue;
-    // Deduct cost
-    const newResources = { ...currentAi.resources };
-    for (const [k, v] of Object.entries(cost)) { newResources[k] = (newResources[k] || 0) - v; }
-    const newPending = [...(currentAi.pendingUnits || []), unitId];
-    state = { ...state, players: state.players.map((p, i) => i === aiIndex ? { ...p, resources: newResources, pendingUnits: newPending } : p) };
-    recruits.push(unitId);
-  }
-  if (recruits.length > 0) {
-    steps.push({ state: JSON.parse(JSON.stringify(state)), message: `🎖️ ${ai.name} recruited ${recruits.length} unit(s)` });
   }
 
-  // STEP 2: Deploy all pending units to the best hex
-  const pendingUnits = getAI().pendingUnits || [];
-  if (pendingUnits.length > 0) {
-    // Find best hex: owned, prioritize those with enemy neighbors
-    let bestHex = null, bestScore = -1;
-    Object.entries(state.hexes).forEach(([hexId, h]) => {
-      if (h.owner !== ai.id) return;
-      const neighbors = getHexNeighborIds(hexId);
-      const enemyNeighbors = neighbors.filter(nid => {
-        const nh = state.hexes[nid];
-        return nh && nh.owner && nh.owner !== ai.id;
-      }).length;
-      if (enemyNeighbors > bestScore) { bestScore = enemyNeighbors; bestHex = hexId; }
-    });
-    if (!bestHex) {
-      bestHex = Object.keys(state.hexes).find(id => state.hexes[id].owner === ai.id);
+  // ── STEP 2: Upgrade existing buildings if affordable ──
+  if (Math.random() < buildingChance * 0.6) {
+    const currentAi = getAI();
+    const gold = currentAi.resources?.gold || 0;
+    const wood = currentAi.resources?.wood || 0;
+    const upgradeTargets = ['mine', 'farm', 'lumber_mill', 'barracks'];
+    for (const bId of upgradeTargets) {
+      const b = currentAi.buildings?.[bId];
+      const def = BUILDING_DEFS[bId];
+      if (!b || !def || b.level >= (def.maxLevel || 3)) continue;
+      // Upgrade cost scales with level
+      const ub = def.upgradeBase || {};
+      const upgCost = typeof ub === 'object' && !Array.isArray(ub)
+        ? Object.fromEntries(Object.entries(ub).map(([k, v]) => [k, Math.ceil(v * b.level)]))
+        : {};
+      const ugold = upgCost.gold || 4;
+      const uwood = upgCost.wood || 2;
+      if (gold >= ugold && wood >= uwood) {
+        const newResources = { ...currentAi.resources, gold: gold - ugold, wood: wood - uwood };
+        const newBuildings = { ...currentAi.buildings, [bId]: { ...b, level: b.level + 1 } };
+        state = { ...state, players: state.players.map((p, i) => i === aiIndex ? { ...p, resources: newResources, buildings: newBuildings } : p) };
+        pushStep(`⬆️ ${ai.name} upgraded their ${def.name || bId} to level ${b.level + 1}`);
+        break;
+      }
     }
-    if (bestHex) {
-      let newHexes = { ...state.hexes };
-      const unitsToPlace = [...pendingUnits];
-      unitsToPlace.forEach(unitId => {
-        const hex = newHexes[bestHex] || {};
-        const hexUnits = (hex.units || []).map(u => ({ ...u }));
-        const existing = hexUnits.find(u => u.type === unitId);
-        if (existing) existing.count += 1;
-        else hexUnits.push({ type: unitId, count: 1 });
-        newHexes[bestHex] = { ...hex, units: hexUnits, owner: ai.id };
+  }
+
+  // ── STEP 3: Recruit units ──
+  {
+    const currentAi = getAI();
+    const hasBarracks = !!currentAi.buildings?.barracks;
+    const hasStables = !!currentAi.buildings?.stables;
+    // Candidates: always try infantry (available with mine/farm), cavalry if stables
+    const recruitCandidates = [];
+    if (hasBarracks) recruitCandidates.push('infantry', 'infantry', 'elite');
+    else recruitCandidates.push('infantry', 'infantry'); // infantry only needs gold+wheat
+    if (hasStables) recruitCandidates.push('cavalry');
+
+    const recruits = [];
+    for (const unitId of recruitCandidates) {
+      const def = UNIT_DEFS[unitId];
+      if (!def) continue;
+      const cost = def.cost || {};
+      const curAi = getAI();
+      let canAfford = true;
+      for (const [k, v] of Object.entries(cost)) {
+        if ((curAi.resources?.[k] ?? 0) < v) { canAfford = false; break; }
+      }
+      if (!canAfford) continue;
+      const newResources = { ...curAi.resources };
+      for (const [k, v] of Object.entries(cost)) { newResources[k] = (newResources[k] || 0) - v; }
+      const newPending = [...(curAi.pendingUnits || []), unitId];
+      state = { ...state, players: state.players.map((p, i) => i === aiIndex ? { ...p, resources: newResources, pendingUnits: newPending } : p) };
+      recruits.push(unitId);
+    }
+    if (recruits.length > 0) {
+      pushStep(`🎖️ ${ai.name} recruited ${recruits.length} unit(s): ${recruits.join(', ')}`);
+    }
+  }
+
+  // ── STEP 4: Deploy all pending units to best frontline hex ──
+  {
+    const pendingUnits = getAI().pendingUnits || [];
+    if (pendingUnits.length > 0) {
+      let bestHex = null, bestScore = -1;
+      Object.entries(state.hexes).forEach(([hexId, h]) => {
+        if (h.owner !== ai.id) return;
+        const neighbors = getHexNeighborIds(hexId);
+        const enemyNeighbors = neighbors.filter(nid => {
+          const nh = state.hexes[nid];
+          return nh && nh.owner && nh.owner !== ai.id;
+        }).length;
+        // also score by total units already there (reinforce strong positions)
+        const unitCount = (h.units || []).reduce((s, u) => s + u.count, 0);
+        const score = enemyNeighbors * 3 + unitCount;
+        if (score > bestScore) { bestScore = score; bestHex = hexId; }
       });
-      state = { ...state, hexes: newHexes, players: state.players.map((p, i) => i === aiIndex ? { ...p, pendingUnits: [] } : p) };
-      steps.push({ state: JSON.parse(JSON.stringify(state)), message: `🚖 ${ai.name} deployed ${unitsToPlace.length} unit(s)` });
+      if (!bestHex) {
+        bestHex = Object.keys(state.hexes).find(id => state.hexes[id].owner === ai.id);
+      }
+      if (bestHex) {
+        let newHexes = { ...state.hexes };
+        const unitsToPlace = [...pendingUnits];
+        unitsToPlace.forEach(unitId => {
+          const hex = newHexes[bestHex] || {};
+          const hexUnits = (hex.units || []).map(u => ({ ...u }));
+          const existing = hexUnits.find(u => u.type === unitId);
+          if (existing) existing.count += 1;
+          else hexUnits.push({ type: unitId, count: 1 });
+          newHexes[bestHex] = { ...hex, units: hexUnits, owner: ai.id };
+        });
+        state = { ...state, hexes: newHexes, players: state.players.map((p, i) => i === aiIndex ? { ...p, pendingUnits: [] } : p) };
+        pushStep(`🚩 ${ai.name} deployed ${unitsToPlace.length} unit(s) to the frontline`);
+      }
     }
   }
 
-  // STEP 3: Attack adjacent enemy hexes
+  // ── STEP 5: Move units toward enemy territory ──
+  if (Math.random() > 0.3) {
+    const aiHexes = Object.entries(state.hexes).filter(([, h]) => h.owner === ai.id && (h.units || []).reduce((s, u) => s + u.count, 0) >= 2);
+    for (const [fromId, fromHex] of aiHexes.slice(0, 2)) {
+      // Find a neighbor that is either unowned or owned by someone else (expand/advance)
+      const neighbors = getHexNeighborIds(fromId);
+      const moveTarget = neighbors.find(nid => {
+        const nh = state.hexes[nid];
+        if (!nh) return false;
+        // Move into unowned hexes in the same nation or neutral
+        return nh.owner !== ai.id && nh.type !== 'water' && !nh.owner;
+      });
+      if (moveTarget) {
+        const newHexes = { ...state.hexes };
+        const movedUnits = [...(fromHex.units || [])];
+        newHexes[fromId] = { ...fromHex, units: [] };
+        const destHex = newHexes[moveTarget] || {};
+        const destUnits = [...(destHex.units || [])];
+        movedUnits.forEach(mu => {
+          const ex = destUnits.find(u => u.type === mu.type);
+          if (ex) ex.count += mu.count;
+          else destUnits.push({ ...mu });
+        });
+        newHexes[moveTarget] = { ...destHex, units: destUnits, owner: ai.id };
+        state = { ...state, hexes: newHexes };
+        pushStep(`🚶 ${ai.name} advanced troops into new territory`);
+        break;
+      }
+    }
+  }
+
+  // ── STEP 6: Attack adjacent enemy hexes ──
   if (Math.random() >= skipChance) {
     const aiHexes = Object.entries(state.hexes)
       .filter(([, h]) => h.owner === ai.id)
@@ -803,19 +908,21 @@ export const getAiTurnSteps = (gameState) => {
       if (fromCount < 2) continue;
 
       const neighbors = getHexNeighborIds(fromId);
+      // Target enemy-owned hexes (including those with 0 units = easy capture)
       const targets = neighbors
         .map(nid => [nid, state.hexes[nid]])
         .filter(([, nh]) => nh && nh.owner && nh.owner !== ai.id)
         .filter(([, nh]) => {
           const defCount = nh.units?.reduce((s, u) => s + u.count, 0) || 0;
           return defCount === 0 || fromCount >= defCount * minAdvantage;
-        });
+        })
+        .sort((a, b) => (a[1].units?.reduce((s, u) => s + u.count, 0) || 0) - (b[1].units?.reduce((s, u) => s + u.count, 0) || 0));
 
       if (targets.length > 0) {
         const [targetId, targetHex] = targets[0];
         const defCount = targetHex.units?.reduce((s, u) => s + u.count, 0) || 0;
         const fromUnits = fromHex.units?.length > 0 ? fromHex.units : [{ type: 'infantry', count: fromCount }];
-        const defUnits = targetHex.units?.length > 0 ? targetHex.units : [{ type: 'infantry', count: Math.max(1, defCount) }];
+        const defUnits = defCount > 0 ? (targetHex.units?.length > 0 ? targetHex.units : [{ type: 'infantry', count: defCount }]) : [{ type: 'infantry', count: 1 }];
         const result = resolveBattle(fromUnits, defUnits, targetHex.buildings?.fortress, { attackBonus });
         const conquered = result.defenderLosses >= defCount || defCount === 0;
 
@@ -826,18 +933,68 @@ export const getAiTurnSteps = (gameState) => {
           const movedCount = Math.max(1, Math.floor(newFromUnits.reduce((s, u) => s + u.count, 0) / 2));
           newHexes[targetId] = { ...targetHex, units: [{ type: (newFromUnits[0]?.type || 'infantry'), count: movedCount }], owner: ai.id };
           newHexes[fromId] = { ...fromHex, units: newFromUnits.map(u => ({ ...u, count: Math.max(1, u.count - movedCount) })) };
+          state = { ...state, hexes: newHexes };
+          pushStep(`⚔️ ${ai.name} conquered a hex! (A:-${result.attackerLosses} D:-${result.defenderLosses})`);
         } else {
           const newDefUnits = defUnits.map(u => ({ ...u, count: Math.max(0, u.count - result.defenderLosses) })).filter(u => u.count > 0);
           newHexes[targetId] = { ...targetHex, units: newDefUnits };
           newHexes[fromId] = { ...fromHex, units: newFromUnits };
+          state = { ...state, hexes: newHexes };
+          pushStep(`⚔️ ${ai.name} attacked (A:-${result.attackerLosses} D:-${result.defenderLosses})`);
         }
-        state = { ...state, hexes: newHexes };
-        steps.push({
-          state: JSON.parse(JSON.stringify(state)),
-          message: conquered ? `⚔️ ${ai.name} conquered a hex!` : `⚔️ ${ai.name} attacked (A:-${result.attackerLosses} D:-${result.defenderLosses})`
-        });
         attacksDone++;
       }
+    }
+  }
+
+  // ── STEP 7: Diplomacy — trade offer or alliance ──
+  if (Math.random() < diplomacyChance) {
+    const currentAi = getAI();
+    const humanPlayers = state.players.filter(p => !p.isAI);
+    if (humanPlayers.length > 0 && (currentAi.resources?.gold || 0) >= 2) {
+      const target = humanPlayers[Math.floor(Math.random() * humanPlayers.length)];
+      // Offer 1 gold for 1 wheat or wood
+      const offerResource = Math.random() > 0.5 ? 'wood' : 'wheat';
+      const tradeOffer = {
+        fromId: ai.id,
+        toId: target.id,
+        offer: { gold: 1 },
+        request: { [offerResource]: 1 },
+        id: Date.now() + Math.random(),
+      };
+      // Store pending trade in state for display; Game.jsx will pick this up
+      state = {
+        ...state,
+        pendingAiTradeOffers: [...(state.pendingAiTradeOffers || []), tradeOffer],
+        diplomaticEvents: [...(state.diplomaticEvents || []), {
+          type: 'trade_offer',
+          text: `${ai.name} offered 1 Gold for 1 ${offerResource} to ${target.name}`,
+          turn: state.turn,
+        }],
+      };
+      pushStep(`📜 ${ai.name} offered trade to ${target.name}: 1 Gold ↔ 1 ${offerResource}`);
+    }
+  }
+
+  // ── STEP 8: Buy / play an action card ──
+  if (Math.random() < cardChance) {
+    const currentAi = getAI();
+    const gold = currentAi.resources?.gold || 0;
+    if (gold >= 2) {
+      // Draw a random card from ACTION_CARDS pool (pick diplomatic/military theme)
+      const cardPool = ['diplomatic_favor', 'faith_surge', 'rally', 'war_profiteering', 'economic_boom'];
+      const pickedCard = cardPool[Math.floor(Math.random() * cardPool.length)];
+      // "Buy" card — deduct 2 gold and add it
+      const newResources = { ...currentAi.resources, gold: gold - 2 };
+      const newCards = [...(currentAi.actionCards || []), pickedCard];
+      // Also immediately "play" it for IP/SP effect
+      let newIp = currentAi.ip ?? 0;
+      let newSp = currentAi.sp ?? 0;
+      if (pickedCard === 'diplomatic_favor') newIp = Math.min(10, newIp + 3);
+      if (pickedCard === 'faith_surge') newSp = Math.min(10, newSp + 3);
+      if (pickedCard === 'war_profiteering') newIp = Math.min(10, newIp + 1);
+      state = { ...state, players: state.players.map((p, i) => i === aiIndex ? { ...p, resources: newResources, actionCards: newCards, ip: newIp, sp: newSp } : p) };
+      pushStep(`🃏 ${ai.name} played action card: ${pickedCard.replace(/_/g, ' ')}`);
     }
   }
 

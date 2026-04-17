@@ -1006,17 +1006,25 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
 
       const endAiTurn = (finalState) => {
         try {
-      const nextIndex = (finalState.currentPlayerIndex + 1) % (finalState.players?.length || 1);
-      const nextState = collectIncome({ ...finalState, currentPlayerIndex: nextIndex, turn: finalState.turn + (nextIndex === 0 ? 1 : 0) });
-      setGameState(checkObjectives(nextState));
-      setPhase('deploy');
-      addMessage(`🌟 ${cp.name} ended their turn`);
-      setTurnLog(prev => [...prev, { type: 'default', text: `${cp.name} ended their turn` }]);
-    } catch (e) {
-      console.error('AI endTurn error:', e);
-    } finally {
-      isAiRunningRef.current = false;
-    }
+          // Flush any AI trade offers into the tradeOffers state
+          const aiOffers = finalState.pendingAiTradeOffers || [];
+          if (aiOffers.length > 0) {
+            setTradeOffers(prev => [...prev, ...aiOffers]);
+            // Switch to diplomacy tab so human notices
+            setBottomTab('diplomacy');
+          }
+          const cleanState = { ...finalState, pendingAiTradeOffers: [] };
+          const nextIndex = (cleanState.currentPlayerIndex + 1) % (cleanState.players?.length || 1);
+          const nextState = collectIncome({ ...cleanState, currentPlayerIndex: nextIndex, turn: cleanState.turn + (nextIndex === 0 ? 1 : 0) });
+          setGameState(checkObjectives(nextState));
+          setPhase('deploy');
+          addMessage(`🌟 ${cp.name} ended their turn`);
+          setTurnLog(prev => [...prev, { type: 'default', text: `${cp.name} ended their turn`, phase: 'AI Turn', playerName: cp.name, playerColor: cp.color }]);
+        } catch (e) {
+          console.error('AI endTurn error:', e);
+        } finally {
+          isAiRunningRef.current = false;
+        }
       };
 
       if (steps.length === 0) {
@@ -1029,14 +1037,22 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           setGameState(checkObjectives(step.state));
           if (step.message) {
             addMessage(step.message);
-            setTurnLog(prev => [...prev, { type: 'attack', text: step.message, detail: null, phase: 'AI Turn', playerName: cp.name, playerColor: cp.color }]);
+            // Map step type to log entry type
+            const logType = step.message.startsWith('⚔️') ? 'attack'
+              : step.message.startsWith('🏗️') || step.message.startsWith('⬆️') ? 'build'
+              : step.message.startsWith('🎖️') ? 'recruit'
+              : step.message.startsWith('🚩') || step.message.startsWith('🚶') ? 'move'
+              : step.message.startsWith('📜') ? 'diplomacy'
+              : step.message.startsWith('🃏') ? 'card'
+              : 'default';
+            setTurnLog(prev => [...prev, { type: logType, text: step.message, detail: null, phase: 'AI Turn', playerName: cp.name, playerColor: cp.color }]);
           }
           if (i === steps.length - 1) {
-            schedule(() => endAiTurn(step.state), 800);
+            schedule(() => endAiTurn(step.state), 600);
           }
-        }, i * 800);
+        }, i * 700);
       });
-    }, 600);
+    }, 500);
 
     return () => {
       timeouts.forEach(clearTimeout);
