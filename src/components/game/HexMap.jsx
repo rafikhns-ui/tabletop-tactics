@@ -161,6 +161,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
   const HEX_SIZE = 2.5;
   const HEX_PX = HEX_SIZE * (SVG_W / 100);
   const [zoomTransform, setZoomTransform] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(4);
   const [movingUnits, setMovingUnits] = useState([]);
   const prevHexesRef = useRef(null);
 
@@ -283,11 +284,11 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
     if (onHexClick) onHexClick(hexId);
     // Zoom into clicked hex
     const { cx, cy } = toSVG(hex.x, hex.y);
-    const scale = 4;
+    setZoomLevel(4);
     const zt = {
-      tx: SVG_W / 2 - cx * scale,
-      ty: SVG_H / 2 - cy * scale,
-      scale,
+      tx: SVG_W / 2 - cx * 4,
+      ty: SVG_H / 2 - cy * 4,
+      scale: 4,
     };
     setZoomTransform(zt);
     if (onZoomChange) onZoomChange(zt);
@@ -295,7 +296,38 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
   const handleZoomOut = () => {
     setZoomTransform(null);
+    setZoomLevel(4);
     if (onZoomChange) onZoomChange(null);
+  };
+
+  const handleZoomIn = () => {
+    if (!zoomTransform || !selected) return;
+    const newLevel = Math.min(zoomLevel + 1, 8);
+    setZoomLevel(newLevel);
+    const { cx, cy } = toSVG(selected.x, selected.y);
+    const zt = {
+      tx: SVG_W / 2 - cx * newLevel,
+      ty: SVG_H / 2 - cy * newLevel,
+      scale: newLevel,
+    };
+    setZoomTransform(zt);
+  };
+
+  const handleZoomDecrement = () => {
+    if (!zoomTransform || !selected) return;
+    const newLevel = Math.max(zoomLevel - 1, 4);
+    if (newLevel === 4) {
+      handleZoomOut();
+      return;
+    }
+    setZoomLevel(newLevel);
+    const { cx, cy } = toSVG(selected.x, selected.y);
+    const zt = {
+      tx: SVG_W / 2 - cx * newLevel,
+      ty: SVG_H / 2 - cy * newLevel,
+      scale: newLevel,
+    };
+    setZoomTransform(zt);
   };
 
 
@@ -394,17 +426,43 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
       {/* ══════ SVG MAP ══════ */}
       <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
         {zoomTransform && (
-          <button
-            onClick={handleZoomOut}
-            style={{
-              position: 'absolute', top: 10, left: 10, zIndex: 10,
-              background: '#1a1c22', border: '1px solid #d4a853',
-              color: '#d4a853', fontFamily: "'Cinzel',serif",
-              fontSize: 11, padding: '4px 12px', borderRadius: 4,
-              cursor: 'pointer',
-            }}>
-            ← Zoom Out
-          </button>
+          <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 10, display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button
+              onClick={handleZoomDecrement}
+              disabled={zoomLevel === 4}
+              style={{
+                background: zoomLevel === 4 ? '#2a2520' : '#1a1c22', border: '1px solid #d4a853',
+                color: zoomLevel === 4 ? '#666' : '#d4a853', fontFamily: "'Cinzel',serif",
+                fontSize: 11, padding: '4px 8px', borderRadius: 4,
+                cursor: zoomLevel === 4 ? 'not-allowed' : 'pointer', opacity: zoomLevel === 4 ? 0.5 : 1,
+              }}>
+              −
+            </button>
+            <span style={{ fontSize: 11, color: '#d4a853', fontFamily: "'Cinzel',serif", minWidth: '32px', textAlign: 'center' }}>
+              {zoomLevel}x
+            </span>
+            <button
+              onClick={handleZoomIn}
+              disabled={zoomLevel === 8}
+              style={{
+                background: zoomLevel === 8 ? '#2a2520' : '#1a1c22', border: '1px solid #d4a853',
+                color: zoomLevel === 8 ? '#666' : '#d4a853', fontFamily: "'Cinzel',serif",
+                fontSize: 11, padding: '4px 8px', borderRadius: 4,
+                cursor: zoomLevel === 8 ? 'not-allowed' : 'pointer', opacity: zoomLevel === 8 ? 0.5 : 1,
+              }}>
+              +
+            </button>
+            <button
+              onClick={handleZoomOut}
+              style={{
+                background: '#1a1c22', border: '1px solid #d4a853',
+                color: '#d4a853', fontFamily: "'Cinzel',serif",
+                fontSize: 11, padding: '4px 12px', borderRadius: 4,
+                cursor: 'pointer', marginLeft: 4,
+              }}>
+              ← Out
+            </button>
+          </div>
         )}
         <svg
           viewBox={`-120 -80 ${SVG_W + 240} ${SVG_H + 160}`}
