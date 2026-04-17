@@ -362,6 +362,13 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     
     // Handle building placement mode
     if (buildingPlacementMode) {
+      // Check if hex is owned by current player
+      const hexOwner = resolveHexOwner(hexId);
+      if (hexOwner !== currentPlayer.id) {
+        addMessage('⛔ You can only place buildings in territories you control');
+        return;
+      }
+      
       // Check if port is placed on coastal tile
       if (buildingPlacementMode === 'port') {
         const terrain = HEX_TERRAIN_LOOKUP[hexId];
