@@ -361,15 +361,46 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         }
 
         const targetOwner = resolveHexOwner(hexId);
+        const panelSelected = movementState.panelSelectedUnits; // may be undefined
         setGameState(prev => {
           const fromHex = prev.hexes[fromHexId] || {};
           const toHex = prev.hexes[hexId] || {};
+          let remainingFromUnits = [...(fromHex.units || [])];
+          let unitsToMove;
+
+          if (panelSelected && panelSelected.length > 0) {
+            // Move only the selected unit types (matched by type, one at a time)
+            unitsToMove = [];
+            const toRemove = [...panelSelected];
+            remainingFromUnits = remainingFromUnits.map(u => ({ ...u }));
+            for (const sel of toRemove) {
+              const existing = remainingFromUnits.find(u => u.type === sel.type && u.count > 0);
+              if (existing) {
+                existing.count -= 1;
+                unitsToMove.push({ type: sel.type, count: 1 });
+              }
+            }
+            remainingFromUnits = remainingFromUnits.filter(u => u.count > 0);
+          } else {
+            // Move all units
+            unitsToMove = [...(fromHex.units || [])];
+            remainingFromUnits = [];
+          }
+
+          // Merge moved units into destination
+          const mergedToUnits = [...(toHex.units || [])];
+          for (const mu of unitsToMove) {
+            const ex = mergedToUnits.find(u => u.type === mu.type);
+            if (ex) ex.count += mu.count;
+            else mergedToUnits.push({ ...mu });
+          }
+
           return {
             ...prev,
             hexes: {
               ...prev.hexes,
-              [fromHexId]: { ...fromHex, units: [] },
-              [hexId]: { ...toHex, units: [...(toHex.units || []), ...(fromHex.units || [])], owner: currentPlayer.id },
+              [fromHexId]: { ...fromHex, units: remainingFromUnits },
+              [hexId]: { ...toHex, units: mergedToUnits, owner: currentPlayer.id },
             },
           };
         });
@@ -679,6 +710,20 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
   };
 
 
+
+  // Called when user selects units from the side panel to move
+  const handlePanelUnitSelect = (fromHexId, selectedUnits) => {
+    if (!selectedUnits || selectedUnits.length === 0) return;
+    // Switch to move phase if not already
+    if (phase !== 'move') setPhase('move');
+    // Use the first selected unit's type to determine speed
+    const primaryUnit = selectedUnits[0];
+    const def = UNIT_DEFS[primaryUnit.type];
+    const speed = def?.movementRange ?? 2;
+    setSelectedTerritory(fromHexId);
+    setMovementState({ fromHexId, selectedUnit: primaryUnit.type, speed, panelSelectedUnits: selectedUnits });
+    addMessage(`🚶 ${selectedUnits.length} unit(s) selected — click destination hex on the map`);
+  };
 
   const handleDrawCard = (card) => {
     setGameState(prev => {
@@ -1136,6 +1181,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               highlightPlayerId={highlightedPlayerId || (highlightMyTerritories ? currentPlayer?.id : null)}
               reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
               onZoomChange={setMapZoomTransform}
+              onSelectPanelUnit={handlePanelUnitSelect}
             />
             {mapZoomTransform && (
               <MiniMap

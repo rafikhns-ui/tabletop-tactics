@@ -102,13 +102,14 @@ function hexNeighborKeys(gc, gr) {
 }
 
 // ══════ COMPONENT ══════
-export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, highlightPlayerId, reachableHexes, onZoomChange }) {
+export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, highlightPlayerId, reachableHexes, onZoomChange, onSelectPanelUnit }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
   const [panelTab, setPanelTab] = useState('selected');
   const [hoveredBorder, setHoveredBorder] = useState(null);
   const [tooltipPos, setTooltipPos] = useState(null);
+  const [selectedPanelUnits, setSelectedPanelUnits] = useState(new Set()); // Set of unit type indices
 
   const SVG_W = 1200;
   const SVG_H = 900;
@@ -149,6 +150,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
     const hexId = `${hex.col},${hex.row}`;
     const hexWithBuildings = { ...hex, buildings: gameState?.hexes?.[hexId]?.buildings };
     setSelected(hexWithBuildings);
+    setSelectedPanelUnits(new Set());
     setPanelTab('selected');
     if (onHexClick) onHexClick(hexId);
     // Zoom into clicked hex
@@ -812,27 +814,98 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
           {panelTab === 'units' && selected && (() => {
             const hexId = `${selected.col},${selected.row}`;
             const panelUnits = getUnits(hexId);
+            const hexOwner = getOwner(hexId, selected?.nation_id);
+            const isMyHex = hexOwner === currentPlayer?.id;
+            const canMove = phase === 'move' && isMyHex && !currentPlayer?.isAI;
+            const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
+            const typeNames = { infantry: 'Infantry', cavalry: 'Cavalry', elite: 'Elite Guard', ranged: 'Ranged', siege: 'Siege Engine', naval: 'Warship' };
+
+            const toggleUnit = (idx) => {
+              if (!canMove) return;
+              setSelectedPanelUnits(prev => {
+                const next = new Set(prev);
+                if (next.has(idx)) next.delete(idx);
+                else next.add(idx);
+                return next;
+              });
+            };
+
+            const handleMoveSelected = () => {
+              if (selectedPanelUnits.size === 0 || !onSelectPanelUnit) return;
+              const selectedUnitTypes = [...selectedPanelUnits].map(idx => panelUnits[idx]);
+              onSelectPanelUnit(hexId, selectedUnitTypes);
+              setSelectedPanelUnits(new Set());
+            };
+
             return (
-            <div>
-              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, marginBottom: 8 }}>UNITS ON HEX</div>
-              {panelUnits.length > 0 ? (
-                <div>
-                  {panelUnits.map((u, i) => {
-                    const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
-                    const typeNames = { infantry: 'Infantry', cavalry: 'Cavalry', elite: 'Elite', ranged: 'Ranged', siege: 'Siege', naval: 'Naval' };
-                    return (
-                      <div key={i} style={{ fontSize: 13, color: '#c8c0b0', marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid #2a2520' }}>
-                        <span style={{ fontSize: 14, marginRight: 8 }}>{icons[u.type] || '⚔️'}</span>
-                        <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{typeNames[u.type] || u.type}</span>
-                        {u.count && <span style={{ marginLeft: 8, color: '#7a6a50' }}>x{u.count}</span>}
-                      </div>
-                    );
-                  })}
+              <div>
+                <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
+                  UNITS ON HEX
                 </div>
-              ) : (
-                <div style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>No units on this hex</div>
-              )}
-            </div>
+                {canMove && (
+                  <div style={{ fontSize: 11, color: '#7a9a7a', marginBottom: 8, padding: '6px 8px', background: 'rgba(100,160,100,0.1)', border: '1px solid #3a5a3a', borderRadius: 4 }}>
+                    Click units to select · then click destination on map
+                  </div>
+                )}
+                {panelUnits.length > 0 ? (
+                  <div>
+                    {panelUnits.map((u, i) => {
+                      const isSelected = selectedPanelUnits.has(i);
+                      return (
+                        <div key={i}
+                          onClick={() => toggleUnit(i)}
+                          style={{
+                            fontSize: 13,
+                            color: isSelected ? '#d4a853' : '#c8c0b0',
+                            marginBottom: 6,
+                            paddingBottom: 6,
+                            borderBottom: '1px solid #2a2520',
+                            padding: '8px',
+                            borderRadius: 4,
+                            cursor: canMove ? 'pointer' : 'default',
+                            background: isSelected ? 'rgba(212,168,83,0.15)' : 'transparent',
+                            border: isSelected ? '1px solid #d4a853' : '1px solid transparent',
+                            transition: 'all 0.15s',
+                            display: 'flex', alignItems: 'center', gap: 8,
+                          }}>
+                          {canMove && (
+                            <div style={{
+                              width: 14, height: 14, borderRadius: 3, border: '1.5px solid',
+                              borderColor: isSelected ? '#d4a853' : '#555',
+                              background: isSelected ? '#d4a853' : 'transparent',
+                              flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 9, color: '#1a1a1a',
+                            }}>
+                              {isSelected ? '✓' : ''}
+                            </div>
+                          )}
+                          <span style={{ fontSize: 18 }}>{icons[u.type] || '⚔️'}</span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontFamily: "'Cinzel', serif", fontWeight: 600, fontSize: 12 }}>{typeNames[u.type] || u.type}</div>
+                            {u.count > 1 && <div style={{ fontSize: 11, color: '#7a6a50' }}>×{u.count} units</div>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {canMove && selectedPanelUnits.size > 0 && (
+                      <button
+                        onClick={handleMoveSelected}
+                        style={{
+                          width: '100%', marginTop: 8, padding: '8px',
+                          background: 'linear-gradient(135deg, #3a6a3a, #2a4a2a)',
+                          border: '1px solid #5a9a5a', borderRadius: 4,
+                          color: '#9afa9a', fontFamily: "'Cinzel', serif",
+                          fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                          letterSpacing: 0.5,
+                        }}>
+                        🚶 Move {selectedPanelUnits.size} unit{selectedPanelUnits.size > 1 ? 's' : ''} — click destination
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>No units on this hex</div>
+                )}
+              </div>
             );
           })()}
 
