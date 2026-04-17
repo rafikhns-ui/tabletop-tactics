@@ -651,9 +651,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                            <circle cx={xPos} cy={yPos} r={8} fill="#111827" stroke={ringColor} strokeWidth={1.5} />
                            {/* Custom unit images or emoji */}
                            {isElite ? (
-                             <image href="https://media.base44.com/images/public/69b732e420481df67e8a6804/071bb3933_elite.png" x={xPos - 11} y={yPos - 11} width={22} height={22} preserveAspectRatio="xMidYMid slice" />
+                             <image href="https://media.base44.com/images/public/69b732e420481df67e8a6804/071bb3933_elite.png" x={xPos - 14} y={yPos - 14} width={28} height={28} preserveAspectRatio="xMidYMid slice" />
                            ) : isRanged ? (
-                             <image href="https://media.base44.com/images/public/69b732e420481df67e8a6804/57eaf9620_crossbow.jpeg" x={xPos - 11} y={yPos - 11} width={22} height={22} preserveAspectRatio="xMidYMid slice" />
+                             <image href="https://media.base44.com/images/public/69b732e420481df67e8a6804/57eaf9620_crossbow.jpeg" x={xPos - 14} y={yPos - 14} width={28} height={28} preserveAspectRatio="xMidYMid slice" />
                            ) : (
                              <text x={xPos} y={yPos + 4} textAnchor="middle" fontSize={11} style={{ pointerEvents: 'none' }}>
                                {icons[u.type] || '⚔️'}
