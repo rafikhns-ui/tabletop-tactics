@@ -233,6 +233,11 @@ function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers
           <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
             💼 Create Trade Offer
           </h3>
+          {!currentPlayer.buildings?.market ? (
+            <div style={{ fontSize: 12, color: '#f0c040', padding: '12px', background: 'rgba(240,192,64,0.1)', border: '1px solid #d4a853', borderRadius: 4, marginBottom: 12 }}>
+              🏪 You need to construct a Market to trade with other players.
+            </div>
+          ) : (
           <div style={{ marginBottom: 12 }}>
             <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 4 }}>Recipient:</label>
             <select value={tradeTarget || ''} onChange={(e) => setTradeTarget(e.target.value)}
@@ -300,6 +305,7 @@ function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers
               </button>
             );
           })()}
+          )}
         </div>
       )}
     </div>
