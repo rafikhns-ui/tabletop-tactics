@@ -78,7 +78,7 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
 function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers, onAcceptTrade, onDeclineTrade }) {
   if (!gameState || !currentPlayer) return null;
 
-  const otherPlayers = gameState.players.filter(p => p.id !== currentPlayer.id && !p.isAI);
+  const otherPlayers = gameState.players.filter(p => p.id !== currentPlayer.id);
   const incomingOffers = tradeOffers.filter(o => o.toId === currentPlayer.id);
   const outgoingOffers = tradeOffers.filter(o => o.fromId === currentPlayer.id);
 
@@ -158,7 +158,7 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
           ⚔️ Diplomatic Relations
         </h3>
         {otherPlayers.length === 0 ? (
-          <div style={{ color: '#555', fontStyle: 'italic' }}>No human players to interact with</div>
+          <div style={{ color: '#555', fontStyle: 'italic' }}>No players to interact with</div>
         ) : (
           otherPlayers.map(player => (
             <div key={player.id} style={{
@@ -166,7 +166,7 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
               padding: 12, marginBottom: 8,
             }}>
               <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                <span style={{ color: player.color }}>●</span> {player.name}
+                <span style={{ color: player.color }}>●</span> {player.name} {player.isAI && <span style={{ color: '#888', fontSize: 10 }}>(AI)</span>}
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 <button onClick={() => onDiplomacyAction({ type: 'alliance', fromId: currentPlayer.id, toId: player.id })}
@@ -221,13 +221,18 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
       {aiPlayers.length === 0 ? (
         <div style={{ color: '#555', fontStyle: 'italic' }}>No AI opponents to influence</div>
       ) : (
-        aiPlayers.map(aiPlayer => (
+        aiPlayers.map(aiPlayer => {
+          const aiLevel = aiPlayer.influenceLevel ?? 0;
+          return (
           <div key={aiPlayer.id} style={{
             background: 'rgba(100,100,100,0.1)', border: '1px solid #2a2520', borderRadius: 6,
             padding: 12, marginBottom: 12,
           }}>
-            <div style={{ fontWeight: 600, marginBottom: 10 }}>
-              <span style={{ color: aiPlayer.color }}>●</span> {aiPlayer.name}
+            <div style={{ fontWeight: 600, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span><span style={{ color: aiPlayer.color }}>●</span> {aiPlayer.name}</span>
+              <span style={{ fontSize: 12, color: '#d4a853', background: 'rgba(212,168,83,0.2)', padding: '4px 8px', borderRadius: 3 }}>
+                Influence: {aiLevel}
+              </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
               {actions.map(action => (
@@ -243,7 +248,8 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
               ))}
             </div>
           </div>
-        ))
+        );
+        })
       )}
     </div>
   );
