@@ -3,97 +3,18 @@ import { base44 } from '@/api/base44Client';
 
 export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer, onDiplomacyAction, onInfluenceAction, tradeOffers, onAcceptTrade, onDeclineTrade, onClose }) {
   const [activeTab, setActiveTab] = useState('diplomacy');
-
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }} onClick={onClose}>
-      <div style={{
-        background: 'linear-gradient(135deg, #1a1c22, #14161c)',
-        border: '1px solid #d4a853', borderRadius: 8,
-        maxWidth: '90vw', maxHeight: '90vh', width: '900px',
-        display: 'flex', flexDirection: 'column',
-      }} onClick={e => e.stopPropagation()}>
-
-        {/* Header */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '16px 20px', borderBottom: '1px solid #2a2520',
-          fontFamily: "'Cinzel', serif",
-        }}>
-          <h2 style={{ color: '#d4a853', fontSize: 18, fontWeight: 700, margin: 0 }}>
-            🕊️ Diplomacy & Influence
-          </h2>
-          <button onClick={onClose} style={{
-            background: 'none', border: 'none', color: '#d4a853', fontSize: 24,
-            cursor: 'pointer',
-          }}>×</button>
-        </div>
-
-        {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #2a2520', background: '#0d0f14' }}>
-          {[
-            { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy & Trade' },
-            { id: 'influence', icon: '🎭', label: 'Influence' },
-          ].map(t => (
-            <button key={t.id} onClick={() => setActiveTab(t.id)}
-              style={{
-                flex: 1, padding: '12px', fontSize: 12, fontFamily: "'Cinzel', serif", fontWeight: 600,
-                background: activeTab === t.id ? '#1e1a12' : 'transparent',
-                color: activeTab === t.id ? '#d4a853' : '#666',
-                border: 'none', borderBottom: activeTab === t.id ? '2px solid #d4a853' : '2px solid transparent',
-                cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5,
-              }}>
-              {t.icon} {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          {activeTab === 'diplomacy' && (
-            <DiplomacyContent
-              gameState={gameState}
-              currentPlayer={currentPlayer}
-              onDiplomacyAction={onDiplomacyAction}
-              tradeOffers={tradeOffers}
-              onAcceptTrade={onAcceptTrade}
-              onDeclineTrade={onDeclineTrade}
-            />
-          )}
-          {activeTab === 'influence' && (
-            <InfluenceContent
-              gameState={gameState}
-              currentPlayer={currentPlayer}
-              onInfluenceAction={onInfluenceAction}
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers, onAcceptTrade, onDeclineTrade }) {
-  const [tradeTarget, setTradeTarget] = React.useState(null);
-  const [tradeOffer, setTradeOffer] = React.useState({});
-  const [tradeRequest, setTradeRequest] = React.useState({});
-  const [chatWithPlayer, setChatWithPlayer] = React.useState(null);
-  const [chatMessages, setChatMessages] = React.useState({});
-  const [chatInput, setChatInput] = React.useState('');
-  const [aiResponding, setAiResponding] = React.useState(false);
-
-  if (!gameState || !currentPlayer) return null;
+  const [chatWithPlayer, setChatWithPlayer] = useState(null);
+  const [chatMessages, setChatMessages] = useState({});
+  const [chatInput, setChatInput] = useState('');
+  const [aiResponding, setAiResponding] = useState(false);
 
   const handleSendMessage = async (message, selectedPlayer, convKey) => {
-    // Add user message
     setChatMessages(prev => ({
       ...prev,
       [convKey]: [...(prev[convKey] || []), { from: currentPlayer.id, text: message, isUser: true }]
     }));
 
-    if (!selectedPlayer.isAI) return; // Only generate response for AI
+    if (!selectedPlayer.isAI) return;
 
     setAiResponding(true);
     try {
@@ -128,84 +49,171 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
     }
   };
 
-  const otherPlayers = gameState.players.filter(p => p.id !== currentPlayer.id);
-  const humanPlayers = otherPlayers.filter(p => !p.isAI);
-  const aiPlayers = otherPlayers.filter(p => p.isAI);
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }} onClick={onClose}>
+      <div style={{
+        background: 'linear-gradient(135deg, #1a1c22, #14161c)',
+        border: '1px solid #d4a853', borderRadius: 8,
+        maxWidth: '90vw', maxHeight: '90vh', width: '900px',
+        display: 'flex', flexDirection: 'column',
+      }} onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '16px 20px', borderBottom: '1px solid #2a2520',
+          fontFamily: "'Cinzel', serif",
+        }}>
+          <h2 style={{ color: '#d4a853', fontSize: 18, fontWeight: 700, margin: 0 }}>
+            🕊️ Diplomacy & Influence
+          </h2>
+          <button onClick={onClose} style={{
+            background: 'none', border: 'none', color: '#d4a853', fontSize: 24,
+            cursor: 'pointer',
+          }}>×</button>
+        </div>
+
+        {/* Tab bar */}
+        <div style={{ display: 'flex', borderBottom: '1px solid #2a2520', background: '#0d0f14' }}>
+          {[
+            { id: 'diplomacy', icon: '🕊️', label: 'Diplomacy' },
+            { id: 'trade', icon: '💼', label: 'Trade' },
+            { id: 'influence', icon: '🎭', label: 'Influence' },
+          ].map(t => (
+            <button key={t.id} onClick={() => setActiveTab(t.id)}
+              style={{
+                flex: 1, padding: '12px', fontSize: 12, fontFamily: "'Cinzel', serif", fontWeight: 600,
+                background: activeTab === t.id ? '#1e1a12' : 'transparent',
+                color: activeTab === t.id ? '#d4a853' : '#666',
+                border: 'none', borderBottom: activeTab === t.id ? '2px solid #d4a853' : '2px solid transparent',
+                cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5,
+              }}>
+              {t.icon} {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+          {activeTab === 'diplomacy' && (
+            <DiplomacyContent
+              gameState={gameState}
+              currentPlayer={currentPlayer}
+              onDiplomacyAction={onDiplomacyAction}
+              chatMessages={chatMessages}
+              setChatMessages={setChatMessages}
+              chatWithPlayer={chatWithPlayer}
+              setChatWithPlayer={setChatWithPlayer}
+              chatInput={chatInput}
+              setChatInput={setChatInput}
+              aiResponding={aiResponding}
+              handleSendMessage={handleSendMessage}
+            />
+          )}
+          {activeTab === 'trade' && (
+            <TradeContent
+              gameState={gameState}
+              currentPlayer={currentPlayer}
+              onDiplomacyAction={onDiplomacyAction}
+              tradeOffers={tradeOffers}
+              onAcceptTrade={onAcceptTrade}
+              onDeclineTrade={onDeclineTrade}
+            />
+          )}
+          {activeTab === 'influence' && (
+            <InfluenceContent
+              gameState={gameState}
+              currentPlayer={currentPlayer}
+              onInfluenceAction={onInfluenceAction}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers, onAcceptTrade, onDeclineTrade }) {
+  const [tradeTarget, setTradeTarget] = React.useState(null);
+  const [tradeOffer, setTradeOffer] = React.useState({});
+  const [tradeRequest, setTradeRequest] = React.useState({});
+  
+  if (!gameState || !currentPlayer) return null;
+
+  const humanPlayers = gameState.players.filter(p => p.id !== currentPlayer.id && !p.isAI);
   const incomingOffers = tradeOffers ? tradeOffers.filter(o => o.toId === currentPlayer.id) : [];
   const outgoingOffers = tradeOffers ? tradeOffers.filter(o => o.fromId === currentPlayer.id) : [];
 
   return (
     <div style={{ color: '#c8c0b0', fontSize: 13 }}>
-      {/* Trade Section */}
-      {otherPlayers.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          {/* Incoming Trade Offers */}
-          {incomingOffers.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
-                📥 Incoming Trade Offers
-              </h3>
-              {incomingOffers.map(offer => {
-                const fromPlayer = gameState.players.find(p => p.id === offer.fromId);
-                return (
-                  <div key={offer.id} style={{
-                    background: 'rgba(212,168,83,0.05)', border: '1px solid #2a2520', borderRadius: 6,
-                    padding: 12, marginBottom: 8,
-                  }}>
-                    <div style={{ marginBottom: 8 }}>
-                      <span style={{ fontWeight: 600 }}>From: {fromPlayer?.name}</span>
-                    </div>
-                    <div style={{ fontSize: 12, marginBottom: 8 }}>
-                      <div>📤 They offer: {Object.entries(offer.offer || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
-                      <div>📥 They want: {Object.entries(offer.request || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => onAcceptTrade(offer)}
-                        style={{
-                          flex: 1, padding: '6px 12px', background: '#2a5a2a', border: '1px solid #5a9a5a',
-                          color: '#9afa9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
-                        }}>
-                        ✓ Accept
-                      </button>
-                      <button onClick={() => onDeclineTrade(offer)}
-                        style={{
-                          flex: 1, padding: '6px 12px', background: '#5a2a2a', border: '1px solid #9a5a5a',
-                          color: '#fa9a9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
-                        }}>
-                        ✗ Decline
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {/* Incoming Trade Offers */}
+      {incomingOffers.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
+            📥 Incoming Trade Offers
+          </h3>
+          {incomingOffers.map(offer => {
+            const fromPlayer = gameState.players.find(p => p.id === offer.fromId);
+            return (
+              <div key={offer.id} style={{
+                background: 'rgba(212,168,83,0.05)', border: '1px solid #2a2520', borderRadius: 6,
+                padding: 12, marginBottom: 8,
+              }}>
+                <div style={{ marginBottom: 8 }}>
+                  <span style={{ fontWeight: 600 }}>From: {fromPlayer?.name}</span>
+                </div>
+                <div style={{ fontSize: 12, marginBottom: 8 }}>
+                  <div>📤 They offer: {Object.entries(offer.offer || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
+                  <div>📥 They want: {Object.entries(offer.request || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => onAcceptTrade(offer)}
+                    style={{
+                      flex: 1, padding: '6px 12px', background: '#2a5a2a', border: '1px solid #5a9a5a',
+                      color: '#9afa9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
+                    }}>
+                    ✓ Accept
+                  </button>
+                  <button onClick={() => onDeclineTrade(offer)}
+                    style={{
+                      flex: 1, padding: '6px 12px', background: '#5a2a2a', border: '1px solid #9a5a5a',
+                      color: '#fa9a9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
+                    }}>
+                    ✗ Decline
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-          {/* Outgoing Trade Offers */}
-          {outgoingOffers.length > 0 && (
-            <div>
-              <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
-                📤 Sent Trade Offers
-              </h3>
-              {outgoingOffers.map(offer => {
-                const toPlayer = gameState.players.find(p => p.id === offer.toId);
-                return (
-                  <div key={offer.id} style={{
-                    background: 'rgba(212,168,83,0.05)', border: '1px solid #2a2520', borderRadius: 6,
-                    padding: 12, marginBottom: 8,
-                  }}>
-                    <div style={{ marginBottom: 8 }}>
-                      <span style={{ fontWeight: 600 }}>To: {toPlayer?.name}</span>
-                    </div>
-                    <div style={{ fontSize: 12 }}>
-                      <div>📤 You offer: {Object.entries(offer.offer || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
-                      <div>📥 You want: {Object.entries(offer.request || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {/* Outgoing Trade Offers */}
+      {outgoingOffers.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
+            📤 Sent Trade Offers
+          </h3>
+          {outgoingOffers.map(offer => {
+            const toPlayer = gameState.players.find(p => p.id === offer.toId);
+            return (
+              <div key={offer.id} style={{
+                background: 'rgba(212,168,83,0.05)', border: '1px solid #2a2520', borderRadius: 6,
+                padding: 12, marginBottom: 8,
+              }}>
+                <div style={{ marginBottom: 8 }}>
+                  <span style={{ fontWeight: 600 }}>To: {toPlayer?.name}</span>
+                </div>
+                <div style={{ fontSize: 12 }}>
+                  <div>📤 You offer: {Object.entries(offer.offer || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
+                  <div>📥 You want: {Object.entries(offer.request || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -294,6 +302,27 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
           })()}
         </div>
       )}
+    </div>
+  );
+}
+
+function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, chatMessages, setChatMessages, chatWithPlayer, setChatWithPlayer, chatInput, setChatInput, aiResponding, handleSendMessage }) {
+
+  if (!gameState || !currentPlayer) return null;
+
+  const otherPlayers = gameState.players.filter(p => p.id !== currentPlayer.id);
+
+  return (
+    <div style={{ color: '#c8c0b0', fontSize: 13 }}>
+      {/* Your Resources */}
+      <div style={{ marginBottom: 24, padding: 12, background: 'rgba(212,168,83,0.08)', border: '1px solid #8a6a30', borderRadius: 6 }}>
+        <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 12, fontWeight: 700, marginBottom: 8 }}>YOUR RESOURCES</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: 8, fontSize: 12 }}>
+          <div>💰 Gold: <span style={{ color: '#f0c040', fontWeight: 600 }}>{currentPlayer.resources?.gold ?? 0}</span></div>
+          <div>🪵 Wood: <span style={{ color: '#c89050', fontWeight: 600 }}>{currentPlayer.resources?.wood ?? 0}</span></div>
+          <div>🌾 Wheat: <span style={{ color: '#d4a050', fontWeight: 600 }}>{currentPlayer.resources?.wheat ?? 0}</span></div>
+        </div>
+      </div>
 
       {/* Diplomacy Actions */}
       <div style={{ marginBottom: 24 }}>
@@ -562,8 +591,6 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
           );
         })
       )}
-
-
     </div>
   );
 }
