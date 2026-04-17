@@ -101,7 +101,7 @@ export default function Game() {
   const [movementState, setMovementState] = useState(null);
   const [movedHexes, setMovedHexes] = useState(new Set()); // hexIds that already moved this turn
   const [tradeOffers, setTradeOffers] = useState([]);
-  const [bottomTab, setBottomTab] = useState('action'); // 'action' | 'diplomacy' | 'log'
+
   const [highlightMyTerritories, setHighlightMyTerritories] = useState(false);
   const [highlightedPlayerId, setHighlightedPlayerId] = useState(null);
   const [provinces, setProvinces] = useState(null);
@@ -116,6 +116,7 @@ export default function Game() {
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [showDiplomacyInfluenceModal, setShowDiplomacyInfluenceModal] = useState(false);
   const [showInfluenceOverlay, setShowInfluenceOverlay] = useState(false);
+  const [openModal, setOpenModal] = useState(null); // 'action' | 'build' | 'recruit' | 'heroes' | 'avatars' | 'effects' | 'unifiedlog' | 'advisor' | null
 
   const toggleMusic = () => {
     const audio = menuAudioRef.current;
@@ -1470,136 +1471,39 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         )}
       </div>
 
-      {/* Bottom panels */}
-      <div className="flex border-t border-border overflow-hidden" style={{ minHeight: '140px', maxHeight: '50vh', resize: 'vertical', background: 'hsl(35,22%,12%)' }}>
-        {/* Center tabbed panel */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab bar */}
-          <div className="flex border-b border-border flex-shrink-0" style={{ background: 'hsl(35,22%,13%)' }}>
-            {[
-              { id: 'action', icon: '⚔️', label: 'Action' },
-              { id: 'build', icon: '🏗️', label: 'Build' },
-              { id: 'recruit', icon: '⚔️', label: 'Recruit' },
-              { id: 'heroes', icon: '⭐', label: 'Heroes' },
-              { id: 'avatars', icon: '👹', label: 'Avatars' },
-              { id: 'effects', icon: '📊', label: 'Effects' },
-              { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy & Influence', action: () => setShowDiplomacyInfluenceModal(true) },
-              { id: 'unifiedlog', icon: '📜', label: '📋 Logs' },
-              { id: 'advisor', icon: '⚜️', label: 'Advisor' },
-            ].map(t => (
-              <button key={t.id} onClick={() => {
-                if (t.action) t.action();
-                else setBottomTab(t.id);
-              }}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold transition-all"
-                style={{
-                  fontFamily: "'Cinzel',serif",
-                  background: bottomTab === t.id ? 'hsl(38,60%,22%)' : 'transparent',
-                  color: bottomTab === t.id ? 'hsl(43,90%,65%)' : 'hsl(40,20%,48%)',
-                  borderBottom: bottomTab === t.id ? '2px solid hsl(43,80%,55%)' : '2px solid transparent',
-                }}>
-                {t.icon} {t.label}
-                {t.id === 'diplomacy-influence' && tradeOffers.filter(o => o.toId === currentPlayer?.id).length > 0 && (
-                  <span className="ml-1 px-1 rounded-full text-xs font-bold"
-                    style={{ background: 'hsl(0,65%,45%)', color: 'white', fontSize: '10px' }}>
-                    {tradeOffers.filter(o => o.toId === currentPlayer?.id).length}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            {bottomTab === 'action' && gameState && currentPlayer && (
-              <ActionBar
-                gameState={gameState}
-                currentPlayer={currentPlayer}
-                phase={phase}
-                onAdvancePhase={advancePhase}
-                isAI={currentPlayer.isAI}
-                onPlayCard={handlePlayCard}
-                onDrawCard={handleDrawCard}
-                onSelectDeployUnit={handleSelectDeployUnit}
-              />
+      {/* Bottom Menu Bar */}
+      <div className="flex gap-1 border-t border-border flex-shrink-0 overflow-x-auto" style={{ background: 'hsl(35,22%,12%)', padding: '6px' }}>
+        {[
+          { id: 'action', icon: '⚔️', label: 'Action' },
+          { id: 'build', icon: '🏗️', label: 'Build' },
+          { id: 'recruit', icon: '⚔️', label: 'Recruit' },
+          { id: 'heroes', icon: '⭐', label: 'Heroes' },
+          { id: 'avatars', icon: '👹', label: 'Avatars' },
+          { id: 'effects', icon: '📊', label: 'Effects' },
+          { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy & Influence' },
+          { id: 'unifiedlog', icon: '📋', label: 'Logs' },
+          { id: 'advisor', icon: '⚜️', label: 'Advisor' },
+        ].map(t => (
+          <button key={t.id} onClick={() => {
+            if (t.id === 'diplomacy-influence') setShowDiplomacyInfluenceModal(true);
+            else setOpenModal(t.id);
+          }}
+            className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-all hover:opacity-90"
+            style={{
+              fontFamily: "'Cinzel',serif",
+              background: 'hsl(35,20%,22%)',
+              border: '1px solid hsl(35,20%,32%)',
+              color: 'hsl(40,20%,65%)',
+            }}>
+            {t.icon} {t.label}
+            {t.id === 'diplomacy-influence' && tradeOffers.filter(o => o.toId === currentPlayer?.id).length > 0 && (
+              <span className="ml-1 px-1 rounded-full text-xs font-bold"
+                style={{ background: 'hsl(0,65%,45%)', color: 'white', fontSize: '10px' }}>
+                {tradeOffers.filter(o => o.toId === currentPlayer?.id).length}
+              </span>
             )}
-            {bottomTab === 'heroes' && gameState && currentPlayer && !currentPlayer.isAI && (
-              <HeroPanel
-                gameState={gameState}
-                currentPlayer={currentPlayer}
-                onRecruit={handleRecruitHero}
-                onTriggerAbility={handleHeroAbility}
-              />
-            )}
-            {bottomTab === 'heroes' && currentPlayer?.isAI && (
-              <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
-                Heroes available during your turn
-              </div>
-            )}
-            {bottomTab === 'build' && gameState && currentPlayer && !currentPlayer.isAI && (
-              <BuildRecruitPanel
-                currentPlayer={currentPlayer}
-                gameState={gameState}
-                onBuild={handleBuild}
-                onUpgrade={handleUpgrade}
-                onSetBuildingPlacementMode={setBuildingPlacementMode}
-                buildingPlacementMode={buildingPlacementMode}
-              />
-            )}
-            {bottomTab === 'build' && currentPlayer?.isAI && (
-              <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
-                Build available during your turn
-              </div>
-            )}
-            {bottomTab === 'recruit' && gameState && currentPlayer && !currentPlayer.isAI && (
-              <RecruitPanel
-                currentPlayer={currentPlayer}
-                onRecruit={handleRecruit}
-              />
-            )}
-            {bottomTab === 'recruit' && currentPlayer?.isAI && (
-               <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
-                 Recruit available during your turn
-               </div>
-             )}
-             {bottomTab === 'avatars' && gameState && currentPlayer && !currentPlayer.isAI && (
-               <AvatarPanel
-                 currentPlayer={currentPlayer}
-                 onSummon={handleSummonAvatar}
-               />
-             )}
-             {bottomTab === 'avatars' && currentPlayer?.isAI && (
-               <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
-                 Avatars available during your turn
-               </div>
-             )}
-             {bottomTab === 'effects' && gameState && currentPlayer && (
-                <EffectsPanel currentPlayer={currentPlayer} gameState={gameState} />
-              )}
-             {bottomTab === 'unifiedlog' && gameState && (
-               <UnifiedLog
-                 entries={turnLog}
-                 battleEntries={battleLog}
-                 diplomaticEvents={gameState.diplomaticEvents || []}
-                 currentTurn={gameState?.turn}
-               />
-             )}
-             {bottomTab === 'advisor' && gameState && currentPlayer && !currentPlayer.isAI && (
-              <AdvisorPanel
-                gameState={gameState}
-                currentPlayer={currentPlayer}
-                onAction={(action) => {
-                  if (action.type === 'advance_phase') advancePhase();
-                  else if (action.type === 'end_turn') endTurn();
-                  else if (action.type === 'recruit' && action.unit) handleRecruit(action.unit);
-                  else if (action.type === 'build' && action.building) handleBuild(action.building);
-                  else if (action.type === 'attack' && action.from && action.to) {
-                    setBattle({ attackerId: action.from, defenderId: action.to });
-                  }
-                }}
-              />
-            )}
-          </div>
-        </div>
+          </button>
+        ))}
       </div>
 
       {battle && gameState && (
@@ -1664,6 +1568,140 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
             setActiveEvent(null);
           }}
         />
+      )}
+
+      {/* Generic Modal Wrapper */}
+      {openModal && (
+        <div onClick={() => setOpenModal(null)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: 'linear-gradient(135deg, hsl(35,22%,14%), hsl(35,20%,10%))',
+            border: '1px solid hsl(35,20%,28%)',
+            borderRadius: 8,
+            maxWidth: '80vw', maxHeight: '80vh',
+            width: openModal === 'action' || openModal === 'advisor' ? '900px' : openModal === 'unifiedlog' ? '1000px' : '700px',
+            display: 'flex', flexDirection: 'column',
+            overflow: 'hidden',
+          }}>
+            {/* Header */}
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '16px 20px', borderBottom: '1px solid hsl(35,20%,25%)',
+              fontFamily: "'Cinzel', serif",
+            }}>
+              <h2 style={{ color: 'hsl(43,80%,60%)', fontSize: 18, fontWeight: 700, margin: 0 }}>
+                {openModal === 'action' && '⚔️ Action'}
+                {openModal === 'build' && '🏗️ Build'}
+                {openModal === 'recruit' && '⚔️ Recruit'}
+                {openModal === 'heroes' && '⭐ Heroes'}
+                {openModal === 'avatars' && '👹 Avatars'}
+                {openModal === 'effects' && '📊 Effects'}
+                {openModal === 'unifiedlog' && '📋 Logs'}
+                {openModal === 'advisor' && '⚜️ Advisor'}
+              </h2>
+              <button onClick={() => setOpenModal(null)} style={{
+                background: 'none', border: 'none', color: 'hsl(43,80%,60%)', fontSize: 24,
+                cursor: 'pointer', opacity: 0.7, transition: 'opacity 0.2s',
+              }} onMouseEnter={e => e.target.style.opacity = '1'} onMouseLeave={e => e.target.style.opacity = '0.7'}>
+                ×
+              </button>
+            </div>
+
+            {/* Content */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {openModal === 'action' && gameState && currentPlayer && (
+                <ActionBar
+                  gameState={gameState}
+                  currentPlayer={currentPlayer}
+                  phase={phase}
+                  onAdvancePhase={advancePhase}
+                  isAI={currentPlayer.isAI}
+                  onPlayCard={handlePlayCard}
+                  onDrawCard={handleDrawCard}
+                  onSelectDeployUnit={handleSelectDeployUnit}
+                />
+              )}
+              {openModal === 'build' && gameState && currentPlayer && !currentPlayer.isAI && (
+                <BuildRecruitPanel
+                  currentPlayer={currentPlayer}
+                  gameState={gameState}
+                  onBuild={handleBuild}
+                  onUpgrade={handleUpgrade}
+                  onSetBuildingPlacementMode={setBuildingPlacementMode}
+                  buildingPlacementMode={buildingPlacementMode}
+                />
+              )}
+              {openModal === 'build' && currentPlayer?.isAI && (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'hsl(40,20%,60%)' }}>
+                  Build available during your turn
+                </div>
+              )}
+              {openModal === 'recruit' && gameState && currentPlayer && !currentPlayer.isAI && (
+                <RecruitPanel
+                  currentPlayer={currentPlayer}
+                  onRecruit={handleRecruit}
+                />
+              )}
+              {openModal === 'recruit' && currentPlayer?.isAI && (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'hsl(40,20%,60%)' }}>
+                  Recruit available during your turn
+                </div>
+              )}
+              {openModal === 'heroes' && gameState && currentPlayer && !currentPlayer.isAI && (
+                <HeroPanel
+                  gameState={gameState}
+                  currentPlayer={currentPlayer}
+                  onRecruit={handleRecruitHero}
+                  onTriggerAbility={handleHeroAbility}
+                />
+              )}
+              {openModal === 'heroes' && currentPlayer?.isAI && (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'hsl(40,20%,60%)' }}>
+                  Heroes available during your turn
+                </div>
+              )}
+              {openModal === 'avatars' && gameState && currentPlayer && !currentPlayer.isAI && (
+                <AvatarPanel
+                  currentPlayer={currentPlayer}
+                  onSummon={handleSummonAvatar}
+                />
+              )}
+              {openModal === 'avatars' && currentPlayer?.isAI && (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'hsl(40,20%,60%)' }}>
+                  Avatars available during your turn
+                </div>
+              )}
+              {openModal === 'effects' && gameState && currentPlayer && (
+                <EffectsPanel currentPlayer={currentPlayer} gameState={gameState} />
+              )}
+              {openModal === 'unifiedlog' && gameState && (
+                <UnifiedLog
+                  entries={turnLog}
+                  battleEntries={battleLog}
+                  diplomaticEvents={gameState.diplomaticEvents || []}
+                  currentTurn={gameState?.turn}
+                />
+              )}
+              {openModal === 'advisor' && gameState && currentPlayer && !currentPlayer.isAI && (
+                <AdvisorPanel
+                  gameState={gameState}
+                  currentPlayer={currentPlayer}
+                  onAction={(action) => {
+                    if (action.type === 'advance_phase') advancePhase();
+                    else if (action.type === 'end_turn') endTurn();
+                    else if (action.type === 'recruit' && action.unit) handleRecruit(action.unit);
+                    else if (action.type === 'build' && action.building) handleBuild(action.building);
+                    else if (action.type === 'attack' && action.from && action.to) {
+                      setBattle({ attackerId: action.from, defenderId: action.to });
+                    }
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Diplomacy & Influence Merged Modal */}
