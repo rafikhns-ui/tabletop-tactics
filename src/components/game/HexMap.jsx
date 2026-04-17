@@ -634,36 +634,43 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 {units.length > 0 && (
                   <g style={{ pointerEvents: 'none' }}>
                     {units.map((u, i) => {
-                      const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '⚙️', naval: '⚓' };
-                      const xPos = cx - 10 + (i % 2) * 20;
-                      const yPos = cy - 10 + Math.floor(i / 2) * 16;
-                      const ringColor = playerColor || (owner?.startsWith('neutral_') ? '#888' : '#d4a853');
-                      const isElite = u.type === 'elite';
-                      return (
-                        <g key={i}>
-                          {/* Outer glow ring for elite */}
-                          {isElite && <circle cx={xPos} cy={yPos} r={10} fill="none" stroke="#f0c040" strokeWidth={1.5} strokeOpacity={0.6}>
-                            <animate attributeName="strokeOpacity" values="0.3;0.9;0.3" dur="1.5s" repeatCount="indefinite" />
-                            <animate attributeName="r" values="9;11;9" dur="1.5s" repeatCount="indefinite" />
-                          </circle>}
-                          {/* Background circle */}
-                          <circle cx={xPos} cy={yPos} r={8} fill="#111827" stroke={ringColor} strokeWidth={1.5} />
-                          {/* Unit emoji */}
-                          <text x={xPos} y={yPos + 4} textAnchor="middle" fontSize={11} style={{ pointerEvents: 'none' }}>
-                            {icons[u.type] || '⚔️'}
-                          </text>
-                          {/* Count badge */}
-                          {u.count > 1 && (
-                            <g>
-                              <circle cx={xPos + 6} cy={yPos - 6} r={5} fill="#dc2626" stroke="#111" strokeWidth={0.8} />
-                              <text x={xPos + 6} y={yPos - 3} textAnchor="middle" fontSize={6} fill="#fff" fontWeight="bold" style={{ pointerEvents: 'none' }}>
-                                {u.count > 9 ? '9+' : u.count}
-                              </text>
-                            </g>
-                          )}
-                        </g>
-                      );
-                    })}
+                       const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '⚙️', naval: '⚓' };
+                       const xPos = cx - 10 + (i % 2) * 20;
+                       const yPos = cy - 10 + Math.floor(i / 2) * 16;
+                       const ringColor = playerColor || (owner?.startsWith('neutral_') ? '#888' : '#d4a853');
+                       const isElite = u.type === 'elite';
+                       const isRanged = u.type === 'ranged';
+                       return (
+                         <g key={i}>
+                           {/* Outer glow ring for elite */}
+                           {isElite && <circle cx={xPos} cy={yPos} r={10} fill="none" stroke="#f0c040" strokeWidth={1.5} strokeOpacity={0.6}>
+                             <animate attributeName="strokeOpacity" values="0.3;0.9;0.3" dur="1.5s" repeatCount="indefinite" />
+                             <animate attributeName="r" values="9;11;9" dur="1.5s" repeatCount="indefinite" />
+                           </circle>}
+                           {/* Background circle */}
+                           <circle cx={xPos} cy={yPos} r={8} fill="#111827" stroke={ringColor} strokeWidth={1.5} />
+                           {/* Custom unit images or emoji */}
+                           {isElite ? (
+                             <image href="https://media.base44.com/images/public/69b732e420481df67e8a6804/071bb3933_elite.png" x={xPos - 8} y={yPos - 8} width={16} height={16} preserveAspectRatio="xMidYMid slice" />
+                           ) : isRanged ? (
+                             <image href="https://media.base44.com/images/public/69b732e420481df67e8a6804/57eaf9620_crossbow.jpeg" x={xPos - 8} y={yPos - 8} width={16} height={16} preserveAspectRatio="xMidYMid slice" />
+                           ) : (
+                             <text x={xPos} y={yPos + 4} textAnchor="middle" fontSize={11} style={{ pointerEvents: 'none' }}>
+                               {icons[u.type] || '⚔️'}
+                             </text>
+                           )}
+                           {/* Count badge */}
+                           {u.count > 1 && (
+                             <g>
+                               <circle cx={xPos + 6} cy={yPos - 6} r={5} fill="#dc2626" stroke="#111" strokeWidth={0.8} />
+                               <text x={xPos + 6} y={yPos - 3} textAnchor="middle" fontSize={6} fill="#fff" fontWeight="bold" style={{ pointerEvents: 'none' }}>
+                                 {u.count > 9 ? '9+' : u.count}
+                               </text>
+                             </g>
+                           )}
+                         </g>
+                       );
+                     })}
                   </g>
                 )}
                 {/* Fortress icon */}
