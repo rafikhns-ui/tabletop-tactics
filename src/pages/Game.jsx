@@ -225,7 +225,6 @@ export default function Game() {
     setMessages(['⚜️ Rulers of Ardonia begins! Recruit troops then deploy them.']);
     setTradeOffers([]);
     setTurnLog([]);
-    setBottomTab('action');
     setSentiment(initializeSentiment(playersWithLeaders));
   };
 
@@ -1224,8 +1223,6 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           const aiOffers = finalState.pendingAiTradeOffers || [];
           if (aiOffers.length > 0) {
             setTradeOffers(prev => [...prev, ...aiOffers]);
-            // Switch to diplomacy tab so human notices
-            setBottomTab('diplomacy');
           }
           const cleanState = { ...finalState, pendingAiTradeOffers: [] };
           const nextIndex = (cleanState.currentPlayerIndex + 1) % (cleanState.players?.length || 1);
