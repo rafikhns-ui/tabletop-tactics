@@ -31,11 +31,13 @@ function CostTag({ cost, resources }) {
 }
 
 export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onUpgrade, onBuildFortress, onSetBuildingPlacementMode, buildingPlacementMode, phase }) {
-  const [tab, setTab] = useState('build'); // 'build' | 'upgrade'
+  const [tab, setTab] = useState('build'); // 'build' | 'upgrade' | 'queue'
   const [previewImage, setPreviewImage] = useState(null);
   const { resources } = currentPlayer;
   const ownedBuildings = Object.keys(currentPlayer.buildings || {});
   const ownedTerritories = Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id);
+  const buildingQueue = currentPlayer.buildingQueue || [];
+  const recruitmentQueue = currentPlayer.recruitmentQueue || [];
 
   // Faction-specific buildable list (exclude already-owned and starting buildings)
   const factionBuildableIds = FACTION_BUILDINGS[currentPlayer.factionId] || Object.keys(BUILDING_DEFS).filter(id => !['mine','lumber_mill','farm','treasury'].includes(id));
@@ -61,7 +63,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
     <div className="rounded p-2" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,28%)' }}>
       {/* Tabs */}
       <div className="flex gap-1 mb-2">
-        {['build', 'upgrade'].map(t => (
+        {['build', 'upgrade', 'queue'].map(t => (
           <button key={t} onClick={() => setTab(t)}
             className="flex-1 py-1 rounded text-xs font-bold transition-all"
             style={{
@@ -70,7 +72,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
               border: tab === t ? '1px solid hsl(38,80%,50%)' : '1px solid hsl(35,20%,32%)',
               color: tab === t ? 'hsl(43,90%,80%)' : 'hsl(40,20%,55%)',
             }}>
-            {t === 'build' ? '🏗️ Build' : '⬆️ Upgrade'}
+            {t === 'build' ? '🏗️ Build' : t === 'upgrade' ? '⬆️ Upgrade' : `📋 Queue (${buildingQueue.length + recruitmentQueue.length})`}
           </button>
         ))}
       </div>
@@ -198,6 +200,65 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
               </div>
             );
           })}
+        </div>
+      )}
+
+      {tab === 'queue' && (
+        <div className="space-y-1.5">
+          {buildingQueue.length === 0 && recruitmentQueue.length === 0 ? (
+            <div className="text-xs text-center opacity-40 py-2" style={{ color: 'hsl(40,20%,60%)' }}>
+              No items in queue
+            </div>
+          ) : (
+            <>
+              {buildingQueue.map((item, i) => {
+                const def = BUILDING_DEFS[item.buildingId];
+                return (
+                  <div key={`build-${i}`} className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold" style={{ ...s, color: 'hsl(40,30%,80%)' }}>
+                        🏗️ {def?.name || item.buildingId}
+                      </span>
+                      <span className="text-xs" style={{ color: 'hsl(43,80%,65%)' }}>
+                        {item.turnsRemaining} turn{item.turnsRemaining !== 1 ? 's' : ''} remaining
+                      </span>
+                    </div>
+                    <div style={{ background: 'hsl(35,20%,18%)', borderRadius: 3, height: 12, overflow: 'hidden', border: '1px solid hsl(35,20%,30%)' }}>
+                      <div style={{
+                        height: '100%',
+                        background: 'linear-gradient(90deg, #4ade80, #22c55e)',
+                        width: `${((1 - item.turnsRemaining / 1) * 100) || 10}%`,
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
+                  </div>
+                );
+              })}
+              {recruitmentQueue.map((item, i) => {
+                const def = UNIT_DEFS[item.unitId];
+                return (
+                  <div key={`unit-${i}`} className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)' }}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold" style={{ ...s, color: 'hsl(40,30%,80%)' }}>
+                        ⚔️ {def?.name || item.unitId}
+                      </span>
+                      <span className="text-xs" style={{ color: 'hsl(43,80%,65%)' }}>
+                        {item.turnsRemaining} turn{item.turnsRemaining !== 1 ? 's' : ''} remaining
+                      </span>
+                    </div>
+                    <div style={{ background: 'hsl(35,20%,18%)', borderRadius: 3, height: 12, overflow: 'hidden', border: '1px solid hsl(35,20%,30%)' }}>
+                      <div style={{
+                        height: '100%',
+                        background: 'linear-gradient(90deg, #60a5fa, #3b82f6)',
+                        width: `${((1 - item.turnsRemaining / 1) * 100) || 10}%`,
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
       )}
 

@@ -525,11 +525,12 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         else newResources[k] = (newResources[k] || 0) - v;
       }
       newPlayer.resources = newResources;
-      newPlayer.buildings = { ...player.buildings, [buildingId]: { ...def, level: 1, disabled: false } };
+      // Add to building queue instead of instant completion
+      newPlayer.buildingQueue = [...(player.buildingQueue || []), { buildingId, turnsRemaining: 1 }];
       return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
     });
-    addMessage(`🏗️ Built ${buildingId}!`);
-    addLog('build', `Built ${BUILDING_DEFS[buildingId]?.name || buildingId}`, null, 'Action');
+    addMessage(`🏗️ Queued ${BUILDING_DEFS[buildingId]?.name}! Available next turn.`);
+    addLog('build', `Queued ${BUILDING_DEFS[buildingId]?.name || buildingId}`, null, 'Action');
   };
 
   const handleUpgrade = (buildingId) => {
@@ -563,14 +564,14 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         if ((newResources[k] ?? 0) < v) return prev;
         newResources[k] -= v;
       }
-      // Add to pendingUnits queue for deployment
-      const pendingUnits = [...(player.pendingUnits || []), unitId];
+      // Add to recruitment queue with 1 turn delay
+      const recruitmentQueue = [...(player.recruitmentQueue || []), { unitId, turnsRemaining: 1 }];
       return {
         ...prev,
-        players: prev.players.map(p => p.id === player.id ? { ...p, resources: newResources, pendingUnits } : p),
+        players: prev.players.map(p => p.id === player.id ? { ...p, resources: newResources, recruitmentQueue } : p),
       };
     });
-    addMessage(`⚔️ Recruited ${def.name} — deploy it on the map!`);
+    addMessage(`⚔️ Recruiting ${def.name}! Available next turn.`);
     addLog('recruit', `Recruited ${def.name}`, null, 'Deploy');
   };
 
@@ -1141,6 +1142,55 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
 
       state = collectIncome(state);
       state = { ...state, players: tickInfluenceModifiers(state.players) };
+      
+      // Process building and recruitment queues
+      state = {
+        ...state,
+        players: state.players.map(p => {
+          let newPlayer = { ...p };
+          // Process building queue
+          if (newPlayer.buildingQueue?.length > 0) {
+            const completedBuildings = [];
+            const remainingQueue = [];
+            newPlayer.buildingQueue.forEach(item => {
+              item.turnsRemaining -= 1;
+              if (item.turnsRemaining <= 0) {
+                completedBuildings.push(item.buildingId);
+              } else {
+                remainingQueue.push(item);
+              }
+            });
+            if (completedBuildings.length > 0) {
+              const newBuildings = { ...newPlayer.buildings };
+              completedBuildings.forEach(buildingId => {
+                const def = BUILDING_DEFS[buildingId];
+                newBuildings[buildingId] = { ...def, level: 1, disabled: false };
+              });
+              newPlayer.buildings = newBuildings;
+            }
+            newPlayer.buildingQueue = remainingQueue;
+          }
+          // Process recruitment queue
+          if (newPlayer.recruitmentQueue?.length > 0) {
+            const completedUnits = [];
+            const remainingQueue = [];
+            newPlayer.recruitmentQueue.forEach(item => {
+              item.turnsRemaining -= 1;
+              if (item.turnsRemaining <= 0) {
+                completedUnits.push(item.unitId);
+              } else {
+                remainingQueue.push(item);
+              }
+            });
+            if (completedUnits.length > 0) {
+              const pendingUnits = [...(newPlayer.pendingUnits || []), ...completedUnits];
+              newPlayer.pendingUnits = pendingUnits;
+            }
+            newPlayer.recruitmentQueue = remainingQueue;
+          }
+          return newPlayer;
+        })
+      };
 
       if (eventTrigger) {
         setTimeout(() => setActiveEvent(eventTrigger), 0);
