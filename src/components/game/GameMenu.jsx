@@ -13,9 +13,9 @@ export default function GameMenu({ onStart, onOnline }) {
   }, []);
 
   return (
-    <audio ref={audioRef} src="https://drive.google.com/uc?export=download&id=1DhnA4TinThSDIRFfqOKAuv5ZxHIJxgKQ" loop />
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden"
       style={{ background: 'radial-gradient(ellipse at 50% 40%, hsl(35,25%,15%) 0%, hsl(35,20%,7%) 100%)' }}>
+      <audio ref={audioRef} src="https://drive.google.com/uc?export=download&id=1DhnA4TinThSDIRFfqOKAuv5ZxHIJxgKQ" loop />
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
         {['⚔️','🏰','🐉','🗡️','⚜️','🛡️','🌙','☀️','🌸','🦎','❄️','🔥'].map((e, i) => (
           <div key={i} className="absolute text-4xl opacity-[0.04]"
