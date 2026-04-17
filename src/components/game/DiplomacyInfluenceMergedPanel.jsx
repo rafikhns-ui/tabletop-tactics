@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
 
 export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer, onDiplomacyAction, onInfluenceAction, tradeOffers, onAcceptTrade, onDeclineTrade, onClose }) {
   const [activeTab, setActiveTab] = useState('diplomacy');
@@ -81,8 +82,51 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
   const [chatWithPlayer, setChatWithPlayer] = React.useState(null);
   const [chatMessages, setChatMessages] = React.useState({});
   const [chatInput, setChatInput] = React.useState('');
+  const [aiResponding, setAiResponding] = React.useState(false);
 
   if (!gameState || !currentPlayer) return null;
+
+  const handleSendMessage = async (message, selectedPlayer, convKey) => {
+    // Add user message
+    setChatMessages(prev => ({
+      ...prev,
+      [convKey]: [...(prev[convKey] || []), { from: currentPlayer.id, text: message, isUser: true }]
+    }));
+
+    if (!selectedPlayer.isAI) return; // Only generate response for AI
+
+    setAiResponding(true);
+    try {
+      const sentiment = gameState.sentiment?.[currentPlayer.id]?.[selectedPlayer.id] ?? 50;
+      const aiInfluence = selectedPlayer.influenceLevel ?? 0;
+
+      const result = await base44.functions.invoke('generateDiplomacyResponse', {
+        userMessage: message,
+        aiName: selectedPlayer.name,
+        aiPersonality: selectedPlayer.personality || {},
+        sentiment: Math.round(sentiment),
+        currentInfluence: aiInfluence,
+        userFaction: currentPlayer.factionId,
+        aiFaction: selectedPlayer.factionId,
+      });
+
+      const aiResponse = result.data?.response || `${selectedPlayer.name} nods thoughtfully...`;
+      
+      setTimeout(() => {
+        setChatMessages(prev => ({
+          ...prev,
+          [convKey]: [...(prev[convKey] || []), { from: selectedPlayer.id, text: aiResponse, isAI: true }]
+        }));
+        setAiResponding(false);
+      }, 800);
+    } catch (err) {
+      setChatMessages(prev => ({
+        ...prev,
+        [convKey]: [...(prev[convKey] || []), { from: selectedPlayer.id, text: '...', isAI: true }]
+      }));
+      setAiResponding(false);
+    }
+  };
 
   const otherPlayers = gameState.players.filter(p => p.id !== currentPlayer.id);
   const humanPlayers = otherPlayers.filter(p => !p.isAI);
@@ -347,11 +391,8 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
                 <div style={{ display: 'flex', gap: 6 }}>
                   <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)}
                     onKeyPress={(e) => {
-                      if (e.key === 'Enter' && chatInput.trim()) {
-                        setChatMessages(prev => ({
-                          ...prev,
-                          [convKey]: [...(prev[convKey] || []), { from: currentPlayer.id, text: chatInput }]
-                        }));
+                      if (e.key === 'Enter' && chatInput.trim() && !aiResponding) {
+                        handleSendMessage(chatInput, selectedPlayer, convKey);
                         setChatInput('');
                       }
                     }}
@@ -360,19 +401,17 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
                       color: '#c8c0b0', borderRadius: 4, fontSize: 11,
                     }} />
                   <button onClick={() => {
-                    if (chatInput.trim()) {
-                      setChatMessages(prev => ({
-                        ...prev,
-                        [convKey]: [...(prev[convKey] || []), { from: currentPlayer.id, text: chatInput }]
-                      }));
+                    if (chatInput.trim() && !aiResponding) {
+                      handleSendMessage(chatInput, selectedPlayer, convKey);
                       setChatInput('');
                     }
                   }}
                     style={{
-                      padding: '6px 12px', background: '#2a5a2a', border: '1px solid #5a9a5a',
-                      color: '#9afa9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
-                    }}>
-                    Send
+                       padding: '6px 12px', background: aiResponding ? '#3a3a3a' : '#2a5a2a', border: `1px solid ${aiResponding ? '#555' : '#5a9a5a'}`,
+                       color: aiResponding ? '#666' : '#9afa9a', borderRadius: 4, cursor: aiResponding ? 'not-allowed' : 'pointer', fontSize: 11, fontWeight: 600,
+                       opacity: aiResponding ? 0.6 : 1,
+                     }}>
+                     {aiResponding ? '⏳' : '✓'} Send
                   </button>
                   <button onClick={() => setChatWithPlayer(null)}
                     style={{
