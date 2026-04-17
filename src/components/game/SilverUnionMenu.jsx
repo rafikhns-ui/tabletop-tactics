@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 
 export default function SilverUnionMenu({ gameState, currentPlayer, setGameState, addMessage, onClose }) {
-  const [activeTab, setActiveTab] = useState('loans'); // 'loans' | 'mercenaries' | 'heroes'
+  const [activeTab, setActiveTab] = useState('loans'); // 'loans' | 'mercenaries' | 'heroes' | 'trade'
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [loanAmount, setLoanAmount] = useState(10);
+  const [tradeAmount, setTradeAmount] = useState(5);
+  const [selectedTradeFrom, setSelectedTradeFrom] = useState('gold');
+  const [selectedTradeTo, setSelectedTradeTo] = useState('wood');
 
   if (!gameState || !currentPlayer) return null;
 
@@ -35,6 +38,17 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
     { turns: 10, interestRate: 0.15, emoji: '📋' },
     { turns: 15, interestRate: 0.20, emoji: '📋' },
   ];
+
+  // Unfavorable trade rates (disadvantage unless card says otherwise)
+  const tradeRates = {
+    'gold-wood': { give: 2, get: 1 },
+    'gold-wheat': { give: 2, get: 1 },
+    'gold-stone': { give: 2.5, get: 1 },
+    'wood-gold': { give: 3, get: 1 },
+    'wood-wheat': { give: 2, get: 1 },
+    'wheat-gold': { give: 3, get: 1 },
+    'wheat-wood': { give: 2, get: 1 },
+  };
 
   const playerLoans = currentPlayer.loans || [];
   const totalDebt = playerLoans.reduce((sum, loan) => sum + loan.amount + (loan.amount * loan.interestRate), 0);
@@ -93,6 +107,34 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
     addMessage(`⭐ ${hero.name} mercenary hero hired!`);
   };
 
+  const handleTrade = () => {
+    const rateKey = `${selectedTradeFrom}-${selectedTradeTo}`;
+    const rate = tradeRates[rateKey];
+    if (!rate) return;
+
+    const giveAmount = tradeAmount * rate.give;
+    const getAmount = tradeAmount * rate.get;
+
+    if ((currentPlayer.resources?.[selectedTradeFrom] || 0) < giveAmount) return;
+
+    setGameState(prev => ({
+      ...prev,
+      players: prev.players.map(p => 
+        p.id === currentPlayer.id 
+          ? { 
+              ...p,
+              resources: {
+                ...p.resources,
+                [selectedTradeFrom]: (p.resources[selectedTradeFrom] || 0) - giveAmount,
+                [selectedTradeTo]: (p.resources[selectedTradeTo] || 0) + getAmount,
+              }
+            }
+          : p
+      ),
+    }));
+    addMessage(`📦 Silver Union trade: gave ${giveAmount} ${selectedTradeFrom}, got ${getAmount} ${selectedTradeTo}`);
+  };
+
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000,
@@ -124,6 +166,7 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
         <div style={{ display: 'flex', borderBottom: '1px solid #2a2520', background: '#0d0f14' }}>
           {[
             { id: 'loans', icon: '💰', label: 'Loans' },
+            { id: 'trade', icon: '📦', label: 'Trade' },
             { id: 'mercenaries', icon: '⚔️', label: 'Mercenaries' },
             { id: 'heroes', icon: '⭐', label: 'Heroes' },
           ].map(t => (
@@ -232,6 +275,68 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Trade Tab */}
+          {activeTab === 'trade' && (
+           <div>
+             <div style={{ marginBottom: 20, padding: 12, background: 'rgba(212,168,83,0.1)', border: '1px solid #8a6a30', borderRadius: 6, fontSize: 11 }}>
+               <div style={{ color: '#d4a853', fontWeight: 600, marginBottom: 4 }}>⚠️ UNFAVORABLE RATES</div>
+               <div style={{ color: '#888' }}>
+                 The Silver Union charges premium rates on all trades. Rates are 30-50% worse than fair value unless you have special cards.
+               </div>
+             </div>
+
+             <div style={{ marginBottom: 20, padding: 12, background: 'hsl(35,20%,21%)', border: '1px solid hsl(35,20%,30%)', borderRadius: 6 }}>
+               <div style={{ marginBottom: 12 }}>
+                 <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Give:</label>
+                 <select value={selectedTradeFrom} onChange={(e) => setSelectedTradeFrom(e.target.value)}
+                   style={{ width: '100%', padding: '8px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, marginBottom: 8 }}>
+                   <option value="gold">Gold</option>
+                   <option value="wood">Wood</option>
+                   <option value="wheat">Wheat</option>
+                   <option value="stone">Stone</option>
+                 </select>
+                 <input type="number" value={tradeAmount} onChange={(e) => setTradeAmount(parseInt(e.target.value) || 1)} min="1"
+                   style={{ width: '100%', padding: '8px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4 }} />
+               </div>
+
+               <div style={{ marginBottom: 12, padding: 12, background: '#0d0f14', borderRadius: 4 }}>
+                 <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>Current Offer:</div>
+                 {(() => {
+                   const rateKey = `${selectedTradeFrom}-${selectedTradeTo}`;
+                   const rate = tradeRates[rateKey];
+                   if (!rate) return <div style={{ color: '#f0c040' }}>Select valid pair</div>;
+                   const giveAmount = tradeAmount * rate.give;
+                   const getAmount = tradeAmount * rate.get;
+                   return (
+                     <div style={{ color: '#f0c040', fontWeight: 600 }}>
+                       Give: {giveAmount.toFixed(1)} {selectedTradeFrom} → Get: {getAmount.toFixed(1)} {selectedTradeTo}
+                     </div>
+                   );
+                 })()}
+               </div>
+
+               <div style={{ marginBottom: 12 }}>
+                 <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Receive:</label>
+                 <select value={selectedTradeTo} onChange={(e) => setSelectedTradeTo(e.target.value)}
+                   style={{ width: '100%', padding: '8px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4 }}>
+                   <option value="gold">Gold</option>
+                   <option value="wood">Wood</option>
+                   <option value="wheat">Wheat</option>
+                   <option value="stone">Stone</option>
+                 </select>
+               </div>
+
+               <button onClick={handleTrade}
+                 style={{
+                   width: '100%', padding: '8px', background: '#2a5a2a', border: '1px solid #5a9a5a',
+                   color: '#9afa9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
+                 }}>
+                 ✓ Execute Trade
+               </button>
+             </div>
+           </div>
           )}
 
           {/* Mercenaries Tab */}
