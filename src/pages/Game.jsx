@@ -2,9 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GameMenu from '../components/game/GameMenu';
 import Lobby from '../components/game/Lobby';
 import OnlineGame from './OnlineGame';
-import DiplomacyPanel from '../components/game/DiplomacyPanel';
 import HeroPanel from '../components/game/HeroPanel';
-import DeployableTroopsPanel from '../components/game/DeployableTroopsPanel';
 import { createInitialProvinceState } from '../components/game/provinceSystem';
 import { HEROES, LEADERS } from '../components/game/ardoniaData';
 import { getHeroCombatBonus } from '../components/game/ardoniaLogic';
@@ -74,10 +72,10 @@ import AdvisorPanel from '../components/game/AdvisorPanel';
 import EffectsPanel from '../components/game/EffectsPanel';
 import MiniMap from '../components/game/MiniMap';
 import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar, initializeSentiment, decaySentiment, applyEventSentiment, executeInfluenceAction, tickInfluenceModifiers, getSentimentLabel } from '../components/game/aiPersonalities';
-import DiplomacyInfluencePanel from '../components/game/DiplomacyInfluencePanel';
 import DiplomacyInfluenceMergedPanel from '../components/game/DiplomacyInfluenceMergedPanel';
 import CardPlayOverlay from '../components/game/CardPlayOverlay';
 import MarketPanel from '../components/game/MarketPanel';
+import SilverUnionMenu from '../components/game/SilverUnionMenu';
 
 export default function Game() {
   const [gameState, setGameState] = useState(null);
@@ -118,6 +116,7 @@ export default function Game() {
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [showDiplomacyInfluenceModal, setShowDiplomacyInfluenceModal] = useState(false);
   const [showInfluenceOverlay, setShowInfluenceOverlay] = useState(false);
+  const [showSilverUnionMenu, setShowSilverUnionMenu] = useState(false);
   const [openModal, setOpenModal] = useState(null); // 'action' | 'build' | 'recruit' | 'heroes' | 'avatars' | 'effects' | 'unifiedlog' | 'advisor' | 'market' | null
 
   const toggleMusic = () => {
@@ -1741,11 +1740,13 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           { id: 'avatars', icon: '👹', label: 'Avatars' },
           { id: 'effects', icon: '📊', label: 'Effects' },
           { id: 'market', icon: '💹', label: 'Market' },
+          { id: 'silver-union', icon: '🏦', label: 'Silver Union' },
           { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy & Influence' },
           { id: 'unifiedlog', icon: '📋', label: 'Logs' },
         ].map(t => (
           <button key={t.id} onClick={() => {
             if (t.id === 'diplomacy-influence') setShowDiplomacyInfluenceModal(true);
+            else if (t.id === 'silver-union') setShowSilverUnionMenu(true);
             else setOpenModal(t.id);
           }}
             className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-all hover:opacity-90"
@@ -1958,6 +1959,9 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         </div>
       )}
 
+      {showSilverUnionMenu && gameState && currentPlayer && (
+        <SilverUnionMenu gameState={gameState} currentPlayer={currentPlayer} setGameState={setGameState} addMessage={addMessage} onClose={() => setShowSilverUnionMenu(false)} />
+      )}
       {/* Diplomacy & Influence Merged Modal */}
       {showDiplomacyInfluenceModal && gameState && currentPlayer && (
         <DiplomacyInfluenceMergedPanel
