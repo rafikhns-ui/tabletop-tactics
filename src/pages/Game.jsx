@@ -1118,6 +1118,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
 
     return () => {
       timeouts.forEach(clearTimeout);
+      isAiRunningRef.current = false;
     };
   }, [gameState?.currentPlayerIndex, gameState?.turn, gameMode, winner]);
 

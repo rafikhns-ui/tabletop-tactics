@@ -761,7 +761,8 @@ export const getAiTurnSteps = (gameState) => {
 
   const getAI = () => state.players[aiIndex];
   const pushStep = (message, type = 'ai') => {
-    steps.push({ state: JSON.parse(JSON.stringify(state)), message, type });
+    // Shallow-clone only the parts that change (hexes + players), avoid expensive deep clone
+    steps.push({ state: { ...state, hexes: { ...state.hexes }, players: state.players.map(p => ({ ...p })) }, message, type });
   };
 
   // ── STEP 1: Build a building if affordable ──
