@@ -162,6 +162,17 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
         </div>
       )}
 
+      {/* Your Resources */}
+      <div style={{ marginBottom: 24, padding: 12, background: 'rgba(212,168,83,0.08)', border: '1px solid #8a6a30', borderRadius: 6 }}>
+        <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 12, fontWeight: 700, marginBottom: 8 }}>YOUR RESOURCES</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: 8, fontSize: 12 }}>
+          <div>💰 Gold: <span style={{ color: '#f0c040', fontWeight: 600 }}>{currentPlayer.resources?.gold ?? 0}</span></div>
+          <div>🪵 Wood: <span style={{ color: '#c89050', fontWeight: 600 }}>{currentPlayer.resources?.wood ?? 0}</span></div>
+          <div>🌾 Wheat: <span style={{ color: '#d4a050', fontWeight: 600 }}>{currentPlayer.resources?.wheat ?? 0}</span></div>
+          <div>⛏️ Stone: <span style={{ color: '#a0a0b0', fontWeight: 600 }}>{currentPlayer.resources?.stone ?? 0}</span></div>
+        </div>
+      </div>
+
       {/* Create Trade Offer */}
       {humanPlayers.length > 0 && (
         <div style={{ marginBottom: 24, padding: 12, background: 'rgba(212,168,83,0.08)', border: '1px solid #2a2520', borderRadius: 6 }}>
@@ -189,6 +200,12 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
                 style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11, marginBottom: 6 }} />
               <input type="number" placeholder="Wood" value={tradeOffer.wood || 0}
                 onChange={(e) => setTradeOffer({...tradeOffer, wood: parseInt(e.target.value) || 0})}
+                style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11, marginBottom: 6 }} />
+              <input type="number" placeholder="Wheat" value={tradeOffer.wheat || 0}
+                onChange={(e) => setTradeOffer({...tradeOffer, wheat: parseInt(e.target.value) || 0})}
+                style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11, marginBottom: 6 }} />
+              <input type="number" placeholder="Stone" value={tradeOffer.stone || 0}
+                onChange={(e) => setTradeOffer({...tradeOffer, stone: parseInt(e.target.value) || 0})}
                 style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11 }} />
             </div>
             <div>
@@ -198,22 +215,35 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
                 style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11, marginBottom: 6 }} />
               <input type="number" placeholder="Wood" value={tradeRequest.wood || 0}
                 onChange={(e) => setTradeRequest({...tradeRequest, wood: parseInt(e.target.value) || 0})}
+                style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11, marginBottom: 6 }} />
+              <input type="number" placeholder="Wheat" value={tradeRequest.wheat || 0}
+                onChange={(e) => setTradeRequest({...tradeRequest, wheat: parseInt(e.target.value) || 0})}
+                style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11, marginBottom: 6 }} />
+              <input type="number" placeholder="Stone" value={tradeRequest.stone || 0}
+                onChange={(e) => setTradeRequest({...tradeRequest, stone: parseInt(e.target.value) || 0})}
                 style={{ width: '100%', padding: '6px', background: '#0d0f14', border: '1px solid #2a2520', color: '#c8c0b0', borderRadius: 4, fontSize: 11 }} />
             </div>
           </div>
-          <button onClick={() => {
-            if (!tradeTarget) return;
-            onDiplomacyAction({ type: 'trade_offer', fromId: currentPlayer.id, toId: tradeTarget, offer: tradeOffer, request: tradeRequest });
-            setTradeTarget(null);
-            setTradeOffer({});
-            setTradeRequest({});
-          }}
-            style={{
-              width: '100%', padding: '8px', background: '#2a5a2a', border: '1px solid #5a9a5a',
-              color: '#9afa9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
-            }}>
-            📤 Send Trade Offer
-          </button>
+          {(() => {
+            const hasEnoughResources = Object.entries(tradeOffer).every(([k, v]) => (currentPlayer.resources?.[k] ?? 0) >= v);
+            const isValid = tradeTarget && Object.values(tradeOffer).some(v => v > 0) && hasEnoughResources;
+            return (
+              <button onClick={() => {
+                if (!isValid) return;
+                onDiplomacyAction({ type: 'trade_offer', fromId: currentPlayer.id, toId: tradeTarget, offer: tradeOffer, request: tradeRequest });
+                setTradeTarget(null);
+                setTradeOffer({});
+                setTradeRequest({});
+              }}
+                style={{
+                  width: '100%', padding: '8px', background: isValid ? '#2a5a2a' : '#3a3a3a', border: `1px solid ${isValid ? '#5a9a5a' : '#555'}`,
+                  color: isValid ? '#9afa9a' : '#666', borderRadius: 4, cursor: isValid ? 'pointer' : 'not-allowed', fontSize: 11, fontWeight: 600,
+                  opacity: isValid ? 1 : 0.6,
+                }}>
+                {!hasEnoughResources ? '⚠️ Insufficient Resources' : '📤 Send Trade Offer'}
+              </button>
+            );
+          })()}
         </div>
       )}
 
@@ -291,12 +321,12 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
 
   const aiPlayers = gameState.players.filter(p => p.id !== currentPlayer.id && p.isAI);
   const actions = [
-    { id: 'gift_gold', label: '💰 Gift Gold', cost: 'gold: 5', cooldown: 1 },
-    { id: 'cultural_exchange', label: '🎭 Cultural Exchange', cost: 'gold: 3', cooldown: 1 },
-    { id: 'military_aid', label: '⚔️ Military Aid', cost: 'gold: 8', cooldown: 2 },
-    { id: 'trade_embargo', label: '📉 Trade Embargo', cost: 'ip: 2', cooldown: 2 },
-    { id: 'propaganda', label: '📣 Propaganda', cost: 'ip: 3', cooldown: 1 },
-    { id: 'spy_network', label: '🕵️ Spy Network', cost: 'ip: 5', cooldown: 3 },
+    { id: 'gift_gold', label: '💰 Gift Gold', cost: 'gold: 5', cooldown: 1, impact: '+20% sentiment' },
+    { id: 'cultural_exchange', label: '🎭 Cultural Exchange', cost: 'gold: 3', cooldown: 1, impact: '+10% sentiment' },
+    { id: 'military_aid', label: '⚔️ Military Aid', cost: 'gold: 8', cooldown: 2, impact: '+30% sentiment · boost army' },
+    { id: 'trade_embargo', label: '📉 Trade Embargo', cost: 'ip: 2', cooldown: 2, impact: '-25% target sentiment' },
+    { id: 'propaganda', label: '📣 Propaganda', cost: 'ip: 3', cooldown: 1, impact: '-15% target vs rival' },
+    { id: 'spy_network', label: '🕵️ Spy Network', cost: 'ip: 5', cooldown: 3, impact: 'reveal secrets · +5 intel' },
   ];
 
   return (
@@ -323,18 +353,30 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
                   Influence: {aiLevel}
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
-                {actions.map(action => (
-                  <button key={action.id} onClick={() => onInfluenceAction(action.id, aiPlayer.id, null)}
-                    style={{
-                      padding: '8px 12px', background: 'rgba(212,168,83,0.15)', border: '1px solid #8a6a30',
-                      color: '#d4a853', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
-                      textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4,
-                    }}>
-                    <div>{action.label}</div>
-                    <div style={{ fontSize: 10, color: '#7a6a50' }}>Cost: {action.cost}</div>
-                  </button>
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
+                {actions.map(action => {
+                  const costParts = action.cost.split(':');
+                  const costType = costParts[0].trim();
+                  const costAmount = parseInt(costParts[1]) || 0;
+                  const playerCost = currentPlayer[costType] ?? currentPlayer.resources?.[costType] ?? 0;
+                  const canAfford = playerCost >= costAmount;
+                  return (
+                    <button key={action.id} onClick={() => canAfford && onInfluenceAction(action.id, aiPlayer.id, null)}
+                      style={{
+                        padding: '10px 12px', background: canAfford ? 'rgba(212,168,83,0.15)' : 'rgba(100,100,100,0.1)', border: `1px solid ${canAfford ? '#8a6a30' : '#555'}`,
+                        color: canAfford ? '#d4a853' : '#666', borderRadius: 4, cursor: canAfford ? 'pointer' : 'not-allowed', fontSize: 11, fontWeight: 600,
+                        textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4, opacity: canAfford ? 1 : 0.5,
+                      }}>
+                      <div>{action.label}</div>
+                      <div style={{ fontSize: 10, color: canAfford ? '#7a6a50' : '#555' }}>
+                        Cost: {action.cost} · Cooldown: {action.cooldown}
+                      </div>
+                      <div style={{ fontSize: 9, color: canAfford ? '#a89a70' : '#555', fontStyle: 'italic' }}>
+                        {action.impact}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           );
