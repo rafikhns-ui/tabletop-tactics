@@ -213,11 +213,11 @@ export const createGameState = (mode, playersArr = null) => {  let players;
 
     // Deploy starting units: 1 elite on capital, 3 infantry spread across owned hexes
     const infantryDeployed = {}; // playerId -> count
-    // First pass: deploy elite on capitals
+    // First pass: deploy elite + fortress on capitals
     Object.entries(hexes).forEach(([id, hex]) => {
       if (hex.isCapital && hex.owner) {
-        hexes[id] = { ...hex, units: [{ type: 'elite', count: 1 }] };
-        console.log(`[DEBUG] Deployed elite to capital ${id}, owner: ${hex.owner}`);
+        hexes[id] = { ...hex, units: [{ type: 'elite', count: 1 }], buildings: { ...hex.buildings, fortress: true } };
+        console.log(`[DEBUG] Deployed elite + fortress to capital ${id}, owner: ${hex.owner}`);
       }
     });
     // Second pass: deploy 3 infantry on first 3 non-capital owned hexes per player
