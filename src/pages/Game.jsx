@@ -1076,11 +1076,8 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         }
       };
 
-      // Inject current sentiment into gameState for AI decisions
-    const gsWithSentiment = { ...gameState, sentiment };
-
-    if (steps.length === 0) {
-        endAiTurn(gsWithSentiment);
+      if (steps.length === 0) {
+        endAiTurn(gameState);
         return;
       }
 

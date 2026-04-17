@@ -864,29 +864,33 @@ export const getAiTurnSteps = (gameState) => {
       ? [...currentAiForDeploy.pendingUnits]
       : ['infantry'];
 
-    // Find all land hexes owned by this AI from state.hexes (which contains the full map)
+    // Find all hexes owned by this AI — check both 'land' type AND any hex with owner set
     const allOwnedHexIds = Object.entries(state.hexes)
-      .filter(([, h]) => h.owner === currentAiForDeploy.id && h.type === 'land')
+      .filter(([, h]) => h.owner === currentAiForDeploy.id && h.type !== 'water')
       .map(([id]) => id);
 
-    // Fallback: capital hex regardless of type
+    // Fallback: any capital hex, regardless of type field
     if (allOwnedHexIds.length === 0) {
       const capEntry = Object.entries(state.hexes).find(([, h]) => h.isCapital && h.owner === currentAiForDeploy.id);
       if (capEntry) allOwnedHexIds.push(capEntry[0]);
     }
+    // Last resort: any hex owned by this AI
+    if (allOwnedHexIds.length === 0) {
+      const anyOwned = Object.entries(state.hexes).find(([, h]) => h.owner === currentAiForDeploy.id);
+      if (anyOwned) allOwnedHexIds.push(anyOwned[0]);
+    }
 
     // Score each owned hex: prefer frontier hexes adjacent to non-AI land
-    let bestHex = null, bestScore = -1;
+    let bestHex = null, bestScore = -Infinity;
     allOwnedHexIds.forEach(hexId => {
       const h = state.hexes[hexId] || {};
       const neighbors = getHexNeighborIds(hexId);
       const frontierScore = neighbors.filter(nid => {
         const nh = state.hexes[nid];
-        // Adjacent enemy-owned OR unowned passable land = frontier value
-        return nh && nh.type === 'land' && nh.owner !== currentAiForDeploy.id;
+        return nh && nh.type !== 'water' && nh.owner !== currentAiForDeploy.id;
       }).length;
       const unitCount = (h.units || []).reduce((s, u) => s + u.count, 0);
-      const score = frontierScore * 3 - unitCount; // prefer under-defended frontier
+      const score = frontierScore * 3 - unitCount;
       if (score > bestScore) { bestScore = score; bestHex = hexId; }
     });
 
@@ -912,7 +916,7 @@ export const getAiTurnSteps = (gameState) => {
   // ── STEP 5: Move units toward enemy/neutral territory ──
   if (Math.random() > 0.2) {
     const aiHexes = Object.entries(state.hexes)
-      .filter(([, h]) => h.owner === ai.id && h.type === 'land' && (h.units || []).reduce((s, u) => s + u.count, 0) >= 2)
+      .filter(([, h]) => h.owner === ai.id && h.type !== 'water' && (h.units || []).reduce((s, u) => s + u.count, 0) >= 2)
       .sort((a, b) => (b[1].units || []).reduce((s, u) => s + u.count, 0) - (a[1].units || []).reduce((s, u) => s + u.count, 0));
 
     let movesDone = 0;
@@ -923,10 +927,10 @@ export const getAiTurnSteps = (gameState) => {
       // Prefer moving into enemy-owned hex, then unowned land
       const moveTarget = neighbors.find(nid => {
         const nh = state.hexes[nid];
-        return nh && nh.type === 'land' && nh.owner && nh.owner !== ai.id; // enemy
+        return nh && nh.type !== 'water' && nh.owner && nh.owner !== ai.id; // enemy
       }) || neighbors.find(nid => {
         const nh = state.hexes[nid];
-        return nh && nh.type === 'land' && !nh.owner; // unowned neutral
+        return nh && nh.type !== 'water' && !nh.owner; // unowned neutral
       });
 
       if (moveTarget) {
@@ -984,7 +988,7 @@ export const getAiTurnSteps = (gameState) => {
   // ── STEP 6: Attack adjacent enemy hexes ──
   if (Math.random() >= skipChance) {
     const aiHexes = Object.entries(state.hexes)
-      .filter(([, h]) => h.owner === ai.id && h.type === 'land')
+      .filter(([, h]) => h.owner === ai.id && h.type !== 'water')
       .sort((a, b) => (b[1].units?.reduce((s, u) => s + u.count, 0) || 0) - (a[1].units?.reduce((s, u) => s + u.count, 0) || 0));
 
     let attacksDone = 0;
@@ -996,7 +1000,7 @@ export const getAiTurnSteps = (gameState) => {
       const neighbors = getHexNeighborIds(fromId);
       const targets = neighbors
         .map(nid => [nid, state.hexes[nid]])
-        .filter(([, nh]) => nh && nh.type === 'land' && nh.owner && nh.owner !== ai.id)
+        .filter(([, nh]) => nh && nh.type !== 'water' && nh.owner && nh.owner !== ai.id)
         .filter(([, nh]) => {
           const defCount = nh.units?.reduce((s, u) => s + u.count, 0) || 0;
           return defCount === 0 || fromCount >= defCount * minAdvantage;
