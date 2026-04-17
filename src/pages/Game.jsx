@@ -114,20 +114,20 @@ export default function Game() {
   const isAiRunningRef = useRef(false);
   const [cardPlayAnnouncement, setCardPlayAnnouncement] = useState(null); // { card, playerName, playerColor }
   const menuAudioRef = useRef(null);
+  const [musicPlaying, setMusicPlaying] = useState(false);
 
-  // Play menu music when not in-game, stop when game starts
-  useEffect(() => {
+  const toggleMusic = () => {
     const audio = menuAudioRef.current;
     if (!audio) return;
-    
-    if (!gameMode) {
-      audio.volume = 0.3;
-      setTimeout(() => audio.play().catch(() => {}), 100);
-    } else {
+    if (musicPlaying) {
       audio.pause();
-      audio.currentTime = 0;
+      setMusicPlaying(false);
+    } else {
+      audio.volume = 0.3;
+      audio.play().catch(() => {});
+      setMusicPlaying(true);
     }
-  }, [gameMode]);
+  };
 
   // Initialize provinces on game start
   useEffect(() => {
@@ -1299,6 +1299,11 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               {phase === 'deploy' ? '🚶 Begin Move' : phase === 'move' ? '⚔️ Begin Attack' : phase === 'attack' ? '🛡️ Fortify' : '✦ End Turn'}
             </button>
           )}
+          <button onClick={toggleMusic}
+            className="text-xs px-3 py-1.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all"
+            style={{ fontFamily: "'Cinzel',serif", background: musicPlaying ? 'hsl(130,50%,35%)' : 'hsl(35,20%,22%)', border: `1px solid ${musicPlaying ? 'hsl(130,60%,55%)' : 'hsl(35,20%,35%)'}`, color: 'hsl(40,20%,65%)' }}>
+            {musicPlaying ? '🎵 Music ON' : '🔇 Music OFF'}
+          </button>
           <button onClick={() => { setGameState(null); setGameMode(null); setPendingMode(null); }}
             className="text-xs px-3 py-1.5 rounded hover:opacity-80"
             style={{ background: 'hsl(35,20%,22%)', border: '1px solid hsl(35,20%,35%)', color: 'hsl(40,20%,65%)' }}>
