@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer, onDiplomacyAction, onInfluenceAction, tradeOffers, onAcceptTrade, onDeclineTrade, onClose }) {
+export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer, onDiplomacyAction, onInfluenceAction, onClose }) {
   const [activeTab, setActiveTab] = useState('diplomacy');
 
   return (
@@ -45,11 +45,7 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
                 cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5,
               }}>
               {t.icon} {t.label}
-              {t.id === 'diplomacy' && tradeOffers.filter(o => o.toId === currentPlayer?.id).length > 0 && (
-                <span style={{ marginLeft: 8, background: '#dc2626', color: 'white', borderRadius: '50%', padding: '0 6px', fontSize: 10 }}>
-                  {tradeOffers.filter(o => o.toId === currentPlayer?.id).length}
-                </span>
-              )}
+
             </button>
           ))}
         </div>
@@ -61,9 +57,6 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
               gameState={gameState}
               currentPlayer={currentPlayer}
               onDiplomacyAction={onDiplomacyAction}
-              tradeOffers={tradeOffers}
-              onAcceptTrade={onAcceptTrade}
-              onDeclineTrade={onDeclineTrade}
             />
           )}
           {activeTab === 'influence' && (
@@ -79,83 +72,13 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
   );
 }
 
-function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers, onAcceptTrade, onDeclineTrade }) {
+function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction }) {
   if (!gameState || !currentPlayer) return null;
 
   const otherPlayers = gameState.players.filter(p => p.id !== currentPlayer.id && !p.isAI);
-  const incomingOffers = tradeOffers.filter(o => o.toId === currentPlayer.id);
-  const outgoingOffers = tradeOffers.filter(o => o.fromId === currentPlayer.id);
 
   return (
     <div style={{ color: '#c8c0b0', fontSize: 13 }}>
-      {/* Incoming Trade Offers */}
-      {incomingOffers.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
-            📥 Incoming Trade Offers
-          </h3>
-          {incomingOffers.map(offer => {
-            const fromPlayer = gameState.players.find(p => p.id === offer.fromId);
-            return (
-              <div key={offer.id} style={{
-                background: 'rgba(212,168,83,0.05)', border: '1px solid #2a2520', borderRadius: 6,
-                padding: 12, marginBottom: 8,
-              }}>
-                <div style={{ marginBottom: 8 }}>
-                  <span style={{ fontWeight: 600 }}>From: {fromPlayer?.name}</span>
-                </div>
-                <div style={{ fontSize: 12, marginBottom: 8 }}>
-                  <div>📤 They offer: {Object.entries(offer.offer || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
-                  <div>📥 They want: {Object.entries(offer.request || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={() => onAcceptTrade(offer)}
-                    style={{
-                      flex: 1, padding: '6px 12px', background: '#2a5a2a', border: '1px solid #5a9a5a',
-                      color: '#9afa9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
-                    }}>
-                    ✓ Accept
-                  </button>
-                  <button onClick={() => onDeclineTrade(offer)}
-                    style={{
-                      flex: 1, padding: '6px 12px', background: '#5a2a2a', border: '1px solid #9a5a5a',
-                      color: '#fa9a9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
-                    }}>
-                    ✗ Decline
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Outgoing Trade Offers */}
-      {outgoingOffers.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
-            📤 Sent Trade Offers
-          </h3>
-          {outgoingOffers.map(offer => {
-            const toPlayer = gameState.players.find(p => p.id === offer.toId);
-            return (
-              <div key={offer.id} style={{
-                background: 'rgba(212,168,83,0.05)', border: '1px solid #2a2520', borderRadius: 6,
-                padding: 12, marginBottom: 8,
-              }}>
-                <div style={{ marginBottom: 8 }}>
-                  <span style={{ fontWeight: 600 }}>To: {toPlayer?.name}</span>
-                </div>
-                <div style={{ fontSize: 12 }}>
-                  <div>📤 You offer: {Object.entries(offer.offer || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
-                  <div>📥 You want: {Object.entries(offer.request || {}).map(([k, v]) => `${v} ${k}`).join(', ')}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       {/* Diplomacy Actions */}
       <div>
         <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 12 }}>
