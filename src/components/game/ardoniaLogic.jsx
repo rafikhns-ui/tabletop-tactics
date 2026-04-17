@@ -173,6 +173,9 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       });
     });
 
+    // Build set of nation_ids that belong to active players/AI
+    const activeNationIds = new Set(players.map(p => factionToNation[p.factionId]).filter(Boolean));
+
     const hexes = {};
     const capitalHexIds = Object.values(capitalsByFaction); // list of capital hex IDs
     Object.entries(generatedHexWorld).forEach(([id, hex]) => {
@@ -186,12 +189,19 @@ export const createGameState = (mode, playersArr = null) => {  let players;
           break;
         }
       }
+      // Neutral faction hex: belongs to a nation not controlled by any player/AI
+      let isNeutralGarrison = false;
+      if (!owner && hex.nation_id && !activeNationIds.has(hex.nation_id) && PLAYABLE_LAND_TYPES.has(hex.type)) {
+        owner = `neutral_${hex.nation_id}`;
+        isNeutralGarrison = true;
+      }
       hexes[id] = {
         ...hex,
         owner,
         units: [],
         hasFortress: false,
         isCapital,
+        isNeutralGarrison,
       };
     });
 
@@ -214,6 +224,13 @@ export const createGameState = (mode, playersArr = null) => {  let players;
         console.log(`[DEBUG] Deployed infantry to ${id}, owner: ${hex.owner}, count: ${infantryDeployed[hex.owner]}`);
       }
     });
+    // Third pass: deploy 1 infantry garrison on every neutral faction hex (land only)
+    Object.entries(hexes).forEach(([id, hex]) => {
+      if (hex.isNeutralGarrison && hex.type !== 'water' && hex.units.length === 0) {
+        hexes[id] = { ...hex, units: [{ type: 'infantry', count: 1 }] };
+      }
+    });
+
     console.log('[DEBUG] Final hexes with units:', Object.entries(hexes).filter(([,h]) => h.units?.length > 0).slice(0, 10));
 
   // Assign territories based on each territory's faction property

@@ -621,6 +621,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 {owner && playerColor && !highlightMode && (
                   <polygon points={ptsInner} fill={playerColor} fillOpacity={0.45} stroke={playerColor} strokeWidth={1.5} strokeOpacity={0.9} style={{ pointerEvents: 'none' }} />
                 )}
+                {/* Neutral garrison tint (grey shield pattern) */}
+                {owner && !playerColor && owner.startsWith('neutral_') && !highlightMode && (
+                  <polygon points={ptsInner} fill="#777" fillOpacity={0.22} stroke="#999" strokeWidth={1} strokeOpacity={0.55} strokeDasharray="3,2" style={{ pointerEvents: 'none' }} />
+                )}
                 {/* Nation tint */}
                 {!owner && nationColor && !highlightMode && (
                   <polygon points={ptsInner} fill={nationColor} fillOpacity={0.28} style={{ pointerEvents: 'none' }} />
@@ -633,7 +637,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                       const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '⚙️', naval: '⚓' };
                       const xPos = cx - 10 + (i % 2) * 20;
                       const yPos = cy - 10 + Math.floor(i / 2) * 16;
-                      const ringColor = playerColor || '#d4a853';
+                      const ringColor = playerColor || (owner?.startsWith('neutral_') ? '#888' : '#d4a853');
                       const isElite = u.type === 'elite';
                       return (
                         <g key={i}>
@@ -1024,11 +1028,25 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   const hexId = selected ? `${selected.col},${selected.row}` : null;
                   const owner = hexId ? getOwner(hexId, selected?.nation_id) : null;
                   const ownerPlayer = owner ? gameState?.players?.find(p => p.id === owner) : null;
-                  if (!ownerPlayer) return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
-                      <span style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>Uncontrolled territory</span>
-                    </div>
-                  );
+                  if (!ownerPlayer) {
+                    const isNeutralGarrison = owner && owner.startsWith('neutral_');
+                    const neutralNation = isNeutralGarrison ? owner.replace('neutral_', '') : null;
+                    const neutralLabel = neutralNation ? (NATION_LABEL_MAP[neutralNation]?.name || neutralNation) : null;
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
+                        {isNeutralGarrison ? (
+                          <>
+                            <span style={{ fontSize: 14 }}>⚔️</span>
+                            <span style={{ fontSize: 12, color: '#9a9a7a', fontStyle: 'italic' }}>
+                              Neutral Garrison — {neutralLabel || neutralNation}
+                            </span>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>Uncontrolled territory</span>
+                        )}
+                      </div>
+                    );
+                  }
                   return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 0', borderTop: '1px solid #2a2520', borderBottom: '1px solid #2a2520' }}>
                       <div style={{ width: 12, height: 12, borderRadius: '50%', background: ownerPlayer.color, border: '1px solid #ffffff30', flexShrink: 0 }} />
