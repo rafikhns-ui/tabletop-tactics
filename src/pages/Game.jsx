@@ -998,6 +998,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
   const handleDiplomacyAction = ({ type, fromId, toId, offer, request }) => {
     const from = gameState.players.find(p => p.id === fromId);
     const to = gameState.players.find(p => p.id === toId);
+    
     if (type === 'trade_offer') {
       setTradeOffers(prev => [...prev, { fromId, toId, offer, request, id: Date.now() }]);
       setGameState(prev => ({
@@ -1009,9 +1010,72 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         }],
       }));
       addMessage(`📜 Trade offer sent to ${to?.name}`);
-    addLog('diplomacy', `Trade offer sent to ${to?.name}`, null, 'Diplomacy');
+      addLog('diplomacy', `Trade offer sent to ${to?.name}`, null, 'Diplomacy');
       return;
     }
+    
+    // For diplomacy actions (alliance/war/neutral), check AI sentiment
+    if (to?.isAI) {
+      const currentSentiment = sentiment?.[fromId]?.[toId] ?? 50;
+      const personality = NATION_PERSONALITIES[to.factionId];
+      
+      // Alliance proposal: AI agrees if sentiment > 80%
+      if (type === 'alliance' && currentSentiment > 80) {
+        const key = [fromId, toId].sort().join('|');
+        setGameState(prev => ({
+          ...prev,
+          diplomacy: { ...(prev.diplomacy || {}), [key]: 'alliance' },
+          diplomaticEvents: [...(prev.diplomaticEvents || []), {
+            type: 'alliance',
+            text: `${from?.name} and ${to?.name} formed an Alliance`,
+            turn: prev.turn,
+          }],
+        }));
+        addMessage(`🕊️ ${to.name} accepts your alliance!`);
+        addLog('diplomacy', `Alliance formed with ${to.name}`, null, 'Diplomacy');
+        return;
+      }
+      
+      // War declaration: AI accepts if sentiment < 30% or personality is aggressive
+      if (type === 'war' && (currentSentiment < 30 || personality?.warTendency > 70)) {
+        const key = [fromId, toId].sort().join('|');
+        setGameState(prev => ({
+          ...prev,
+          diplomacy: { ...(prev.diplomacy || {}), [key]: 'war' },
+          diplomaticEvents: [...(prev.diplomaticEvents || []), {
+            type: 'war',
+            text: `${from?.name} and ${to?.name} are at War`,
+            turn: prev.turn,
+          }],
+        }));
+        addMessage(`⚔️ ${to.name} accepts your declaration of war!`);
+        addLog('diplomacy', `War declared with ${to.name}`, null, 'Diplomacy');
+        return;
+      }
+      
+      // Neutral/Peace: AI accepts if sentiment is moderate (35-75%)
+      if (type === 'neutral' && currentSentiment >= 35 && currentSentiment <= 75) {
+        const key = [fromId, toId].sort().join('|');
+        setGameState(prev => ({
+          ...prev,
+          diplomacy: { ...(prev.diplomacy || {}), [key]: 'neutral' },
+          diplomaticEvents: [...(prev.diplomaticEvents || []), {
+            type: 'neutral',
+            text: `${from?.name} and ${to?.name} agreed to a Peace Treaty`,
+            turn: prev.turn,
+          }],
+        }));
+        addMessage(`🤝 ${to.name} accepts peace!`);
+        addLog('diplomacy', `Peace treaty with ${to.name}`, null, 'Diplomacy');
+        return;
+      }
+      
+      // If AI rejects, inform player
+      addMessage(`❌ ${to.name} refuses your diplomatic proposal (sentiment: ${Math.round(currentSentiment)}%)`);
+      return;
+    }
+    
+    // Human players can always propose diplomacy
     const key = [fromId, toId].sort().join('|');
     setGameState(prev => {
       const typeLabels = { alliance: 'Alliance', war: 'War', neutral: 'Peace' };
@@ -1034,9 +1098,19 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     const fromPlayer = gameState?.players?.find(p => p.id === offer.fromId);
     const toPlayer = gameState?.players?.find(p => p.id === offer.toId);
     
-    // If accepting player is AI, use personality to decide
+    // If accepting player is AI, use sentiment + personality to decide
     if (toPlayer?.isAI) {
+      const currentSentiment = sentiment?.[offer.toId]?.[offer.fromId] ?? 50;
       const personality = NATION_PERSONALITIES[toPlayer.factionId];
+      
+      // Hostile: reject trade
+      if (currentSentiment < 35) {
+        handleDeclineTrade(offer);
+        addMessage(`❌ ${toPlayer.name} refuses trade — relationship too hostile`);
+        return;
+      }
+      
+      // Use personality scoring for middle ground
       const score = scoreTradeOffer(offer, toPlayer, fromPlayer, personality);
       if (score < 50) {
         handleDeclineTrade(offer);
