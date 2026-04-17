@@ -1235,7 +1235,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     };
   }, [gameState?.currentPlayerIndex, gameState?.turn, gameMode, winner]);
 
-  const menuAudio = <audio ref={menuAudioRef} src="https://drive.google.com/uc?id=1DhnA4TinThSDIRFfqOKAuv5ZxHIJxgKQ" loop style={{ display: 'none' }} crossOrigin="anonymous" />;
+  const menuAudio = <audio ref={menuAudioRef} src="https://drive.google.com/u/0/uc?id=1DhnA4TinThSDIRFfqOKAuv5ZxHIJxgKQ&export=download" loop style={{ display: 'none' }} />;
 
   if (onlineSession) return <OnlineGame session={onlineSession} onLeave={() => { setOnlineSession(null); setShowLobby(false); }} />;
   if (showLobby) return <>{menuAudio}<Lobby onStartOnline={(s) => setOnlineSession(s)} onBack={() => setShowLobby(false)} /></>;
