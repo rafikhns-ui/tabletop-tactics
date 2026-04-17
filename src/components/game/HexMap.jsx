@@ -144,7 +144,7 @@ function estimateCombat(attackerUnits, defenderUnits, hasFortress) {
   };
 }
 
-export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit }) {
+export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -1166,7 +1166,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const panelUnits = getUnits(hexId);
             const hexOwner = getOwner(hexId, selected?.nation_id);
             const isMyHex = hexOwner === currentPlayer?.id;
-            const canMove = phase === 'move' && isMyHex && !currentPlayer?.isAI;
+            const alreadyMoved = movedHexes?.has(hexId);
+            const canMove = phase === 'move' && isMyHex && !currentPlayer?.isAI && !alreadyMoved;
             const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
             const typeNames = { infantry: 'Infantry', cavalry: 'Cavalry', elite: 'Elite Guard', ranged: 'Ranged', siege: 'Siege Engine', naval: 'Warship' };
 
@@ -1192,11 +1193,16 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
                   UNITS ON HEX
                 </div>
+                {!canMove && alreadyMoved && (
+                   <div style={{ fontSize: 11, color: '#c08030', marginBottom: 8, padding: '6px 8px', background: 'rgba(192,128,48,0.1)', border: '1px solid #8a6a30', borderRadius: 4 }}>
+                     This unit already moved this turn
+                   </div>
+                 )}
                 {canMove && (
-                  <div style={{ fontSize: 11, color: '#7a9a7a', marginBottom: 8, padding: '6px 8px', background: 'rgba(100,160,100,0.1)', border: '1px solid #3a5a3a', borderRadius: 4 }}>
-                    Click units to select · then click destination on map
-                  </div>
-                )}
+                   <div style={{ fontSize: 11, color: '#7a9a7a', marginBottom: 8, padding: '6px 8px', background: 'rgba(100,160,100,0.1)', border: '1px solid #3a5a3a', borderRadius: 4 }}>
+                     Click units to select · then click destination on map
+                   </div>
+                 )}
                 {panelUnits.length > 0 ? (
                   <div>
                     {panelUnits.map((u, i) => {

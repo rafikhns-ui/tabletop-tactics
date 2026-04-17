@@ -1377,6 +1377,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               onHexClick={handleTerritoryClick}
               onProvincClick={setSelectedProvince}
               movementState={movementState}
+              movedHexes={movedHexes}
               highlightPlayerId={highlightedPlayerId || (highlightMyTerritories ? currentPlayer?.id : null)}
               reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
               attackableHexes={phase === 'attack' && selectedTerritory ? (() => {
