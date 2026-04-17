@@ -75,6 +75,10 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
 }
 
 function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers, onAcceptTrade, onDeclineTrade }) {
+  const [tradeTarget, setTradeTarget] = React.useState(null);
+  const [tradeOffer, setTradeOffer] = React.useState({});
+  const [tradeRequest, setTradeRequest] = React.useState({});
+
   if (!gameState || !currentPlayer) return null;
 
   const otherPlayers = gameState.players.filter(p => p.id !== currentPlayer.id);
@@ -82,9 +86,6 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
   const aiPlayers = otherPlayers.filter(p => p.isAI);
   const incomingOffers = tradeOffers ? tradeOffers.filter(o => o.toId === currentPlayer.id) : [];
   const outgoingOffers = tradeOffers ? tradeOffers.filter(o => o.fromId === currentPlayer.id) : [];
-  const [tradeTarget, setTradeTarget] = React.useState(null);
-  const [tradeOffer, setTradeOffer] = React.useState({});
-  const [tradeRequest, setTradeRequest] = React.useState({});
 
   return (
     <div style={{ color: '#c8c0b0', fontSize: 13 }}>
