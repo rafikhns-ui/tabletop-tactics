@@ -1640,6 +1640,9 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           currentPlayer={currentPlayer}
           onDiplomacyAction={handleDiplomacyAction}
           onInfluenceAction={handleInfluenceAction}
+          tradeOffers={tradeOffers}
+          onAcceptTrade={handleAcceptTrade}
+          onDeclineTrade={handleDeclineTrade}
           onClose={() => setShowDiplomacyInfluenceModal(false)}
         />
       )}
