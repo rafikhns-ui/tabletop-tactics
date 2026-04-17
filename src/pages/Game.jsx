@@ -914,13 +914,10 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
   const endTurn = useCallback(() => {
     setSelectedTerritory(null);
     setMovedHexes(new Set());
-    if (!gameState) return;
-    const nextIndex2 = (gameState.currentPlayerIndex + 1) % gameState.players.length;
-    let capturedEventTrigger = null;
-    if (nextIndex2 === 0) setTurnLog([]);
     setGameState(prev => {
       if (!prev) return prev;
       const nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length;
+      if (nextIndex === 0) setTurnLog([]);
       let eventCountdown = (prev.eventCountdown || 3) - 1;
       let eventTrigger = null;
       if (eventCountdown <= 0) {
@@ -939,12 +936,11 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       state = collectIncome(state);
 
       if (eventTrigger) {
-                capturedEventTrigger = eventTrigger;
+        setTimeout(() => setActiveEvent(eventTrigger), 0);
       }
 
       return checkObjectives(state);
     });
-        if (capturedEventTrigger) setActiveEvent(capturedEventTrigger);
     setPhase('deploy');
     addMessage('🔄 New turn — deploy your reinforcements');
   }, [checkObjectives]);
