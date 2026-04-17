@@ -1044,6 +1044,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
       </div>
 
       {/* ══════ SIDE PANEL ══════ */}
+      {selected && (
       <div style={{
         width: 260,
         background: 'linear-gradient(135deg, #1a1c22, #14161c)',
@@ -1382,6 +1383,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }
