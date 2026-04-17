@@ -172,7 +172,6 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
           <div>💰 Gold: <span style={{ color: '#f0c040', fontWeight: 600 }}>{currentPlayer.resources?.gold ?? 0}</span></div>
           <div>🪵 Wood: <span style={{ color: '#c89050', fontWeight: 600 }}>{currentPlayer.resources?.wood ?? 0}</span></div>
           <div>🌾 Wheat: <span style={{ color: '#d4a050', fontWeight: 600 }}>{currentPlayer.resources?.wheat ?? 0}</span></div>
-          <div>⛏️ Stone: <span style={{ color: '#a0a0b0', fontWeight: 600 }}>{currentPlayer.resources?.stone ?? 0}</span></div>
         </div>
       </div>
 
