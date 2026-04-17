@@ -393,6 +393,8 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, tradeOf
 }
 
 function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
+  const [actionCooldowns, setActionCooldowns] = React.useState({});
+  
   if (!gameState || !currentPlayer) return null;
 
   const aiPlayers = gameState.players.filter(p => p.id !== currentPlayer.id && p.isAI);
@@ -400,9 +402,13 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
     { id: 'gift_gold', label: '💰 Gift Gold', cost: 'gold: 5', cooldown: 1, impact: '+20% sentiment' },
     { id: 'cultural_exchange', label: '🎭 Cultural Exchange', cost: 'gold: 3', cooldown: 1, impact: '+10% sentiment' },
     { id: 'military_aid', label: '⚔️ Military Aid', cost: 'gold: 8', cooldown: 2, impact: '+30% sentiment · boost army' },
-    { id: 'trade_embargo', label: '📉 Trade Embargo', cost: 'ip: 2', cooldown: 2, impact: '-25% target sentiment' },
-    { id: 'propaganda', label: '📣 Propaganda', cost: 'ip: 3', cooldown: 1, impact: '-15% target vs rival' },
-    { id: 'spy_network', label: '🕵️ Spy Network', cost: 'ip: 5', cooldown: 3, impact: 'reveal secrets · +5 intel' },
+    { id: 'trade_embargo', label: '📉 Trade Embargo', cost: 'ip: 2', cooldown: 2, impact: '-25% sentiment' },
+    { id: 'propaganda', label: '📣 Propaganda', cost: 'ip: 3', cooldown: 1, impact: '-15% vs rival' },
+    { id: 'spy_network', label: '🕵️ Spy Network', cost: 'ip: 5', cooldown: 3, impact: 'reveal secrets · intel +5' },
+    { id: 'royal_marriage', label: '💍 Royal Marriage', cost: 'ip: 4, gold: 10', cooldown: 4, impact: '+40% sentiment · alliance boost' },
+    { id: 'science_grant', label: '🔬 Science Grant', cost: 'gold: 6', cooldown: 2, impact: '+15% sentiment · tech boost' },
+    { id: 'religious_influence', label: '⛪ Religious Influence', cost: 'ip: 3, gold: 4', cooldown: 2, impact: '+25% sentiment · zealotry +1' },
+    { id: 'blackmail', label: '🔐 Blackmail', cost: 'ip: 4', cooldown: 3, impact: '-35% sentiment · forced deal' },
   ];
 
   return (
@@ -417,7 +423,11 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
         <div style={{ color: '#555', fontStyle: 'italic' }}>No AI opponents to influence</div>
       ) : (
         aiPlayers.map(aiPlayer => {
+          const sentiment = gameState.sentiment?.[currentPlayer.id]?.[aiPlayer.id] ?? 50;
+          const sentimentLabel = sentiment > 70 ? 'Friendly 😊' : sentiment > 40 ? 'Neutral 😐' : 'Hostile 😠';
+          const sentimentColor = sentiment > 70 ? '#5a9a5a' : sentiment > 40 ? '#9a9a5a' : '#9a5a5a';
           const aiLevel = aiPlayer.influenceLevel ?? 0;
+          
           return (
             <div key={aiPlayer.id} style={{
               background: 'rgba(100,100,100,0.1)', border: '1px solid #2a2520', borderRadius: 6,
@@ -425,31 +435,85 @@ function InfluenceContent({ gameState, currentPlayer, onInfluenceAction }) {
             }}>
               <div style={{ fontWeight: 600, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span><span style={{ color: aiPlayer.color }}>●</span> {aiPlayer.name}</span>
-                <span style={{ fontSize: 12, color: '#d4a853', background: 'rgba(212,168,83,0.2)', padding: '4px 8px', borderRadius: 3 }}>
-                  Influence: {aiLevel}
-                </span>
+                <div style={{ display: 'flex', gap: 8, fontSize: 12 }}>
+                  <span style={{ color: '#d4a853', background: 'rgba(212,168,83,0.2)', padding: '4px 8px', borderRadius: 3 }}>
+                    Influence: {aiLevel}
+                  </span>
+                  <span style={{ color: sentimentColor, background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: 3 }}>
+                    {sentimentLabel}
+                  </span>
+                </div>
               </div>
+              
+              {/* Sentiment bar */}
+              <div style={{ marginBottom: 12, background: '#0d0f14', borderRadius: 4, padding: 8 }}>
+                <div style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>Relationship: {Math.round(sentiment)}%</div>
+                <div style={{ background: '#1a1a2a', borderRadius: 2, height: 12, overflow: 'hidden', border: '1px solid #2a2520' }}>
+                  <div style={{
+                    width: `${sentiment}%`, height: '100%', background: `linear-gradient(90deg, #9a5a5a, #9a9a5a, #5a9a5a)`,
+                    transition: 'width 0.3s ease',
+                  }} />
+                </div>
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
                 {actions.map(action => {
-                  const costParts = action.cost.split(':');
-                  const costType = costParts[0].trim();
-                  const costAmount = parseInt(costParts[1]) || 0;
-                  const playerCost = currentPlayer[costType] ?? currentPlayer.resources?.[costType] ?? 0;
-                  const canAfford = playerCost >= costAmount;
+                  const cooldownKey = `${aiPlayer.id}-${action.id}`;
+                  const cooldownRemaining = actionCooldowns[cooldownKey] ?? 0;
+                  const costParts = action.cost.split(',').map(s => s.trim());
+                  let canAfford = true;
+                  
+                  costParts.forEach(costPart => {
+                    const parts = costPart.split(':');
+                    const costType = parts[0].trim();
+                    const costAmount = parseInt(parts[1]) || 0;
+                    const playerCost = currentPlayer[costType] ?? currentPlayer.resources?.[costType] ?? 0;
+                    if (playerCost < costAmount) canAfford = false;
+                  });
+                  
+                  const onCooldown = cooldownRemaining > 0;
+                  
                   return (
-                    <button key={action.id} onClick={() => canAfford && onInfluenceAction(action.id, aiPlayer.id, null)}
+                    <button key={action.id} onClick={() => {
+                      if (canAfford && !onCooldown) {
+                        onInfluenceAction(action.id, aiPlayer.id, null);
+                        setActionCooldowns(prev => ({ ...prev, [cooldownKey]: action.cooldown }));
+                        const interval = setInterval(() => {
+                          setActionCooldowns(prev => {
+                            const remaining = prev[cooldownKey] - 1;
+                            if (remaining <= 0) {
+                              clearInterval(interval);
+                              const newState = { ...prev };
+                              delete newState[cooldownKey];
+                              return newState;
+                            }
+                            return { ...prev, [cooldownKey]: remaining };
+                          });
+                        }, 1000);
+                      }
+                    }}
                       style={{
-                        padding: '10px 12px', background: canAfford ? 'rgba(212,168,83,0.15)' : 'rgba(100,100,100,0.1)', border: `1px solid ${canAfford ? '#8a6a30' : '#555'}`,
-                        color: canAfford ? '#d4a853' : '#666', borderRadius: 4, cursor: canAfford ? 'pointer' : 'not-allowed', fontSize: 11, fontWeight: 600,
-                        textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4, opacity: canAfford ? 1 : 0.5,
+                        padding: '10px 12px', background: onCooldown ? 'rgba(100,100,100,0.1)' : canAfford ? 'rgba(212,168,83,0.15)' : 'rgba(100,100,100,0.1)',
+                        border: `1px solid ${onCooldown ? '#555' : canAfford ? '#8a6a30' : '#555'}`,
+                        color: onCooldown ? '#666' : canAfford ? '#d4a853' : '#666', borderRadius: 4, cursor: onCooldown || !canAfford ? 'not-allowed' : 'pointer',
+                        fontSize: 11, fontWeight: 600, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4,
+                        opacity: onCooldown ? 0.5 : canAfford ? 1 : 0.5, position: 'relative',
                       }}>
                       <div>{action.label}</div>
-                      <div style={{ fontSize: 10, color: canAfford ? '#7a6a50' : '#555' }}>
-                        Cost: {action.cost} · Cooldown: {action.cooldown}
+                      <div style={{ fontSize: 10, color: onCooldown ? '#666' : canAfford ? '#7a6a50' : '#555' }}>
+                        Cost: {action.cost}
                       </div>
-                      <div style={{ fontSize: 9, color: canAfford ? '#a89a70' : '#555', fontStyle: 'italic' }}>
+                      <div style={{ fontSize: 9, color: onCooldown ? '#666' : canAfford ? '#a89a70' : '#555', fontStyle: 'italic' }}>
                         {action.impact}
                       </div>
+                      {onCooldown && (
+                        <div style={{
+                          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', borderRadius: 4,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f0c040', fontWeight: 700, fontSize: 16,
+                        }}>
+                          {cooldownRemaining}s
+                        </div>
+                      )}
                     </button>
                   );
                 })}
