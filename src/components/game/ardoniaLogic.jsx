@@ -119,14 +119,15 @@ export const createGameState = (mode, playersArr = null) => {  let players;
 
     // Find first non-water hex per faction (capital) — use nation_id -> faction mapping
     // Find capital: the center hex of each nation's LAND territory
-    // Only include true land hexes: plains, forest, mountain, hills, desert, swamp, tundra, scorched
+    // Land hexes use h.type === 'land' (not terrain names) in generateWorldMap
     const PLAYABLE_LAND_TYPES = new Set(['plains', 'forest', 'mountain', 'hills', 'desert', 'swamp', 'tundra', 'scorched']);
+    const isLandHex = (h) => h.type === 'land';
     const capitalsByFaction = {};
     players.forEach(p => {
       if (!p.factionId) return;
       const nationId = factionToNation[p.factionId];
       const landHexes = Object.entries(generatedHexWorld).filter(
-        ([, h]) => h.nation_id === nationId && PLAYABLE_LAND_TYPES.has(h.type)
+        ([, h]) => h.nation_id === nationId && isLandHex(h)
       );
       console.log(`[DEBUG] Faction '${p.factionId}' (nation ${nationId}): found ${landHexes.length} playable land hexes`);
       if (landHexes.length === 0) return;
@@ -167,14 +168,19 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       const neighbors = getHexNeighbors(capitalId);
       neighbors.forEach(nId => {
         const nHex = generatedHexWorld[nId];
-        if (nHex && PLAYABLE_LAND_TYPES.has(nHex.type) && nHex.nation_id === expectedNation) {
+        if (nHex && isLandHex(nHex) && nHex.nation_id === expectedNation) {
           playerStartingHexes[owner].add(nId);
         }
       });
     });
 
     // Build set of nation_ids that belong to active players/AI
-    const activeNationIds = new Set(players.map(p => factionToNation[p.factionId]).filter(Boolean));
+    // In generatedHexWorld, nation_id = the remapped factionId (e.g. 'onishiman', 'sultanate')
+    // factionToNation maps factionId -> nationId, but since FACTION_TO_NATION_ID is 1:1 they are the same
+    const activeNationIds = new Set([
+      ...players.map(p => factionToNation[p.factionId]).filter(Boolean),
+      ...players.map(p => p.factionId).filter(Boolean),
+    ]);
 
     const hexes = {};
     const capitalHexIds = Object.values(capitalsByFaction); // list of capital hex IDs
@@ -191,7 +197,7 @@ export const createGameState = (mode, playersArr = null) => {  let players;
       }
       // Neutral faction hex: belongs to a nation not controlled by any player/AI
       let isNeutralGarrison = false;
-      if (!owner && hex.nation_id && !activeNationIds.has(hex.nation_id) && PLAYABLE_LAND_TYPES.has(hex.type)) {
+      if (!owner && hex.nation_id && !activeNationIds.has(hex.nation_id) && isLandHex(hex)) {
         owner = `neutral_${hex.nation_id}`;
         isNeutralGarrison = true;
       }
