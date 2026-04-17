@@ -77,6 +77,7 @@ import TurnLog from '../components/game/TurnLog';
 import MiniMap from '../components/game/MiniMap';
 import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar, initializeSentiment, decaySentiment, applyEventSentiment, executeInfluenceAction, tickInfluenceModifiers, getSentimentLabel } from '../components/game/aiPersonalities';
 import DiplomacyInfluencePanel from '../components/game/DiplomacyInfluencePanel';
+import DiplomacyInfluenceMergedPanel from '../components/game/DiplomacyInfluenceMergedPanel';
 import CardPlayOverlay from '../components/game/CardPlayOverlay';
 
 export default function Game() {
@@ -115,6 +116,7 @@ export default function Game() {
   const [cardPlayAnnouncement, setCardPlayAnnouncement] = useState(null); // { card, playerName, playerColor }
   const menuAudioRef = useRef(null);
   const [musicPlaying, setMusicPlaying] = useState(false);
+  const [showDiplomacyInfluenceModal, setShowDiplomacyInfluenceModal] = useState(false);
 
   const toggleMusic = () => {
     const audio = menuAudioRef.current;
@@ -1515,14 +1517,13 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                <TurnLog entries={turnLog} currentTurn={gameState?.turn} />
              )}
              {bottomTab === 'diplomacy' && gameState && currentPlayer && !currentPlayer.isAI && (
-              <DiplomacyPanel
-                gameState={gameState}
-                currentPlayer={currentPlayer}
-                onDiplomacyAction={handleDiplomacyAction}
-                tradeOffers={tradeOffers}
-                onAcceptTrade={handleAcceptTrade}
-                onDeclineTrade={handleDeclineTrade}
-              />
+              <div className="flex items-center justify-center h-full">
+                <button onClick={() => setShowDiplomacyInfluenceModal(true)}
+                  className="px-6 py-3 rounded-lg font-bold text-center"
+                  style={{ fontFamily: "'Cinzel', serif", background: 'linear-gradient(135deg, hsl(210,50%,30%), hsl(210,50%,20%))', border: '1px solid hsl(210,60%,50%)', color: 'hsl(40,30%,95%)', cursor: 'pointer' }}>
+                  🕊️ Open Diplomacy & Influence Window
+                </button>
+              </div>
             )}
             {bottomTab === 'diplomacy' && currentPlayer?.isAI && (
               <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
@@ -1530,11 +1531,13 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               </div>
             )}
             {bottomTab === 'influence' && gameState && currentPlayer && !currentPlayer.isAI && (
-              <DiplomacyInfluencePanel
-                gameState={{ ...gameState, sentiment }}
-                currentPlayer={currentPlayer}
-                onInfluenceAction={handleInfluenceAction}
-              />
+              <div className="flex items-center justify-center h-full">
+                <button onClick={() => setShowDiplomacyInfluenceModal(true)}
+                  className="px-6 py-3 rounded-lg font-bold text-center"
+                  style={{ fontFamily: "'Cinzel', serif", background: 'linear-gradient(135deg, hsl(260,40%,30%), hsl(260,40%,20%))', border: '1px solid hsl(260,50%,50%)', color: 'hsl(40,30%,95%)', cursor: 'pointer' }}>
+                  🎭 Open Diplomacy & Influence Window
+                </button>
+              </div>
             )}
             {bottomTab === 'influence' && currentPlayer?.isAI && (
               <div className="flex items-center justify-center h-full text-xs opacity-30" style={{ color: 'hsl(40,20%,60%)' }}>
@@ -1627,6 +1630,20 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
             setGameState(prev => applyEventEffect(prev, activeEvent));
             setActiveEvent(null);
           }}
+        />
+      )}
+
+      {/* Diplomacy & Influence Merged Modal */}
+      {showDiplomacyInfluenceModal && gameState && currentPlayer && (
+        <DiplomacyInfluenceMergedPanel
+          gameState={gameState}
+          currentPlayer={currentPlayer}
+          onDiplomacyAction={handleDiplomacyAction}
+          onInfluenceAction={handleInfluenceAction}
+          tradeOffers={tradeOffers}
+          onAcceptTrade={handleAcceptTrade}
+          onDeclineTrade={handleDeclineTrade}
+          onClose={() => setShowDiplomacyInfluenceModal(false)}
         />
       )}
 
