@@ -1479,7 +1479,6 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           { id: 'effects', icon: '📊', label: 'Effects' },
           { id: 'diplomacy-influence', icon: '🕊️', label: 'Diplomacy & Influence' },
           { id: 'unifiedlog', icon: '📋', label: 'Logs' },
-          { id: 'advisor', icon: '⚜️', label: 'Advisor' },
         ].map(t => (
           <button key={t.id} onClick={() => {
             if (t.id === 'diplomacy-influence') setShowDiplomacyInfluenceModal(true);
@@ -1596,7 +1595,6 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                 {openModal === 'avatars' && '👹 Avatars'}
                 {openModal === 'effects' && '📊 Effects'}
                 {openModal === 'unifiedlog' && '📋 Logs'}
-                {openModal === 'advisor' && '⚜️ Advisor'}
               </h2>
               <button onClick={() => setOpenModal(null)} style={{
                 background: 'none', border: 'none', color: 'hsl(43,80%,60%)', fontSize: 24,
@@ -1679,21 +1677,6 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                   battleEntries={battleLog}
                   diplomaticEvents={gameState.diplomaticEvents || []}
                   currentTurn={gameState?.turn}
-                />
-              )}
-              {openModal === 'advisor' && gameState && currentPlayer && !currentPlayer.isAI && (
-                <AdvisorPanel
-                  gameState={gameState}
-                  currentPlayer={currentPlayer}
-                  onAction={(action) => {
-                    if (action.type === 'advance_phase') advancePhase();
-                    else if (action.type === 'end_turn') endTurn();
-                    else if (action.type === 'recruit' && action.unit) handleRecruit(action.unit);
-                    else if (action.type === 'build' && action.building) handleBuild(action.building);
-                    else if (action.type === 'attack' && action.from && action.to) {
-                      setBattle({ attackerId: action.from, defenderId: action.to });
-                    }
-                  }}
                 />
               )}
             </div>
