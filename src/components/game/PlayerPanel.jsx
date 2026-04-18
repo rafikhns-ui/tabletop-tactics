@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { HEROES } from './ardoniaData';
 import { NATION_PERSONALITIES } from './aiPersonalities';
 import { getProvincesOwnedBy } from './provinceSystem';
@@ -69,9 +69,42 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
   const [hoveredObjId, setHoveredObjId] = useState(null);
   const completedCount = player.completedObjectives?.length || 0;
   
-  // Count provinces owned by this player (dynamically computed from hex control)
-  const ownedProvinces = provinces && gameState ? getProvincesOwnedBy(player.id, provinces, gameState) : [];
+  // Count provinces owned by this player based on dynamic hex ownership in gameState
+  // A province is "controlled" if the player owns at least one hex in it OR via static province ownership
   const totalProvinces = provinces ? Object.keys(provinces).length : 0;
+  const ownedProvinces = useMemo(() => {
+    if (!provinces || !gameState) return [];
+
+    // Start with statically-assigned province ownership
+    const controlledIds = new Set(
+      getProvincesOwnedBy(player.id, provinces, gameState).map(p => `${p.nation_id}-${p.province_id}`)
+    );
+
+    // Also check dynamic hex ownership: if a player controls a hex, they control its province
+    if (gameState.hexes) {
+      Object.entries(gameState.hexes).forEach(([hexId, hex]) => {
+        if (hex.owner !== player.id) return;
+        // Find the province this hex belongs to
+        Object.entries(provinces).forEach(([provId, prov]) => {
+          if (prov.hexIds && prov.hexIds.includes(hexId)) {
+            controlledIds.add(provId);
+          }
+        });
+      });
+    }
+
+    // Also count based on faction's home nation (initial territory)
+    if (gameState.players) {
+      const thisPlayer = gameState.players.find(p => p.id === player.id);
+      if (thisPlayer?.factionId) {
+        Object.entries(provinces).forEach(([provId, prov]) => {
+          if (prov.owner === player.id) controlledIds.add(provId);
+        });
+      }
+    }
+
+    return Array.from(controlledIds).map(id => provinces[id]).filter(Boolean);
+  }, [provinces, gameState?.hexes, gameState?.players, player.id]);
 
   return (
     <div className="border-b border-border"
@@ -162,8 +195,8 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
       {expanded && (
         <div className="px-3 pb-3 space-y-2 border-t border-border pt-2">
           <div className="grid grid-cols-2 gap-1">
-            <StatRow icon="✨" label="SP" value={player.sp ?? 0} max={10} color="#8e44ad" />
-            <StatRow icon="💬" label="IP" value={player.ip ?? 0} max={10} color="#2980b9" />
+            <StatRow icon="✨" label="SP" value={player.sp ?? 0} max={50} color="#8e44ad" />
+            <StatRow icon="💬" label="IP" value={player.ip ?? 0} max={50} color="#2980b9" />
           </div>
 
           {player.leader && (
