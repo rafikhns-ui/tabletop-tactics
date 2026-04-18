@@ -71,25 +71,57 @@ const FACTION_CENTROIDS = mapData.nations
     color: NATION_LABEL_MAP[n.id].color,
   }));
 
-// ══════ NATIONAL CAPITAL HEX IDs (always show fortress) ══════
-// Pre-compute from map data: for each nation, find the hex that is in the national capital province
+// ══════ CAPITAL HEX LOOKUP ══════
+// For each province, find its "capital hex" = hex closest to its province centroid
+// national_capital = true means it's the nation's throne city
+// Maps hexId -> { isNatCap, isProvCap, nationId, provinceId, capitalName }
+const CAPITAL_HEX_INFO = {};
 const NATIONAL_CAPITAL_HEX_IDS = new Set();
+const PROVINCE_CAPITAL_HEX_IDS = new Set();
+
 mapData.nations.forEach(nation => {
-  const capProv = nation.provinces?.find(p => p.is_national_capital);
-  if (!capProv) return;
-  // Find the first hex belonging to this province (prefer the capital hex if identifiable)
-  const hexesInProv = mapData.hex_grid.filter(h => h.nation_id === nation.id && h.province === capProv.id);
-  if (hexesInProv.length > 0) {
-    // Use the hex closest to the nation centroid as the "capital hex"
+  (nation.provinces || []).forEach(prov => {
+    const hexesInProv = mapData.hex_grid.filter(h => h.nation_id === nation.id && h.province === prov.id);
+    if (!hexesInProv.length) return;
+    // Use the hex closest to the nation centroid for nat caps, else province centroid
     const [cx, cy] = nation.centroid || [0, 0];
-    let best = hexesInProv[0];
-    let bestDist = Infinity;
+    const provCx = hexesInProv.reduce((s, h) => s + h.x, 0) / hexesInProv.length;
+    const provCy = hexesInProv.reduce((s, h) => s + h.y, 0) / hexesInProv.length;
+    const refX = prov.is_national_capital ? cx : provCx;
+    const refY = prov.is_national_capital ? cy : provCy;
+    let best = hexesInProv[0], bestDist = Infinity;
     hexesInProv.forEach(h => {
-      const d = Math.hypot(h.x - cx, h.y - cy);
+      const d = Math.hypot(h.x - refX, h.y - refY);
       if (d < bestDist) { bestDist = d; best = h; }
     });
-    NATIONAL_CAPITAL_HEX_IDS.add(`${best.col},${best.row}`);
-  }
+    const hexId = `${best.col},${best.row}`;
+    CAPITAL_HEX_INFO[hexId] = {
+      isNatCap: !!prov.is_national_capital,
+      isProvCap: true,
+      nationId: nation.id,
+      provinceId: prov.id,
+      capitalName: prov.capital || '',
+    };
+    if (prov.is_national_capital) NATIONAL_CAPITAL_HEX_IDS.add(hexId);
+    PROVINCE_CAPITAL_HEX_IDS.add(hexId);
+  });
+});
+
+// Province ownership: a province is owned by whoever owns its capital hex
+// hexId -> province key (nationId-provinceId)
+const PROVINCE_CAPITAL_HEX_TO_PROVINCE = {};
+Object.entries(CAPITAL_HEX_INFO).forEach(([hexId, info]) => {
+  PROVINCE_CAPITAL_HEX_TO_PROVINCE[hexId] = `${info.nationId}-${info.provinceId}`;
+});
+// province key -> capital hexId
+const PROVINCE_TO_CAPITAL_HEX = {};
+Object.entries(PROVINCE_CAPITAL_HEX_TO_PROVINCE).forEach(([hexId, provKey]) => {
+  PROVINCE_TO_CAPITAL_HEX[provKey] = hexId;
+});
+// hex -> province key (all hexes)
+const HEX_TO_PROVINCE_KEY = {};
+mapData.hex_grid.forEach(h => {
+  if (h.nation_id && h.province) HEX_TO_PROVINCE_KEY[`${h.col},${h.row}`] = `${h.nation_id}-${h.province}`;
 });
 
 // ══════ HEX GEOMETRY ══════
@@ -284,9 +316,33 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
     return map;
   }, [gameState?.players]);
 
+  // Get province capital owner — determines who owns ALL hexes in that province
+  const getProvinceOwner = (provKey) => {
+    const capHexId = PROVINCE_TO_CAPITAL_HEX[provKey];
+    if (!capHexId) return null;
+    // Explicit owner on capital hex takes priority
+    const capHexOwner = gameState?.hexes?.[capHexId]?.owner;
+    if (capHexOwner) return capHexOwner;
+    // Fall back to nation-based ownership for home territory
+    const info = CAPITAL_HEX_INFO[capHexId];
+    if (info) {
+      const normId = normNationId(info.nationId);
+      if (nationOwnerMap[normId]) return nationOwnerMap[normId];
+    }
+    return null;
+  };
+
   const getOwner = (hexId, hexNationId) => {
+    // Explicit hex owner (unit placement, conquest) always wins
     const hexOwner = gameState?.hexes?.[hexId]?.owner;
     if (hexOwner) return hexOwner;
+    // Province-capital-based ownership: all hexes in a province belong to whoever holds the capital
+    const provKey = HEX_TO_PROVINCE_KEY[hexId];
+    if (provKey) {
+      const provOwner = getProvinceOwner(provKey);
+      if (provOwner) return provOwner;
+    }
+    // Final fallback: nation map
     if (hexNationId) {
       const normId = normNationId(hexNationId);
       if (nationOwnerMap[normId]) return nationOwnerMap[normId];
@@ -1010,6 +1066,19 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                      })}
                   </g>
                 )}
+                {/* ── Capital hex marker (crown/star badge under fortress) ── */}
+                {CAPITAL_HEX_INFO[hexId] && !NATIONAL_CAPITAL_HEX_IDS.has(hexId) && (
+                  // Province capital: silver diamond badge
+                  <g style={{ pointerEvents: 'none' }}>
+                    <circle cx={cx + HEX_PX * 0.55} cy={cy - HEX_PX * 0.55} r={5.5}
+                      fill="#1a1c24" stroke="#c8b880" strokeWidth={1} />
+                    <text x={cx + HEX_PX * 0.55} y={cy - HEX_PX * 0.55 + 3.5}
+                      textAnchor="middle" fontSize={7} fill="#d4c870"
+                      fontFamily="'Cinzel',serif" fontWeight="bold"
+                      style={{ userSelect: 'none' }}>◆</text>
+                  </g>
+                )}
+
                 {/* ══ EPIC FORTRESS SVG STRUCTURE ══ */}
                  {(gameState?.hexes?.[hexId]?.buildings?.fortress || NATIONAL_CAPITAL_HEX_IDS.has(hexId)) && (
                    <g transform={`translate(${cx},${cy - 6})`} style={{ pointerEvents: 'none' }} filter="url(#fortressGlow)">
@@ -1252,27 +1321,37 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             );
           })()}
 
-          {/* ── Province labels with capital icons ── */}
-          {provCentroidList.map((pc, i) => {
-            const { cx, cy } = toSVG(pc.x, pc.y);
-            const nation = nations.find(n => n.id === pc.nid);
-            if (!nation) return null;
-            const prov = nation.provinces.find(p => p.id === pc.prov);
-            if (!prov) return null;
-            const isNatCap = prov.is_national_capital;
-            const label = prov.capital.split(' ')[0];
-
+          {/* ── Capital labels — pinned directly on capital hexes ── */}
+          {Object.entries(CAPITAL_HEX_INFO).map(([hexId, info]) => {
+            const hd = hexLookup[hexId];
+            if (!hd) return null;
+            const { cx, cy } = toSVG(hd.x, hd.y);
+            const isNatCap = info.isNatCap;
+            // Show full capital name, clipped to first two words for space
+            const label = (info.capitalName || '').split(' ').slice(0, 2).join(' ');
+            if (!label) return null;
+            const yOffset = isNatCap ? HEX_PX * 0.72 : HEX_PX * 0.6;
             return (
-              <g key={`pl${i}`} style={{ pointerEvents: 'none' }}>
-                <text x={cx} y={cy - 3} textAnchor="middle" fontSize={isNatCap ? 11 : 7}
-                  fill={isNatCap ? '#f0c040' : '#c8c0b0'}
+              <g key={`cap-${hexId}`} style={{ pointerEvents: 'none' }}>
+                {/* Capital name label below hex center */}
+                <text x={cx} y={cy + yOffset}
+                  textAnchor="middle"
+                  fontSize={isNatCap ? 7.5 : 6}
+                  fill={isNatCap ? '#f0c040' : '#d4c870'}
+                  fontFamily="'Cinzel', serif" fontWeight="bold"
+                  stroke="#030508" strokeWidth={2.5} paintOrder="stroke"
+                  letterSpacing={0.4}
                   filter={isNatCap ? 'url(#capitalGlow)' : undefined}>
-                  {isNatCap ? '★' : '◆'}
-                </text>
-                <text x={cx} y={cy + 6} textAnchor="middle" fontSize={6}
-                  fill="#fff" fontFamily="'Cinzel', serif" fontWeight="bold"
-                  stroke="#0a0806" strokeWidth={2} paintOrder="stroke" letterSpacing={0.5}>
                   {label}
+                </text>
+                {/* Tiny type badge */}
+                <text x={cx} y={cy + yOffset + 8}
+                  textAnchor="middle" fontSize={5}
+                  fill={isNatCap ? '#f0c040' : '#a09060'}
+                  fontFamily="'Cinzel', serif"
+                  stroke="#030508" strokeWidth={1.5} paintOrder="stroke"
+                  style={{ opacity: 0.85 }}>
+                  {isNatCap ? '✦ CAPITAL ✦' : '◆ PROVINCE'}
                 </text>
               </g>
             );
@@ -1522,32 +1601,48 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   {selected.province_name || 'Uncharted Waters'}
                 </div>
 
-                {/* Capital city */}
-                {selected.capital_name && (() => {
-                 const isNatCap = selectedProvinceInfo?.is_national_capital;
-                  return (
-                    <div style={{ marginBottom: 10 }}>
-                      <div style={{ color: isNatCap ? '#d4a853' : '#c8a060', fontSize: 13, fontStyle: 'italic', marginBottom: 4 }}>
-                        {isNatCap ? '★' : '◆'} {selected.capital_name}
-                        <span style={{ marginLeft: 6, fontSize: 10, fontFamily: "'Cinzel',serif", letterSpacing: 0.5,
-                          color: isNatCap ? '#d4a853' : '#a08050', opacity: 0.85 }}>
-                          {isNatCap ? 'NATIONAL CAPITAL' : 'PROVINCIAL CAPITAL'}
-                        </span>
+                {/* Capital / province info */}
+                {(() => {
+                  const hexId = `${selected.col},${selected.row}`;
+                  const capInfo = CAPITAL_HEX_INFO[hexId];
+                  const isNatCap = capInfo?.isNatCap;
+                  const isProvCap = capInfo?.isProvCap;
+                  if (isNatCap) return (
+                    <div style={{ marginBottom: 10, borderRadius: 6, overflow: 'hidden', border: '1px solid #d4a85388' }}>
+                      <div style={{ padding: '6px 10px', background: 'linear-gradient(90deg,#2a1e08,#1a1208)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 14 }}>★</span>
+                        <span style={{ color: '#f0c040', fontFamily: "'Cinzel',serif", fontWeight: 700, fontSize: 12 }}>{capInfo.capitalName}</span>
+                        <span style={{ fontSize: 9, color: '#c08030', fontFamily: "'Cinzel',serif", letterSpacing: 1, marginLeft: 'auto' }}>NATIONAL CAPITAL</span>
                       </div>
-                      <div style={{ fontSize: 11, color: '#7a6a50', fontStyle: 'italic', padding: '4px 8px', borderLeft: `2px solid ${isNatCap ? '#d4a853' : '#7a6030'}`, background: 'rgba(0,0,0,0.2)', borderRadius: 2 }}>
-                        ⚔️ Capture this city to control the province
-                        {isNatCap && <span style={{ color: '#c08030' }}> — and cripple the nation</span>}
+                      <div style={{ padding: '6px 10px', fontSize: 10, color: '#a08040', lineHeight: 1.5, background: 'rgba(0,0,0,0.25)' }}>
+                        🏰 Fortress city — controls the entire nation. Capture to cripple the realm.
                       </div>
                     </div>
                   );
+                  if (isProvCap) return (
+                    <div style={{ marginBottom: 10, borderRadius: 6, overflow: 'hidden', border: '1px solid #8a785044' }}>
+                      <div style={{ padding: '6px 10px', background: 'linear-gradient(90deg,#1a1810,#141008)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 12 }}>◆</span>
+                        <span style={{ color: '#d4c870', fontFamily: "'Cinzel',serif", fontWeight: 700, fontSize: 11 }}>{capInfo.capitalName}</span>
+                        <span style={{ fontSize: 9, color: '#8a7840', fontFamily: "'Cinzel',serif", letterSpacing: 1, marginLeft: 'auto' }}>PROVINCIAL CAPITAL</span>
+                      </div>
+                      <div style={{ padding: '6px 10px', fontSize: 10, color: '#7a6840', lineHeight: 1.5, background: 'rgba(0,0,0,0.25)' }}>
+                        ⚔️ Control this hex to own the entire province — all its hexes follow its owner.
+                      </div>
+                    </div>
+                  );
+                  // Non-capital hex: show which capital controls this province
+                  if (selected.nation_id && selectedProvinceInfo) {
+                    const provCapHexId = PROVINCE_TO_CAPITAL_HEX[`${selected.nation_id}-${selectedProvinceInfo.id}`];
+                    return (
+                      <div style={{ fontSize: 10, color: '#555', fontStyle: 'italic', marginBottom: 8, padding: '4px 8px', borderLeft: '2px solid #3a3020', background: 'rgba(0,0,0,0.15)', borderRadius: 2 }}>
+                        ◆ Province capital: <span style={{ color: '#a09050' }}>{selectedProvinceInfo.capital}</span>
+                        <br/><span style={{ color: '#444' }}>Capture the provincial capital hex to control this entire province</span>
+                      </div>
+                    );
+                  }
+                  return null;
                 })()}
-                {/* Non-capital hex hint */}
-                {!selected.capital_name && selected.nation_id && selectedProvinceInfo && (
-                  <div style={{ fontSize: 11, color: '#555', fontStyle: 'italic', marginBottom: 8 }}>
-                    ◆ Provincial capital: <span style={{ color: '#7a6a50' }}>{selectedProvinceInfo.capital}</span><br/>
-                    <span style={{ color: '#444' }}>Capture the capital hex to control this province</span>
-                  </div>
-                )}
 
                 {/* Controller info */}
                 {(() => {
@@ -1785,19 +1880,26 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
           })()}
 
           {panelTab === 'buildings' && selected && (() => {
-            const hexBuildings = gameState?.hexes?.[`${selected.col},${selected.row}`]?.buildings || {};
+            const selHexId = `${selected.col},${selected.row}`;
+            const hexBuildings = gameState?.hexes?.[selHexId]?.buildings || {};
+            const capInfo = CAPITAL_HEX_INFO[selHexId];
             const BDEF = {
               fortress: { icon: '🏰', name: 'Fortress', effect: 'Defense +2 dice', color: '#8a8a9a', desc: 'Stone fortification. Defenders roll d8 instead of d6.' },
               port: { icon: '⚓', name: 'Harbour Port', effect: 'Naval access · Gold +1', color: '#4488ff', desc: 'Enables naval deployment and boosts coastal income.' },
+              _nat_capital: { icon: '★', name: 'National Capital', effect: 'Controls entire nation · Fortress', color: '#d4a853', desc: 'The throne city of the nation. Controlling this hex grants dominance over the entire realm.' },
+              _prov_capital: { icon: '◆', name: 'Provincial Capital', effect: 'Controls province', color: '#c8b860', desc: 'The capital of this province. Whoever holds this hex owns all hexes of the province.' },
             };
-            const entries = Object.entries(hexBuildings);
+            // Add capital pseudo-entries
+            const capitalEntries = capInfo?.isNatCap ? [['_nat_capital', true]] : capInfo?.isProvCap ? [['_prov_capital', true]] : [];
+            const entries = [...capitalEntries, ...Object.entries(hexBuildings)];
             return (
               <div>
                 <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 13, fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>
                   STRUCTURES ON HEX
                 </div>
                 {entries.length > 0 ? entries.map(([key]) => {
-                  const def = BDEF[key] || { icon: '🏛️', name: key, effect: '', color: '#888', desc: '' };
+                   const def = BDEF[key] || { icon: '🏛️', name: key, effect: '', color: '#888', desc: '' };
+                   if (!def) return null;
                   return (
                     <div key={key} style={{
                       marginBottom: 10, borderRadius: 8, overflow: 'hidden',
