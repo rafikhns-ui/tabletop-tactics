@@ -1,8 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { HEROES } from './ardoniaData';
 import { NATION_PERSONALITIES } from './aiPersonalities';
-import { getProvincesOwnedBy } from './provinceSystem';
+import { buildHexToProvinceMap } from './provinceSystem';
 import PlayerDetailModal from './PlayerDetailModal';
+
+// Pre-build the static hex→province lookup once
+const HEX_TO_PROVINCE = buildHexToProvinceMap();
 
 function ObjectivesModal({ player, onClose }) {
   const [hoveredObjId, setHoveredObjId] = React.useState(null);
@@ -69,42 +72,21 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
   const [hoveredObjId, setHoveredObjId] = useState(null);
   const completedCount = player.completedObjectives?.length || 0;
   
-  // Count provinces owned by this player based on dynamic hex ownership in gameState
-  // A province is "controlled" if the player owns at least one hex in it OR via static province ownership
-  const totalProvinces = provinces ? Object.keys(provinces).length : 0;
-  const ownedProvinces = useMemo(() => {
-    if (!provinces || !gameState) return [];
+  // Count provinces controlled by this player using the hex→province map
+  // A province is controlled if the player owns any hex in it (via gameState.hexes)
+  const { ownedProvinceCount, totalProvinces } = useMemo(() => {
+    const total = provinces ? Object.keys(provinces).length : 0;
+    if (!gameState?.hexes) return { ownedProvinceCount: 0, totalProvinces: total };
 
-    // Start with statically-assigned province ownership
-    const controlledIds = new Set(
-      getProvincesOwnedBy(player.id, provinces, gameState).map(p => `${p.nation_id}-${p.province_id}`)
-    );
-
-    // Also check dynamic hex ownership: if a player controls a hex, they control its province
-    if (gameState.hexes) {
-      Object.entries(gameState.hexes).forEach(([hexId, hex]) => {
-        if (hex.owner !== player.id) return;
-        // Find the province this hex belongs to
-        Object.entries(provinces).forEach(([provId, prov]) => {
-          if (prov.hexIds && prov.hexIds.includes(hexId)) {
-            controlledIds.add(provId);
-          }
-        });
-      });
-    }
-
-    // Also count based on faction's home nation (initial territory)
-    if (gameState.players) {
-      const thisPlayer = gameState.players.find(p => p.id === player.id);
-      if (thisPlayer?.factionId) {
-        Object.entries(provinces).forEach(([provId, prov]) => {
-          if (prov.owner === player.id) controlledIds.add(provId);
-        });
+    const controlled = new Set();
+    Object.entries(gameState.hexes).forEach(([hexId, hex]) => {
+      if (hex.owner === player.id) {
+        const provId = HEX_TO_PROVINCE[hexId];
+        if (provId) controlled.add(provId);
       }
-    }
-
-    return Array.from(controlledIds).map(id => provinces[id]).filter(Boolean);
-  }, [provinces, gameState?.hexes, gameState?.players, player.id]);
+    });
+    return { ownedProvinceCount: controlled.size, totalProvinces: total };
+  }, [gameState?.hexes, player.id, provinces]);
 
   return (
     <div className="border-b border-border"
@@ -184,11 +166,11 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
 
       <div className="px-3 pb-2">
         <div className="flex justify-between text-xs mb-0.5" style={{ color: 'hsl(40,20%,55%)' }}>
-          <span>{ownedProvinces.length}/{totalProvinces} provinces</span>
+          <span>{ownedProvinceCount}/{totalProvinces} provinces</span>
           <span>🎯 {completedCount}/2</span>
         </div>
         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'hsl(35,20%,25%)' }}>
-          <div className="h-full rounded-full transition-all" style={{ width: `${totalProvinces > 0 ? (ownedProvinces.length / totalProvinces) * 100 : 0}%`, background: player.color }} />
+          <div className="h-full rounded-full transition-all" style={{ width: `${totalProvinces > 0 ? (ownedProvinceCount / totalProvinces) * 100 : 0}%`, background: player.color }} />
         </div>
       </div>
 
