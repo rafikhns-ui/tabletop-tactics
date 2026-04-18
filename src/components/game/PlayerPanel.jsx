@@ -8,6 +8,17 @@ import mapData from './ardonia_game_map.json';
 // Pre-build the static hex→province lookup once
 const HEX_TO_PROVINCE = buildHexToProvinceMap();
 
+// Same aliases as provinceSystem — normalize raw map nation_ids to canonical faction/nation ids
+const NATION_ID_ALIASES = {
+  kinetic:       'kintei',
+  ilalocatotlan: 'tlalocayotlan',
+  hestia:        'republic',
+  azure:         'sultanate',
+  shadowsfall:   'shadowfell',
+  silver:        'silverunion',
+};
+const normNationId = (id) => NATION_ID_ALIASES[id] || id;
+
 function ObjectivesModal({ player, onClose }) {
   const [hoveredObjId, setHoveredObjId] = React.useState(null);
 
@@ -98,7 +109,7 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
       if (explicitOwner === player.id) {
         // Explicitly conquered by this player
         isControlled = true;
-      } else if (!otherPlayerIds.has(explicitOwner) && h.nation_id === playerNationId) {
+      } else if (!otherPlayerIds.has(explicitOwner) && normNationId(h.nation_id) === playerNationId) {
         // Home territory not yet taken by another player
         isControlled = true;
       }
