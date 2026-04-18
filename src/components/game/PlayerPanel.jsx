@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { HEROES } from './ardoniaData';
+import { HEROES, FACTION_TO_NATION_ID } from './ardoniaData';
 import { NATION_PERSONALITIES } from './aiPersonalities';
 import { buildHexToProvinceMap } from './provinceSystem';
 import PlayerDetailModal from './PlayerDetailModal';
+import mapData from './ardonia_game_map.json';
 
 // Pre-build the static hex→province lookup once
 const HEX_TO_PROVINCE = buildHexToProvinceMap();
@@ -72,21 +73,44 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
   const [hoveredObjId, setHoveredObjId] = useState(null);
   const completedCount = player.completedObjectives?.length || 0;
   
-  // Count provinces controlled by this player using the hex→province map
-  // A province is controlled if the player owns any hex in it (via gameState.hexes)
+  // Count provinces controlled by this player.
+  // A hex is "owned" by this player if:
+  //   - hex.owner === player.id (explicit conquest), OR
+  //   - hex.nation_id matches the player's faction's nation AND is not explicitly owned by another player
   const { ownedProvinceCount, totalProvinces } = useMemo(() => {
     const total = provinces ? Object.keys(provinces).length : 0;
-    if (!gameState?.hexes) return { ownedProvinceCount: 0, totalProvinces: total };
+    if (!gameState) return { ownedProvinceCount: 0, totalProvinces: total };
+
+    const playerNationId = FACTION_TO_NATION_ID[player.factionId];
+    const hexes = gameState.hexes || {};
+    const otherPlayerIds = new Set(
+      (gameState.players || []).filter(p => p.id !== player.id).map(p => p.id)
+    );
 
     const controlled = new Set();
-    Object.entries(gameState.hexes).forEach(([hexId, hex]) => {
-      if (hex.owner === player.id) {
+
+    mapData.hex_grid.forEach(h => {
+      const hexId = `${h.col},${h.row}`;
+      const hexState = hexes[hexId];
+      const explicitOwner = hexState?.owner;
+
+      let isControlled = false;
+      if (explicitOwner === player.id) {
+        // Explicitly conquered by this player
+        isControlled = true;
+      } else if (!otherPlayerIds.has(explicitOwner) && h.nation_id === playerNationId) {
+        // Home territory not yet taken by another player
+        isControlled = true;
+      }
+
+      if (isControlled) {
         const provId = HEX_TO_PROVINCE[hexId];
         if (provId) controlled.add(provId);
       }
     });
+
     return { ownedProvinceCount: controlled.size, totalProvinces: total };
-  }, [gameState?.hexes, player.id, provinces]);
+  }, [gameState, player.id, player.factionId, provinces]);
 
   return (
     <div className="border-b border-border"
