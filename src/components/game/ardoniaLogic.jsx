@@ -360,8 +360,8 @@ export const collectIncome = (gameState) => {
         wood: Math.min(maxStorage, p.resources.wood + income.wood),
         wheat: Math.min(maxStorage, p.resources.wheat + income.wheat),
       },
-      sp: Math.min(10, p.sp + income.sp),
-      ip: Math.min(10, p.ip + income.ip),
+      sp: Math.min(50, p.sp + income.sp),
+      ip: Math.min(50, p.ip + income.ip),
       cardEffects: newCardEffects,
     };
   });
@@ -631,9 +631,9 @@ export const doAiTurn = (gameState) => {
   }
 
   // 6. SP generation
-  if (state.players[aiIndex].sp < 10) {
+  if (state.players[aiIndex].sp < 50) {
     const spGain = difficulty === 'hard' ? 2 : 1;
-    state.players[aiIndex].sp = Math.min(10, state.players[aiIndex].sp + spGain);
+    state.players[aiIndex].sp = Math.min(50, state.players[aiIndex].sp + spGain);
     logs.push(`✨ ${ai.name} gained ${spGain} SP`);
   }
 
@@ -1120,9 +1120,9 @@ export const getAiTurnSteps = (gameState) => {
       const newCards = [...(currentAi.actionCards || []), pickedCard];
       let newIp = currentAi.ip ?? 0;
       let newSp = currentAi.sp ?? 0;
-      if (pickedCard === 'diplomatic_favor') newIp = Math.min(10, newIp + 3);
-      if (pickedCard === 'faith_surge') newSp = Math.min(10, newSp + 3);
-      if (pickedCard === 'war_profiteering') newIp = Math.min(10, newIp + 1);
+      if (pickedCard === 'diplomatic_favor') newIp = Math.min(50, newIp + 3);
+      if (pickedCard === 'faith_surge') newSp = Math.min(50, newSp + 3);
+      if (pickedCard === 'war_profiteering') newIp = Math.min(50, newIp + 1);
       state = { ...state, players: state.players.map((p, i) => i === aiIndex ? { ...p, resources: newResources, actionCards: newCards, ip: newIp, sp: newSp } : p) };
       pushStep(`🃏 ${ai.name} played action card: ${pickedCard.replace(/_/g, ' ')}`, 'card');
     }
