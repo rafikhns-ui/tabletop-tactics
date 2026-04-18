@@ -111,7 +111,7 @@ export const createInitialProvinceState = (gameState) => {
   mapData.nations.forEach(nation => {
     nation.provinces.forEach(prov => {
       const provId = `${nation.id}-${prov.id}`;
-      const hexesInProv = mapData.hex_grid.filter(h => normNationId(h.nation_id) === nation.id && h.province === prov.id);
+      const hexesInProv = mapData.hex_grid.filter(h => h.nation_id === nation.id && h.province === prov.id);
       
       // Calculate terrain distribution and base income
       const terrainDist = {};
@@ -165,7 +165,8 @@ export const buildHexToProvinceMap = () => {
   mapData.nations.forEach(nation => {
     nation.provinces.forEach(prov => {
       mapData.hex_grid.forEach(h => {
-        if (normNationId(h.nation_id) === nation.id && h.province === prov.id) {
+        // Compare raw nation_id directly (nation.id is the raw map id, e.g. 'azure')
+        if (h.nation_id === nation.id && h.province === prov.id) {
           const hexId = `${h.col},${h.row}`;
           map[hexId] = `${nation.id}-${prov.id}`;
         }

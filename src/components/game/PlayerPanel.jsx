@@ -96,13 +96,12 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
   const { ownedProvinceCount, totalProvinces } = useMemo(() => {
     if (!gameState) return { ownedProvinceCount: 0, totalProvinces: 0 };
 
+    // Total provinces across ALL nations
+    const total = mapData.nations.reduce((sum, n) => sum + n.province_count, 0);
+
     // Use the raw map nation_id for this faction (e.g. 'azure' for sultanate)
     const canonicalNationId = FACTION_TO_NATION_ID[player.factionId]; // e.g. 'sultanate'
     const playerNationId = FACTION_TO_RAW_NATION_ID[canonicalNationId] || canonicalNationId; // e.g. 'azure'
-
-    // Total provinces for THIS faction's nation only
-    const nation = mapData.nations.find(n => n.id === playerNationId);
-    const total = nation ? nation.province_count : 0;
 
     const hexes = gameState.hexes || {};
     const otherPlayerIds = new Set(
@@ -112,20 +111,25 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
     const controlled = new Set();
 
     mapData.hex_grid.forEach(h => {
-      if (h.nation_id !== playerNationId) return;
+      if (!h.province || h.province === 0) return; // skip water/unowned hexes
       const hexId = `${h.col},${h.row}`;
       const hexState = hexes[hexId];
       const explicitOwner = hexState?.owner;
 
       let isControlled = false;
       if (explicitOwner === player.id) {
+        // Explicitly conquered by this player
         isControlled = true;
-      } else if (!otherPlayerIds.has(explicitOwner)) {
-        // Home territory not yet taken by another player
+      } else if (explicitOwner == null && h.nation_id === playerNationId) {
+        // Home territory, never conquered by anyone
+        isControlled = true;
+      } else if (explicitOwner != null && !otherPlayerIds.has(explicitOwner) && h.nation_id === playerNationId) {
+        // Home territory where owner field exists but matches no other player
         isControlled = true;
       }
 
       if (isControlled) {
+        // Province key format in HEX_TO_PROVINCE is "nationId-provinceId"
         const provId = HEX_TO_PROVINCE[hexId];
         if (provId) controlled.add(provId);
       }
