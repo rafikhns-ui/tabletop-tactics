@@ -74,6 +74,7 @@ import MiniMap from '../components/game/MiniMap';
 import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar, initializeSentiment, decaySentiment, applyEventSentiment, executeInfluenceAction, tickInfluenceModifiers, getSentimentLabel } from '../components/game/aiPersonalities';
 import DiplomacyInfluenceMergedPanel from '../components/game/DiplomacyInfluenceMergedPanel';
 import CardPlayOverlay from '../components/game/CardPlayOverlay';
+import { applyInstantCardEffects, getPlayerCombatCardBonus } from '../components/game/cardEffects';
 import MarketPanel from '../components/game/MarketPanel';
 import SilverUnionMenu from '../components/game/SilverUnionMenu';
 import TopBar from '../components/game/TopBar';
@@ -706,7 +707,8 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     addMessage(`🏯 Imperial Stronghold built in ${gameState.territories[territoryId].name}!`);
   };
 
-  const handleBattleResult = (result) => {
+  const handleBattleResult = (rawResult) => {
+    let result = rawResult;
     const attackerTerr = gameState.territories[battle.attackerId];
     const defenderTerr = gameState.territories[battle.defenderId];
     const attackerPlayer = gameState.players.find(p => p.id === attackerTerr.owner);
@@ -714,27 +716,9 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     const defenderTroops = defenderTerr.units?.reduce((s, u) => s + u.count, 0) || defenderTerr.troops;
     const conquered = result.defenderLosses >= defenderTroops;
 
-    // Build unit composition from territory unit types (if tracked), else infer from troops
-    const buildUnits = (territory, player) => {
-      if (territory.units && territory.units.length > 0) {
-        const counts = {};
-        territory.units.forEach(u => { counts[u] = (counts[u] || 0) + 1; });
-        return Object.entries(counts).map(([type, count]) => ({ type, count }));
-      }
-      // Infer from buildings: if stables → some cavalry, barracks → infantry, else generic
-      const buildings = Object.keys(player?.buildings || {});
-      const units = [];
-      const t = territory.troops;
-      if (buildings.includes('stables') && t > 2) {
-        const cavCount = Math.min(Math.floor(t * 0.3), 3);
-        units.push({ type: 'cavalry', count: cavCount });
-        units.push({ type: 'infantry', count: t - cavCount });
-      } else if (buildings.includes('barracks')) {
-        units.push({ type: 'infantry', count: t });
-      } else {
-        units.push({ type: 'infantry', count: t });
-      }
-      return units;
+    const buildUnits = (territory) => {
+      if (territory.units?.length > 0) return territory.units;
+      return [{ type: 'infantry', count: territory.troops || 1 }];
     };
 
     const logEntry = {
@@ -750,8 +734,8 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       defenderTroopsBefore: defenderTroops,
       attackerLosses: result.attackerLosses,
       defenderLosses: result.defenderLosses,
-      attackerUnits: attackerTerr.units?.length > 0 ? attackerTerr.units : buildUnits(attackerTerr, attackerPlayer),
-      defenderUnits: defenderTerr.units?.length > 0 ? defenderTerr.units : buildUnits(defenderTerr, defenderPlayer),
+      attackerUnits: buildUnits(attackerTerr),
+      defenderUnits: buildUnits(defenderTerr),
       hasFortress: defenderTerr.hasFortress,
       conquered,
       aRolls: result.aRolls,
@@ -761,6 +745,16 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     };
     setBattleLog(prev => [...prev, logEntry]);
 
+    // Apply card combat bonuses to result before executing
+    const atkPlayer = gameState.players.find(p => p.id === attackerTerr.owner);
+    const defPlayer = gameState.players.find(p => p.id === defenderTerr.owner);
+    const atkCardBonus = getPlayerCombatCardBonus(atkPlayer);
+    const defCardBonus = getPlayerCombatCardBonus(defPlayer);
+    result = {
+      ...result,
+      aBonus: (result.aBonus || 0) + atkCardBonus.attackBonus,
+      dBonus: (result.dBonus || 0) + defCardBonus.defenseBonus,
+    };
     const newState = checkObjectives(executeAttack(gameState, battle.attackerId, battle.defenderId, result));
     setGameState(newState);
     setBattle(null);
@@ -773,9 +767,14 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     }
   };
 
-  const handleHexBattleResult = (result) => {
+  const handleHexBattleResult = (rawResult) => {
     if (!hexBattle) return;
     const { attackerHexId, defenderHexId, pendingMove } = hexBattle;
+    // Apply card combat bonuses
+    const defHexOwner = gameState.hexes[defenderHexId]?.owner;
+    const atkCardBonus = getPlayerCombatCardBonus(currentPlayer);
+    const defCardBonus = getPlayerCombatCardBonus(gameState.players.find(p => p.id === defHexOwner));
+    const result = { ...rawResult, aBonus: (rawResult.aBonus || 0) + atkCardBonus.attackBonus, dBonus: (rawResult.dBonus || 0) + defCardBonus.defenseBonus };
     const { unitsToMove, remainingFromUnits } = pendingMove;
 
     const defenderHex = gameState.hexes[defenderHexId] || {};
@@ -1093,7 +1092,10 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       
       const newCards = (player.actionCards || []).filter(id => id !== card.id);
       const newPlayer = { ...player, resources: newResources, ip: newIp, sp: newSp, actionCards: newCards, cardEffects };
-      return { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
+      const baseState = { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
+      // Apply instant effects (tributes, wrath damage, taxes, etc.)
+      const { newPlayers, newHexes } = applyInstantCardEffects(card, baseState, currentPlayer.id);
+      return { ...baseState, players: newPlayers, hexes: newHexes };
     });
     setCardPlayAnnouncement({ card, playerName: currentPlayer.name, playerColor: currentPlayer.color });
     addMessage(`🃏 Played ${card.name}: ${card.effect}`);

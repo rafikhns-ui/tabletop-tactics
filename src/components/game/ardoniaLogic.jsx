@@ -340,31 +340,81 @@ export const calculateIncome = (player, territories) => {
 // ---- Collect income ----
 export const collectIncome = (gameState) => {
   const newState = { ...gameState };
+
+  // Tick down the active world event
+  let activeWorldEvent = gameState.activeWorldEvent;
+  if (activeWorldEvent && activeWorldEvent.turnsRemaining > 0) {
+    activeWorldEvent = { ...activeWorldEvent, turnsRemaining: activeWorldEvent.turnsRemaining - 1 };
+    if (activeWorldEvent.turnsRemaining <= 0) activeWorldEvent = null;
+  } else if (activeWorldEvent?.turnsRemaining === 0) {
+    activeWorldEvent = null;
+  }
+  newState.activeWorldEvent = activeWorldEvent;
+  // Clear peace treaty flag each new turn
+  if (newState.peaceTreatyActive) newState.peaceTreatyActive = false;
+
   newState.players = gameState.players.map(p => {
-    const income = calculateIncome(p, gameState.territories);
+    let income = calculateIncome(p, gameState.territories);
     const maxStorage = 10 + (p.buildings.treasury?.level || 1) * 5;
-    // Apply active world event penalties to income
-    const crisisPenalty = p.cardEffects?.economic_crisis?.active ? (p.cardEffects.economic_crisis.goldPenalty || 0) : 0;
-    // Tick down card effects duration
-    const newCardEffects = { ...(p.cardEffects || {}) };
+    const fx = p.cardEffects || {};
+
+    // ── Card effect income bonuses / penalties ──
+    if (fx.economic_boom?.active)  income.gold += fx.economic_boom.goldBonus || 2;
+    if (fx.temple_blessing?.active && p.buildings?.temple) income.sp += p.buildings.temple.level || 1;
+    if (fx.economic_crisis?.active) income.gold -= fx.economic_crisis.goldPenalty || 1;
+    if (fx.war_profiteering?.active) {
+      const anyWar = gameState.players.some(other =>
+        other.id !== p.id && gameState.diplomacy?.[[p.id, other.id].sort().join('|')] === 'war'
+      );
+      if (anyWar) income.gold += 2;
+    }
+    if (fx.tariff_deal?.active) income.gold += fx.tariff_deal.tariffBonus || 1;
+    // Famine event still active
+    if (activeWorldEvent?.id === 'famine') income.wheat = Math.max(0, income.wheat - 1);
+    // Economic crisis event
+    if (activeWorldEvent?.id === 'economic_crisis') income.gold = Math.max(0, income.gold - 1);
+
+    // ── Tick down card effects ──
+    const newCardEffects = { ...fx };
     Object.keys(newCardEffects).forEach(k => {
-      if (newCardEffects[k]?.duration > 0) {
-        newCardEffects[k] = { ...newCardEffects[k], duration: newCardEffects[k].duration - 1 };
+      const eff = newCardEffects[k];
+      if (!eff || eff.duration === Infinity) return;
+      if (eff.duration > 0) {
+        newCardEffects[k] = { ...eff, duration: eff.duration - 1 };
         if (newCardEffects[k].duration <= 0) newCardEffects[k] = { ...newCardEffects[k], active: false };
       }
     });
+
+    // ── Avatar duration tick ──
+    let activeAvatar = p.activeAvatar;
+    if (activeAvatar) {
+      activeAvatar = { ...activeAvatar, duration: activeAvatar.duration - 1 };
+      if (activeAvatar.duration <= 0) activeAvatar = null;
+    }
+
     return {
       ...p,
       resources: {
-        gold: Math.min(maxStorage, Math.max(0, p.resources.gold + income.gold - crisisPenalty)),
+        gold: Math.min(maxStorage, Math.max(0, p.resources.gold + income.gold)),
         wood: Math.min(maxStorage, p.resources.wood + income.wood),
         wheat: Math.min(maxStorage, p.resources.wheat + income.wheat),
       },
       sp: Math.min(50, p.sp + income.sp),
       ip: Math.min(50, p.ip + income.ip),
       cardEffects: newCardEffects,
+      activeAvatar,
     };
   });
+
+  // ── Luxury tax: players with >10 gold pay 2 to the caster ──
+  newState.players = newState.players.map((p, _, arr) => {
+    const caster = arr.find(x => x.cardEffects?.luxury_tax?.active && x.id !== p.id);
+    if (caster && (p.resources?.gold || 0) > 10) {
+      return { ...p, resources: { ...p.resources, gold: Math.max(0, p.resources.gold - 2) } };
+    }
+    return p;
+  });
+
   return newState;
 };
 
@@ -432,6 +482,18 @@ export const calculateUnitBonuses = (units) => {
     if (u.type === 'ranged') attackBonus += 1;
     if (u.type === 'siege') attackBonus += 2;
   });
+  return { attackBonus, defenseBonus };
+};
+
+// ---- Card effect combat bonuses ----
+// Pass attacker/defenderPlayer to apply active card effects
+export const getCardCombatBonuses = (player) => {
+  const fx = player?.cardEffects || {};
+  let attackBonus = 0, defenseBonus = 0;
+  if (fx.rally?.active)        attackBonus  += 2;
+  if (fx.holy_shield?.active)  defenseBonus += 3;
+  if (fx.divine_shield?.active) defenseBonus += 3;
+  if (fx.sanctified_ground?.active) defenseBonus += 1; // enemy rolls -1, defender gains +1
   return { attackBonus, defenseBonus };
 };
 
