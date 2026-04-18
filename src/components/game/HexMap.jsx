@@ -981,14 +981,58 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                      })}
                   </g>
                 )}
-                {/* Fortress icon */}
-                {gameState?.hexes?.[hexId]?.buildings?.fortress && (
-                  <text x={cx - 8} y={cy + 2} textAnchor="middle" fontSize={11} style={{ pointerEvents: 'none', textShadow: '0 0 2px #000' }}>🏰</text>
-                )}
-                {/* Port icon */}
-                {gameState?.hexes?.[hexId]?.buildings?.port && (
-                  <text x={cx + 8} y={cy + 10} textAnchor="middle" fontSize={11} style={{ pointerEvents: 'none', textShadow: '0 0 2px #000' }}>⚓</text>
-                )}
+                {/* ── 3D Fortress token ── */}
+                 {gameState?.hexes?.[hexId]?.buildings?.fortress && (
+                   <g transform={`translate(${cx - 10},${cy - 14})`} style={{ pointerEvents: 'none' }} filter="url(#goldGlow)">
+                     {/* Ground shadow */}
+                     <ellipse cx={0} cy={11} rx={8} ry={2.5} fill="#000" fillOpacity={0.45} />
+                     {/* Outer ring — stone grey */}
+                     <circle cx={0} cy={0} r={10} fill="#7a7a8a" stroke="#2a2a3a" strokeWidth={1}>
+                       <animate attributeName="cy" values="-0.5;0.5;-0.5" dur="3s" repeatCount="indefinite" additive="sum" />
+                     </circle>
+                     {/* Inner dark body */}
+                     <circle cx={0} cy={0} r={8.5} fill="#1a1a22" stroke="#5a5a6a" strokeWidth={1}>
+                       <animate attributeName="cy" values="-0.5;0.5;-0.5" dur="3s" repeatCount="indefinite" additive="sum" />
+                     </circle>
+                     {/* Specular highlight */}
+                     <ellipse cx={-3} cy={-3.5} rx={3} ry={1.7} fill="#ffffff" fillOpacity={0.25} transform="rotate(-20)" />
+                     {/* Fortress icon */}
+                     <text x={0} y={4} textAnchor="middle" fontSize={11} style={{ userSelect: 'none' }}>🏰
+                       <animate attributeName="y" values="3.5;4.5;3.5" dur="3s" repeatCount="indefinite" additive="sum" />
+                     </text>
+                     {/* Pulsing stone-grey halo */}
+                     <circle cx={0} cy={0} r={13} fill="none" stroke="#9a9aaa" strokeWidth={1}>
+                       <animate attributeName="strokeOpacity" values="0.1;0.5;0.1" dur="3s" repeatCount="indefinite" />
+                       <animate attributeName="r" values="11;15;11" dur="3s" repeatCount="indefinite" />
+                     </circle>
+                   </g>
+                 )}
+                 {/* ── 3D Port token ── */}
+                 {gameState?.hexes?.[hexId]?.buildings?.port && (
+                   <g transform={`translate(${cx + 10},${cy - 14})`} style={{ pointerEvents: 'none' }} filter="url(#unitGlowBlue)">
+                     {/* Ground shadow */}
+                     <ellipse cx={0} cy={11} rx={8} ry={2.5} fill="#000" fillOpacity={0.4} />
+                     {/* Outer ring — ocean blue */}
+                     <circle cx={0} cy={0} r={10} fill="#1a4a7a" stroke="#0a1a2a" strokeWidth={1}>
+                       <animate attributeName="cy" values="-0.5;0.5;-0.5" dur="2.5s" repeatCount="indefinite" additive="sum" />
+                     </circle>
+                     {/* Inner dark body */}
+                     <circle cx={0} cy={0} r={8.5} fill="#0a0f1a" stroke="#2a5a8a" strokeWidth={1}>
+                       <animate attributeName="cy" values="-0.5;0.5;-0.5" dur="2.5s" repeatCount="indefinite" additive="sum" />
+                     </circle>
+                     {/* Specular highlight */}
+                     <ellipse cx={-3} cy={-3.5} rx={3} ry={1.7} fill="#ffffff" fillOpacity={0.22} transform="rotate(-20)" />
+                     {/* Port icon */}
+                     <text x={0} y={4} textAnchor="middle" fontSize={11} style={{ userSelect: 'none' }}>⚓
+                       <animate attributeName="y" values="3.5;4.5;3.5" dur="2.5s" repeatCount="indefinite" additive="sum" />
+                     </text>
+                     {/* Animated wave ring */}
+                     <circle cx={0} cy={0} r={12} fill="none" stroke="#4488ff" strokeWidth={0.9} strokeDasharray="5,3">
+                       <animate attributeName="strokeDashoffset" from="0" to="16" dur="2s" repeatCount="indefinite" />
+                       <animate attributeName="strokeOpacity" values="0.2;0.6;0.2" dur="2.5s" repeatCount="indefinite" />
+                     </circle>
+                   </g>
+                 )}
               </g>
             );
           })}
@@ -1631,27 +1675,58 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             );
           })()}
 
-          {panelTab === 'buildings' && selected && (
-            <div>
-              <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, marginBottom: 8 }}>STRUCTURES</div>
-              {selected.buildings && (Object.keys(selected.buildings).length > 0) ? (
-                <div>
-                  {Object.entries(selected.buildings).map(([key, val]) => {
-                    const icons = { fortress: '🏰', port: '⚓' };
-                    const names = { fortress: 'Fortress', port: 'Port' };
-                    return (
-                      <div key={key} style={{ fontSize: 13, color: '#c8c0b0', marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid #2a2520' }}>
-                        <span style={{ fontSize: 14, marginRight: 8 }}>{icons[key] || '🏛️'}</span>
-                        <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 600 }}>{names[key] || key}</span>
-                      </div>
-                    );
-                  })}
+          {panelTab === 'buildings' && selected && (() => {
+            const hexBuildings = gameState?.hexes?.[`${selected.col},${selected.row}`]?.buildings || {};
+            const BDEF = {
+              fortress: { icon: '🏰', name: 'Fortress', effect: 'Defense +2 dice', color: '#8a8a9a', desc: 'Stone fortification. Defenders roll d8 instead of d6.' },
+              port: { icon: '⚓', name: 'Harbour Port', effect: 'Naval access · Gold +1', color: '#4488ff', desc: 'Enables naval deployment and boosts coastal income.' },
+            };
+            const entries = Object.entries(hexBuildings);
+            return (
+              <div>
+                <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 13, fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>
+                  STRUCTURES ON HEX
                 </div>
-              ) : (
-                <div style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>No structures on this hex</div>
-              )}
-            </div>
-          )}
+                {entries.length > 0 ? entries.map(([key]) => {
+                  const def = BDEF[key] || { icon: '🏛️', name: key, effect: '', color: '#888', desc: '' };
+                  return (
+                    <div key={key} style={{
+                      marginBottom: 10, borderRadius: 8, overflow: 'hidden',
+                      border: `1px solid ${def.color}55`,
+                      background: `linear-gradient(135deg, ${def.color}18, #0a0c12)`,
+                    }}>
+                      {/* Header */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: `1px solid ${def.color}33` }}>
+                        <div style={{
+                          width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                          background: `radial-gradient(circle at 35% 30%, ${def.color}88, #0a0c12)`,
+                          border: `2px solid ${def.color}88`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 18, boxShadow: `0 0 10px ${def.color}44`,
+                        }}>
+                          {def.icon}
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: 13, color: def.color }}>{def.name}</div>
+                          <div style={{ fontSize: 10, color: '#7a9a7a', marginTop: 1 }}>✦ {def.effect}</div>
+                        </div>
+                      </div>
+                      {/* Description */}
+                      {def.desc && (
+                        <div style={{ padding: '8px 12px', fontSize: 11, color: '#8a8070', fontStyle: 'italic', lineHeight: 1.5 }}>
+                          {def.desc}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }) : (
+                  <div style={{ textAlign: 'center', color: '#444', marginTop: 32, fontStyle: 'italic', fontSize: 12 }}>
+                    No structures on this hex
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
 
 
