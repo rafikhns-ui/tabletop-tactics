@@ -94,12 +94,16 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
   //   - hex.owner === player.id (explicit conquest), OR
   //   - hex.nation_id matches the player's faction's nation AND is not explicitly owned by another player
   const { ownedProvinceCount, totalProvinces } = useMemo(() => {
-    const total = provinces ? Object.keys(provinces).length : 0;
-    if (!gameState) return { ownedProvinceCount: 0, totalProvinces: total };
+    if (!gameState) return { ownedProvinceCount: 0, totalProvinces: 0 };
 
     // Use the raw map nation_id for this faction (e.g. 'azure' for sultanate)
     const canonicalNationId = FACTION_TO_NATION_ID[player.factionId]; // e.g. 'sultanate'
     const playerNationId = FACTION_TO_RAW_NATION_ID[canonicalNationId] || canonicalNationId; // e.g. 'azure'
+
+    // Total provinces for THIS faction's nation only
+    const nation = mapData.nations.find(n => n.id === playerNationId);
+    const total = nation ? nation.province_count : 0;
+
     const hexes = gameState.hexes || {};
     const otherPlayerIds = new Set(
       (gameState.players || []).filter(p => p.id !== player.id).map(p => p.id)
@@ -108,15 +112,15 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
     const controlled = new Set();
 
     mapData.hex_grid.forEach(h => {
+      if (h.nation_id !== playerNationId) return;
       const hexId = `${h.col},${h.row}`;
       const hexState = hexes[hexId];
       const explicitOwner = hexState?.owner;
 
       let isControlled = false;
       if (explicitOwner === player.id) {
-        // Explicitly conquered by this player
         isControlled = true;
-      } else if (!otherPlayerIds.has(explicitOwner) && h.nation_id === playerNationId) {
+      } else if (!otherPlayerIds.has(explicitOwner)) {
         // Home territory not yet taken by another player
         isControlled = true;
       }
@@ -128,7 +132,7 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
     });
 
     return { ownedProvinceCount: controlled.size, totalProvinces: total };
-  }, [gameState, player.id, player.factionId, provinces]);
+  }, [gameState, player.id, player.factionId]);
 
   return (
     <div className="border-b border-border"
