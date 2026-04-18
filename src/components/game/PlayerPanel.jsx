@@ -8,7 +8,7 @@ import mapData from './ardonia_game_map.json';
 // Pre-build the static hex→province lookup once
 const HEX_TO_PROVINCE = buildHexToProvinceMap();
 
-// Same aliases as provinceSystem — normalize raw map nation_ids to canonical faction/nation ids
+// Raw map nation_ids → canonical factionId (same as provinceSystem aliases)
 const NATION_ID_ALIASES = {
   kinetic:       'kintei',
   ilalocatotlan: 'tlalocayotlan',
@@ -18,6 +18,11 @@ const NATION_ID_ALIASES = {
   silver:        'silverunion',
 };
 const normNationId = (id) => NATION_ID_ALIASES[id] || id;
+
+// Reverse: factionId → raw map nation_id (for factions that differ)
+const FACTION_TO_RAW_NATION_ID = Object.fromEntries(
+  Object.entries(NATION_ID_ALIASES).map(([raw, faction]) => [faction, raw])
+);
 
 function ObjectivesModal({ player, onClose }) {
   const [hoveredObjId, setHoveredObjId] = React.useState(null);
@@ -92,7 +97,9 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
     const total = provinces ? Object.keys(provinces).length : 0;
     if (!gameState) return { ownedProvinceCount: 0, totalProvinces: total };
 
-    const playerNationId = FACTION_TO_NATION_ID[player.factionId];
+    // Use the raw map nation_id for this faction (e.g. 'azure' for sultanate)
+    const canonicalNationId = FACTION_TO_NATION_ID[player.factionId]; // e.g. 'sultanate'
+    const playerNationId = FACTION_TO_RAW_NATION_ID[canonicalNationId] || canonicalNationId; // e.g. 'azure'
     const hexes = gameState.hexes || {};
     const otherPlayerIds = new Set(
       (gameState.players || []).filter(p => p.id !== player.id).map(p => p.id)
@@ -109,7 +116,7 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
       if (explicitOwner === player.id) {
         // Explicitly conquered by this player
         isControlled = true;
-      } else if (!otherPlayerIds.has(explicitOwner) && normNationId(h.nation_id) === playerNationId) {
+      } else if (!otherPlayerIds.has(explicitOwner) && h.nation_id === playerNationId) {
         // Home territory not yet taken by another player
         isControlled = true;
       }
