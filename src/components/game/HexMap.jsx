@@ -208,6 +208,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
   const [combatTooltip, setCombatTooltip] = useState(null);
   const [combatFlashes, setCombatFlashes] = useState([]); // [{hexId, key}]
   const [hoveredSpecialEvent, setHoveredSpecialEvent] = useState(null);
+  const [hoveredFactionLabel, setHoveredFactionLabel] = useState(null);
 
   const SVG_W = 1200;
   const SVG_H = 900;
@@ -1519,12 +1520,19 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
           {/* ── Faction labels ── */}
           {FACTION_CENTROIDS.map(fc => {
+
             const { cx, cy } = toSVG(fc.x, fc.y);
             const words = fc.name.split(' ');
             const line1 = words.slice(0, Math.ceil(words.length / 2)).join(' ');
             const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
+            const isHovered = hoveredFactionLabel === fc.fid;
             return (
-              <g key={`fl${fc.fid}`} style={{ pointerEvents: 'none' }}>
+              <g key={`fl${fc.fid}`}
+                style={{ pointerEvents: 'all', cursor: 'default', opacity: isHovered ? 0 : 1, transition: 'opacity 0.15s' }}
+                onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
+                onMouseLeave={() => setHoveredFactionLabel(null)}>
+                {/* Transparent hit area so hover works reliably */}
+                <rect x={cx - 65} y={cy - 20} width={130} height={line2 ? 38 : 20} fill="transparent" />
                 <text x={cx} y={cy - (line2 ? 6 : 0)} textAnchor="middle" fontSize={13}
                   fill="none" stroke={fc.color} strokeWidth={4} strokeOpacity={0.4}
                   fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}>
