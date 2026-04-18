@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import TradeTreatyScreen from './TradeTreatyScreen';
 
 export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer, onDiplomacyAction, onInfluenceAction, tradeOffers, onAcceptTrade, onDeclineTrade, onClose, onSentimentChange }) {
   const [activeTab, setActiveTab] = useState('diplomacy');
+  const [treatyTarget, setTreatyTarget] = useState(null);
   const [chatWithPlayer, setChatWithPlayer] = useState(null);
   const [chatMessages, setChatMessages] = useState({});
   const [chatInput, setChatInput] = useState('');
@@ -128,6 +130,7 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
               setChatInput={setChatInput}
               aiResponding={aiResponding}
               handleSendMessage={handleSendMessage}
+              onOpenTreaty={setTreatyTarget}
             />
           )}
           {activeTab === 'trade' && (
@@ -138,6 +141,7 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
               tradeOffers={tradeOffers}
               onAcceptTrade={onAcceptTrade}
               onDeclineTrade={onDeclineTrade}
+              onOpenTreaty={setTreatyTarget}
             />
           )}
           {activeTab === 'influence' && (
@@ -149,11 +153,23 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
           )}
         </div>
       </div>
+      {treatyTarget && (
+        <TradeTreatyScreen
+          gameState={gameState}
+          currentPlayer={currentPlayer}
+          targetPlayer={treatyTarget}
+          onFinalize={(deal) => {
+            onDiplomacyAction({ type: 'treaty_proposal', ...deal });
+            setTreatyTarget(null);
+          }}
+          onClose={() => setTreatyTarget(null)}
+        />
+      )}
     </div>
   );
 }
 
-function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers, onAcceptTrade, onDeclineTrade }) {
+function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers, onAcceptTrade, onDeclineTrade, onOpenTreaty }) {
   const [tradeTarget, setTradeTarget] = React.useState(null);
   const [tradeOffer, setTradeOffer] = React.useState({});
   const [tradeRequest, setTradeRequest] = React.useState({});
@@ -244,6 +260,31 @@ function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers
         </div>
       </div>
 
+      {/* Negotiate Treaty Button per player */}
+      {gameState?.players?.filter(p => p.id !== currentPlayer.id).length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <h3 style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, marginBottom: 10 }}>
+            📜 Treaty Negotiation Chamber
+          </h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {gameState.players.filter(p => p.id !== currentPlayer.id).map(p => (
+              <button key={p.id} onClick={() => onOpenTreaty(p)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px',
+                  background: 'linear-gradient(135deg,#1e1808,#140e04)',
+                  border: `1px solid ${p.color}66`, borderRadius: 6,
+                  color: p.color, cursor: 'pointer', fontSize: 12, fontFamily: "'Cinzel',serif",
+                  transition: 'all 0.15s',
+                }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, display: 'inline-block' }} />
+                {p.name}
+                <span style={{ fontSize: 10, color: '#888' }}>⇄ Negotiate</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Create Trade Offer */}
       {humanPlayers.length > 0 && (
         <div style={{ marginBottom: 24, padding: 12, background: 'rgba(212,168,83,0.08)', border: '1px solid #2a2520', borderRadius: 6 }}>
@@ -331,7 +372,7 @@ function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers
   );
 }
 
-function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, chatMessages, setChatMessages, chatWithPlayer, setChatWithPlayer, chatInput, setChatInput, aiResponding, handleSendMessage }) {
+function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, chatMessages, setChatMessages, chatWithPlayer, setChatWithPlayer, chatInput, setChatInput, aiResponding, handleSendMessage, onOpenTreaty }) {
 
   if (!gameState || !currentPlayer) return null;
 
@@ -386,6 +427,15 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, chatMes
                     color: '#fa9a9a', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
                   }}>
                   ⚔️ War
+                </button>
+                <button onClick={() => onOpenTreaty(player)}
+                  style={{
+                    padding: '6px 12px', background: 'linear-gradient(135deg,#2a1e08,#1a1208)',
+                    border: '1px solid #d4a853', color: '#f0d080',
+                    borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600,
+                    fontFamily: "'Cinzel',serif",
+                  }}>
+                  📜 Negotiate Treaty
                 </button>
               </div>
             </div>
