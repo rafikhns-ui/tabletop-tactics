@@ -25,12 +25,12 @@ function calcIncome(player, territories) {
   };
 }
 
-export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePhase, isAI, onPlayCard, onDrawCard, onSelectDeployUnit }) {
+export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePhase, isAI, onPlayCard, onDrawCard, onSelectDeployUnit, onDragDeployStart, onDragDeployEnd, isDraggingDeploy }) {
   if (!currentPlayer) return null;
   const income = calcIncome(currentPlayer, gameState.territories);
 
   return (
-    <div className="p-3 flex flex-col gap-3">
+    <div className="p-3 flex flex-col gap-3" style={{ opacity: isDraggingDeploy ? 0.15 : 1, transition: 'opacity 0.2s', pointerEvents: isDraggingDeploy ? 'none' : 'auto' }}>
       <div>
         <div className="text-xs font-semibold mb-2 opacity-50 tracking-widest" style={{ fontFamily: "'Cinzel',serif" }}>PHASE</div>
         <div className="flex flex-col gap-1">
@@ -54,7 +54,7 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
       </div>
 
       {phase === 'deploy' && (
-        <DeployQueue pendingUnits={currentPlayer.pendingUnits || []} onSelectUnit={onSelectDeployUnit} />
+        <DeployQueue pendingUnits={currentPlayer.pendingUnits || []} onSelectUnit={onSelectDeployUnit} onDragStart={onDragDeployStart} onDragEnd={onDragDeployEnd} />
       )}
 
       <div className="rounded p-2" style={{ background: 'hsl(35,20%,18%)', border: '1px solid hsl(35,20%,28%)' }}>
@@ -101,7 +101,7 @@ export default function ActionBar({ gameState, currentPlayer, phase, onAdvancePh
   );
 }
 
-function DeployQueue({ pendingUnits, onSelectUnit }) {
+function DeployQueue({ pendingUnits, onSelectUnit, onDragStart, onDragEnd }) {
   const counts = {};
   pendingUnits.forEach(u => { counts[u] = (counts[u] || 0) + 1; });
   const entries = Object.entries(counts);
@@ -123,6 +123,20 @@ function DeployQueue({ pendingUnits, onSelectUnit }) {
               return (
                 <button
                   key={type}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('deployUnitType', type);
+                    e.dataTransfer.effectAllowed = 'move';
+                    // Custom drag image
+                    const ghost = document.createElement('div');
+                    ghost.textContent = def?.emoji || '⚔️';
+                    ghost.style.cssText = 'position:fixed;top:-100px;left:-100px;font-size:32px;background:rgba(30,20,10,0.9);border:2px solid #d4a853;border-radius:8px;padding:6px 10px;pointer-events:none;z-index:99999;';
+                    document.body.appendChild(ghost);
+                    e.dataTransfer.setDragImage(ghost, 24, 24);
+                    setTimeout(() => document.body.removeChild(ghost), 0);
+                    onDragStart && onDragStart(type);
+                  }}
+                  onDragEnd={() => onDragEnd && onDragEnd()}
                   onClick={() => onSelectUnit && onSelectUnit(type)}
                   className="flex items-center gap-1 px-2 py-1.5 rounded text-xs font-bold transition-all hover:scale-105 active:scale-95"
                   style={{
@@ -131,7 +145,7 @@ function DeployQueue({ pendingUnits, onSelectUnit }) {
                     color: isNext ? 'hsl(43,95%,85%)' : 'hsl(40,25%,65%)',
                     fontFamily: "'Cinzel',serif",
                     boxShadow: isNext ? '0 0 12px rgba(255,200,50,0.4)' : 'none',
-                    cursor: 'pointer',
+                    cursor: 'grab',
                   }}>
                   <span className="text-base">{def?.emoji || '⚔️'}</span>
                   <span>{def?.name || type}</span>
@@ -141,7 +155,7 @@ function DeployQueue({ pendingUnits, onSelectUnit }) {
               );
             })}
           </div>
-          <div className="text-xs opacity-50 text-center">click a unit type to select, then click your territory</div>
+          <div className="text-xs opacity-50 text-center">drag unit onto your territory · or click to select then click hex</div>
         </>
       )}
     </div>

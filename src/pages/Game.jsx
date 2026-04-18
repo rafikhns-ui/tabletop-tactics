@@ -120,6 +120,7 @@ export default function Game() {
   const [showInfluenceOverlay, setShowInfluenceOverlay] = useState(false);
   const [showSilverUnionMenu, setShowSilverUnionMenu] = useState(false);
   const [openModal, setOpenModal] = useState(null); // 'action' | 'build' | 'recruit' | 'heroes' | 'avatars' | 'effects' | 'unifiedlog' | 'advisor' | 'market' | null
+  const [draggingDeployUnit, setDraggingDeployUnit] = useState(null); // unit type being dragged for deploy
 
   const toggleMusic = () => {
     const audio = menuAudioRef.current;
@@ -1688,6 +1689,13 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               movementState={movementState}
               movedHexes={movedHexes}
               highlightPlayerId={highlightedPlayerId || (highlightMyTerritories ? currentPlayer?.id : null)}
+              draggingDeployUnit={draggingDeployUnit}
+              onDragDeployDrop={(hexId, unitType) => {
+                const type = unitType || draggingDeployUnit;
+                if (!type) return;
+                handleSelectDeployUnit(type);
+                setTimeout(() => { handleTerritoryClick(hexId); setDraggingDeployUnit(null); }, 0);
+              }}
               reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
               attackableHexes={phase === 'attack' && selectedTerritory ? (() => {
                 const attackerHex = gameState.hexes[selectedTerritory];
@@ -1863,14 +1871,17 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {openModal === 'action' && gameState && currentPlayer && (
                 <ActionBar
-                  gameState={gameState}
-                  currentPlayer={currentPlayer}
-                  phase={phase}
-                  onAdvancePhase={advancePhase}
-                  isAI={currentPlayer.isAI}
-                  onPlayCard={handlePlayCard}
-                  onDrawCard={handleDrawCard}
-                  onSelectDeployUnit={handleSelectDeployUnit}
+                 gameState={gameState}
+                 currentPlayer={currentPlayer}
+                 phase={phase}
+                 onAdvancePhase={advancePhase}
+                 isAI={currentPlayer.isAI}
+                 onPlayCard={handlePlayCard}
+                 onDrawCard={handleDrawCard}
+                 onSelectDeployUnit={handleSelectDeployUnit}
+                 onDragDeployStart={(unitType) => { setDraggingDeployUnit(unitType); setOpenModal(null); }}
+                 onDragDeployEnd={() => setDraggingDeployUnit(null)}
+                 isDraggingDeploy={!!draggingDeployUnit}
                 />
               )}
               {openModal === 'build' && gameState && currentPlayer && !currentPlayer.isAI && (

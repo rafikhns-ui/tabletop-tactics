@@ -197,7 +197,7 @@ function estimateCombat(attackerUnits, defenderUnits, hasFortress) {
   };
 }
 
-export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit, showInfluenceOverlay, sentiment }) {
+export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit, showInfluenceOverlay, sentiment, draggingDeployUnit, onDragDeployDrop }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -846,9 +846,19 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                     setSelected(null);
                   }
                 }}
+                onDragOver={(e) => {
+                  if (draggingDeployUnit && !isWater) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+                }}
+                onDrop={(e) => {
+                  if (!isWater && onDragDeployDrop) {
+                    e.preventDefault();
+                    const unitType = e.dataTransfer.getData('deployUnitType') || draggingDeployUnit;
+                    if (unitType) onDragDeployDrop(hexId, unitType);
+                  }
+                }}
                 onMouseEnter={handleHexMouseEnter}
                 onMouseLeave={handleHexMouseLeave}
-                style={{ cursor: isWater ? 'default' : 'pointer' }}>
+                style={{ cursor: draggingDeployUnit && !isWater ? 'copy' : isWater ? 'default' : 'pointer' }}>
 
                 {/* ── 3D HEX RENDERING ── */}
                 {isWater ? (
