@@ -69,6 +69,7 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
   };
 
   return (
+    <>
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -153,19 +154,20 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
           )}
         </div>
       </div>
-      {treatyTarget && (
-        <TradeTreatyScreen
-          gameState={gameState}
-          currentPlayer={currentPlayer}
-          targetPlayer={treatyTarget}
-          onFinalize={(deal) => {
-            onDiplomacyAction({ type: 'treaty_proposal', ...deal });
-            setTreatyTarget(null);
-          }}
-          onClose={() => setTreatyTarget(null)}
-        />
-      )}
     </div>
+    {treatyTarget && (
+      <TradeTreatyScreen
+        gameState={gameState}
+        currentPlayer={currentPlayer}
+        targetPlayer={treatyTarget}
+        onFinalize={(deal) => {
+          onDiplomacyAction({ type: 'treaty_proposal', ...deal });
+          setTreatyTarget(null);
+        }}
+        onClose={() => setTreatyTarget(null)}
+      />
+    )}
+    </>
   );
 }
 
