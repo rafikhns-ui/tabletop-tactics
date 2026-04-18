@@ -270,7 +270,7 @@ function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers
           </h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {gameState.players.filter(p => p.id !== currentPlayer.id).map(p => (
-              <button key={p.id} onClick={() => onOpenTreaty(p)}
+              <button key={p.id} onClick={(e) => { e.stopPropagation(); onOpenTreaty(p); }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px',
                   background: 'linear-gradient(135deg,#1e1808,#140e04)',
@@ -430,7 +430,7 @@ function DiplomacyContent({ gameState, currentPlayer, onDiplomacyAction, chatMes
                   }}>
                   ⚔️ War
                 </button>
-                <button onClick={() => onOpenTreaty(player)}
+                <button onClick={(e) => { e.stopPropagation(); onOpenTreaty(player); }}
                   style={{
                     padding: '6px 12px', background: 'linear-gradient(135deg,#2a1e08,#1a1208)',
                     border: '1px solid #d4a853', color: '#f0d080',
