@@ -664,6 +664,14 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             <filter id="unitGlowGreen">
               <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#44ff88" floodOpacity="0.8" />
             </filter>
+            <filter id="fortressGlow">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000000" floodOpacity="0.8" />
+              <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#8a8a9a" floodOpacity="0.5" />
+            </filter>
+            <filter id="portGlow">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000000" floodOpacity="0.7" />
+              <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#2266cc" floodOpacity="0.6" />
+            </filter>
 
           </defs>
 
@@ -981,55 +989,135 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                      })}
                   </g>
                 )}
-                {/* ── 3D Fortress token ── */}
+                {/* ══ EPIC FORTRESS SVG STRUCTURE ══ */}
                  {gameState?.hexes?.[hexId]?.buildings?.fortress && (
-                   <g transform={`translate(${cx - 10},${cy - 14})`} style={{ pointerEvents: 'none' }} filter="url(#goldGlow)">
-                     {/* Ground shadow */}
-                     <ellipse cx={0} cy={11} rx={8} ry={2.5} fill="#000" fillOpacity={0.45} />
-                     {/* Outer ring — stone grey */}
-                     <circle cx={0} cy={0} r={10} fill="#7a7a8a" stroke="#2a2a3a" strokeWidth={1}>
-                       <animate attributeName="cy" values="-0.5;0.5;-0.5" dur="3s" repeatCount="indefinite" additive="sum" />
-                     </circle>
-                     {/* Inner dark body */}
-                     <circle cx={0} cy={0} r={8.5} fill="#1a1a22" stroke="#5a5a6a" strokeWidth={1}>
-                       <animate attributeName="cy" values="-0.5;0.5;-0.5" dur="3s" repeatCount="indefinite" additive="sum" />
-                     </circle>
-                     {/* Specular highlight */}
-                     <ellipse cx={-3} cy={-3.5} rx={3} ry={1.7} fill="#ffffff" fillOpacity={0.25} transform="rotate(-20)" />
-                     {/* Fortress icon */}
-                     <text x={0} y={4} textAnchor="middle" fontSize={11} style={{ userSelect: 'none' }}>🏰
-                       <animate attributeName="y" values="3.5;4.5;3.5" dur="3s" repeatCount="indefinite" additive="sum" />
-                     </text>
-                     {/* Pulsing stone-grey halo */}
-                     <circle cx={0} cy={0} r={13} fill="none" stroke="#9a9aaa" strokeWidth={1}>
-                       <animate attributeName="strokeOpacity" values="0.1;0.5;0.1" dur="3s" repeatCount="indefinite" />
-                       <animate attributeName="r" values="11;15;11" dur="3s" repeatCount="indefinite" />
+                   <g transform={`translate(${cx},${cy - 6})`} style={{ pointerEvents: 'none' }} filter="url(#fortressGlow)">
+                     {/* Drop shadow platform */}
+                     <ellipse cx={0} cy={14} rx={16} ry={4} fill="#000" fillOpacity={0.5} />
+                     {/* Animated slow hover */}
+                     <g>
+                       <animateTransform attributeName="transform" type="translate" values="0,0;0,-2;0,0" dur="4s" repeatCount="indefinite" />
+                       {/* Stone base / wall */}
+                       <rect x={-12} y={2} width={24} height={10} rx={1}
+                         fill="#4a4a5a" stroke="#2a2a38" strokeWidth={0.8} />
+                       {/* Wall highlight (top edge) */}
+                       <rect x={-12} y={2} width={24} height={2} rx={1}
+                         fill="#7a7a8a" />
+                       {/* Gate arch */}
+                       <rect x={-3} y={6} width={6} height={6} rx={1} fill="#0d0f16" />
+                       <ellipse cx={0} cy={6} rx={3} ry={2} fill="#0d0f16" />
+                       {/* Left tower */}
+                       <rect x={-14} y={-6} width={8} height={10} rx={1}
+                         fill="#5a5a6a" stroke="#2a2a38" strokeWidth={0.8} />
+                       {/* Left tower top-light */}
+                       <rect x={-14} y={-6} width={8} height={2} fill="#8a8a9a" rx={1} />
+                       {/* Left merlon teeth */}
+                       <rect x={-14} y={-10} width={2} height={4} rx={0.5} fill="#5a5a6a" stroke="#2a2a38" strokeWidth={0.5} />
+                       <rect x={-11} y={-10} width={2} height={4} rx={0.5} fill="#5a5a6a" stroke="#2a2a38" strokeWidth={0.5} />
+                       <rect x={-8} y={-10} width={2} height={4} rx={0.5} fill="#5a5a6a" stroke="#2a2a38" strokeWidth={0.5} />
+                       {/* Right tower */}
+                       <rect x={6} y={-6} width={8} height={10} rx={1}
+                         fill="#5a5a6a" stroke="#2a2a38" strokeWidth={0.8} />
+                       {/* Right tower top-light */}
+                       <rect x={6} y={-6} width={8} height={2} fill="#8a8a9a" rx={1} />
+                       {/* Right merlon teeth */}
+                       <rect x={6} y={-10} width={2} height={4} rx={0.5} fill="#5a5a6a" stroke="#2a2a38" strokeWidth={0.5} />
+                       <rect x={9} y={-10} width={2} height={4} rx={0.5} fill="#5a5a6a" stroke="#2a2a38" strokeWidth={0.5} />
+                       <rect x={12} y={-10} width={2} height={4} rx={0.5} fill="#5a5a6a" stroke="#2a2a38" strokeWidth={0.5} />
+                       {/* Center keep */}
+                       <rect x={-5} y={-12} width={10} height={14} rx={1}
+                         fill="#6a6a7a" stroke="#2a2a38" strokeWidth={0.8} />
+                       {/* Keep top-light */}
+                       <rect x={-5} y={-12} width={10} height={2} fill="#9a9aaa" rx={1} />
+                       {/* Keep window */}
+                       <rect x={-1.5} y={-8} width={3} height={4} rx={0.5} fill="#ffe080" fillOpacity={0.8}>
+                         <animate attributeName="fillOpacity" values="0.5;1;0.5" dur="2.5s" repeatCount="indefinite" />
+                       </rect>
+                       {/* Keep battlements */}
+                       <rect x={-5} y={-16} width={2} height={4} rx={0.5} fill="#6a6a7a" stroke="#2a2a38" strokeWidth={0.5} />
+                       <rect x={-2} y={-16} width={2} height={4} rx={0.5} fill="#6a6a7a" stroke="#2a2a38" strokeWidth={0.5} />
+                       <rect x={1} y={-16} width={2} height={4} rx={0.5} fill="#6a6a7a" stroke="#2a2a38" strokeWidth={0.5} />
+                       <rect x={4} y={-16} width={2} height={4} rx={0.5} fill="#6a6a7a" stroke="#2a2a38" strokeWidth={0.5} />
+                       {/* Top specular glint */}
+                       <ellipse cx={-2} cy={-13} rx={3} ry={1} fill="#ffffff" fillOpacity={0.18} />
+                       {/* Flag */}
+                       <line x1={0} y1={-17} x2={0} y2={-23} stroke="#aaa" strokeWidth={0.8} />
+                       <polygon points="0,-23 6,-20 0,-18" fill="#c0392b">
+                         <animate attributeName="points"
+                           values="0,-23 6,-20 0,-18; 0,-23 7,-21 0,-19; 0,-23 6,-20 0,-18"
+                           dur="1.5s" repeatCount="indefinite" />
+                       </polygon>
+                     </g>
+                     {/* Pulsing stone-aura ring */}
+                     <circle cx={0} cy={4} r={19} fill="none" stroke="#8a8a9a" strokeWidth={1.2}>
+                       <animate attributeName="r" values="17;22;17" dur="3s" repeatCount="indefinite" />
+                       <animate attributeName="strokeOpacity" values="0.15;0.5;0.15" dur="3s" repeatCount="indefinite" />
                      </circle>
                    </g>
                  )}
-                 {/* ── 3D Port token ── */}
+                 {/* ══ EPIC PORT SVG STRUCTURE ══ */}
                  {gameState?.hexes?.[hexId]?.buildings?.port && (
-                   <g transform={`translate(${cx + 10},${cy - 14})`} style={{ pointerEvents: 'none' }} filter="url(#unitGlowBlue)">
-                     {/* Ground shadow */}
-                     <ellipse cx={0} cy={11} rx={8} ry={2.5} fill="#000" fillOpacity={0.4} />
-                     {/* Outer ring — ocean blue */}
-                     <circle cx={0} cy={0} r={10} fill="#1a4a7a" stroke="#0a1a2a" strokeWidth={1}>
-                       <animate attributeName="cy" values="-0.5;0.5;-0.5" dur="2.5s" repeatCount="indefinite" additive="sum" />
-                     </circle>
-                     {/* Inner dark body */}
-                     <circle cx={0} cy={0} r={8.5} fill="#0a0f1a" stroke="#2a5a8a" strokeWidth={1}>
-                       <animate attributeName="cy" values="-0.5;0.5;-0.5" dur="2.5s" repeatCount="indefinite" additive="sum" />
-                     </circle>
-                     {/* Specular highlight */}
-                     <ellipse cx={-3} cy={-3.5} rx={3} ry={1.7} fill="#ffffff" fillOpacity={0.22} transform="rotate(-20)" />
-                     {/* Port icon */}
-                     <text x={0} y={4} textAnchor="middle" fontSize={11} style={{ userSelect: 'none' }}>⚓
-                       <animate attributeName="y" values="3.5;4.5;3.5" dur="2.5s" repeatCount="indefinite" additive="sum" />
-                     </text>
-                     {/* Animated wave ring */}
-                     <circle cx={0} cy={0} r={12} fill="none" stroke="#4488ff" strokeWidth={0.9} strokeDasharray="5,3">
-                       <animate attributeName="strokeDashoffset" from="0" to="16" dur="2s" repeatCount="indefinite" />
-                       <animate attributeName="strokeOpacity" values="0.2;0.6;0.2" dur="2.5s" repeatCount="indefinite" />
+                   <g transform={`translate(${cx},${cy - 4})`} style={{ pointerEvents: 'none' }} filter="url(#portGlow)">
+                     {/* Water shadow */}
+                     <ellipse cx={0} cy={14} rx={14} ry={3.5} fill="#0a1a3a" fillOpacity={0.7} />
+                     {/* Animated gentle sway */}
+                     <g>
+                       <animateTransform attributeName="transform" type="translate" values="0,0;0,-1.5;0,0" dur="3s" repeatCount="indefinite" />
+                       {/* Dock planks */}
+                       <rect x={-13} y={8} width={26} height={4} rx={1} fill="#5a3a18" stroke="#3a2008" strokeWidth={0.6} />
+                       <line x1={-8} y1={8} x2={-8} y2={12} stroke="#3a2008" strokeWidth={0.5} />
+                       <line x1={-3} y1={8} x2={-3} y2={12} stroke="#3a2008" strokeWidth={0.5} />
+                       <line x1={3} y1={8} x2={3} y2={12} stroke="#3a2008" strokeWidth={0.5} />
+                       <line x1={8} y1={8} x2={8} y2={12} stroke="#3a2008" strokeWidth={0.5} />
+                       {/* Dock pillars */}
+                       <rect x={-12} y={10} width={2} height={6} fill="#4a2808" />
+                       <rect x={-2} y={10} width={2} height={6} fill="#4a2808" />
+                       <rect x={10} y={10} width={2} height={6} fill="#4a2808" />
+                       {/* Lighthouse tower */}
+                       <rect x={-4} y={-14} width={8} height={22} rx={1}
+                         fill="#c8c4b8" stroke="#8a8070" strokeWidth={0.8} />
+                       {/* Lighthouse stripes */}
+                       <rect x={-4} y={-14} width={8} height={4} rx={0.5} fill="#e8e0d0" />
+                       <rect x={-4} y={-6} width={8} height={4} fill="#2255aa" />
+                       <rect x={-4} y={2} width={8} height={4} fill="#2255aa" />
+                       {/* Balcony rail */}
+                       <rect x={-6} y={-16} width={12} height={2} rx={1}
+                         fill="#9a9080" stroke="#6a6050" strokeWidth={0.5} />
+                       <line x1={-5} y1={-16} x2={-5} y2={-14} stroke="#6a6050" strokeWidth={0.6} />
+                       <line x1={0} y1={-16} x2={0} y2={-14} stroke="#6a6050" strokeWidth={0.6} />
+                       <line x1={5} y1={-16} x2={5} y2={-14} stroke="#6a6050" strokeWidth={0.6} />
+                       {/* Light dome */}
+                       <ellipse cx={0} cy={-18} rx={5} ry={3.5}
+                         fill="#ffee80" stroke="#d4a820" strokeWidth={0.8}>
+                         <animate attributeName="fill" values="#ffee80;#fff8a0;#ffee80" dur="1.5s" repeatCount="indefinite" />
+                       </ellipse>
+                       {/* Light beam sweep */}
+                       <path d="M0,-18 L18,4 L12,8 Z" fill="#ffee80" fillOpacity={0.08}>
+                         <animate attributeName="fillOpacity" values="0.04;0.15;0.04" dur="2s" repeatCount="indefinite" />
+                         <animateTransform attributeName="transform" type="rotate" from="0 0 -18" to="360 0 -18" dur="6s" repeatCount="indefinite" />
+                       </path>
+                       {/* Light rays */}
+                       {[0,60,120,180,240,300].map((deg,ri) => (
+                         <line key={ri}
+                           x1={0} y1={-18}
+                           x2={Math.cos(deg*Math.PI/180)*10}
+                           y2={-18+Math.sin(deg*Math.PI/180)*10}
+                           stroke="#ffe040" strokeWidth={0.8} strokeOpacity={0.4}>
+                           <animate attributeName="strokeOpacity" values="0.2;0.7;0.2" dur={`${1.5+ri*0.2}s`} repeatCount="indefinite" />
+                         </line>
+                       ))}
+                       {/* Ship mast */}
+                       <line x1={8} y1={8} x2={8} y2={-8} stroke="#6a4a20" strokeWidth={1.2} />
+                       <polygon points="8,-8 16,-4 8,0" fill="#eee0c0" fillOpacity={0.85}>
+                         <animate attributeName="points" values="8,-8 16,-4 8,0; 8,-8 15,-5 8,1; 8,-8 16,-4 8,0" dur="2s" repeatCount="indefinite" />
+                       </polygon>
+                       {/* Specular glint */}
+                       <ellipse cx={-1.5} cy={-19.5} rx={2} ry={1} fill="#ffffff" fillOpacity={0.5} />
+                     </g>
+                     {/* Ocean pulse rings */}
+                     <circle cx={0} cy={10} r={17} fill="none" stroke="#2266cc" strokeWidth={1} strokeDasharray="6,4">
+                       <animate attributeName="strokeDashoffset" from="0" to="20" dur="2s" repeatCount="indefinite" />
+                       <animate attributeName="strokeOpacity" values="0.15;0.5;0.15" dur="3s" repeatCount="indefinite" />
                      </circle>
                    </g>
                  )}
