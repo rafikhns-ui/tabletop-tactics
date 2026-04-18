@@ -71,6 +71,27 @@ const FACTION_CENTROIDS = mapData.nations
     color: NATION_LABEL_MAP[n.id].color,
   }));
 
+// ══════ NATIONAL CAPITAL HEX IDs (always show fortress) ══════
+// Pre-compute from map data: for each nation, find the hex that is in the national capital province
+const NATIONAL_CAPITAL_HEX_IDS = new Set();
+mapData.nations.forEach(nation => {
+  const capProv = nation.provinces?.find(p => p.is_national_capital);
+  if (!capProv) return;
+  // Find the first hex belonging to this province (prefer the capital hex if identifiable)
+  const hexesInProv = mapData.hex_grid.filter(h => h.nation_id === nation.id && h.province === capProv.id);
+  if (hexesInProv.length > 0) {
+    // Use the hex closest to the nation centroid as the "capital hex"
+    const [cx, cy] = nation.centroid || [0, 0];
+    let best = hexesInProv[0];
+    let bestDist = Infinity;
+    hexesInProv.forEach(h => {
+      const d = Math.hypot(h.x - cx, h.y - cy);
+      if (d < bestDist) { bestDist = d; best = h; }
+    });
+    NATIONAL_CAPITAL_HEX_IDS.add(`${best.col},${best.row}`);
+  }
+});
+
 // ══════ HEX GEOMETRY ══════
 function flatHexCorners(cx, cy, size) {
   return Array.from({ length: 6 }, (_, i) => {
@@ -990,7 +1011,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   </g>
                 )}
                 {/* ══ EPIC FORTRESS SVG STRUCTURE ══ */}
-                 {gameState?.hexes?.[hexId]?.buildings?.fortress && (
+                 {(gameState?.hexes?.[hexId]?.buildings?.fortress || NATIONAL_CAPITAL_HEX_IDS.has(hexId)) && (
                    <g transform={`translate(${cx},${cy - 6})`} style={{ pointerEvents: 'none' }} filter="url(#fortressGlow)">
                      {/* Drop shadow platform */}
                      <ellipse cx={0} cy={14} rx={16} ry={4} fill="#000" fillOpacity={0.5} />
