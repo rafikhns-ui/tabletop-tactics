@@ -921,20 +921,21 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   <polygon points={pts} fill={influenceColor} fillOpacity={influenceOpacity} style={{ pointerEvents: 'none' }} />
                 )}
 
-                {/* ── Player ownership — inner glowing tint ── */}
+                {/* ── Nation color tint — always visible on land hexes to differentiate nations ── */}
+                {nationColor && !isWater && !highlightMode && !isSelected && !isReachable && !isAttackable && !isInSelectedProvince && (
+                  <polygon points={pts} fill={nationColor} fillOpacity={0.28} style={{ pointerEvents: 'none' }} />
+                )}
+
+                {/* ── Player ownership — inner glowing tint + border ring ── */}
                 {owner && playerColor && !highlightMode && (
                   <>
-                    <polygon points={ptsInner} fill={playerColor} fillOpacity={0.3} style={{ pointerEvents: 'none' }} />
-                    <polygon points={ptsInner} fill="none" stroke={playerColor} strokeWidth={2} strokeOpacity={0.75} style={{ pointerEvents: 'none' }} />
+                    <polygon points={ptsInner} fill={playerColor} fillOpacity={0.22} style={{ pointerEvents: 'none' }} />
+                    <polygon points={ptsInner} fill="none" stroke={playerColor} strokeWidth={2.5} strokeOpacity={0.85} style={{ pointerEvents: 'none' }} />
                   </>
                 )}
                 {/* Neutral garrison tint */}
                 {owner && !playerColor && owner.startsWith('neutral_') && !highlightMode && (
                   <polygon points={ptsInner} fill="#888" fillOpacity={0.18} stroke="#aaa" strokeWidth={1} strokeOpacity={0.5} strokeDasharray="3,2" style={{ pointerEvents: 'none' }} />
-                )}
-                {/* Nation tint (unowned territory) */}
-                {!owner && nationColor && !highlightMode && !isWater && (
-                  <polygon points={ptsInner} fill={nationColor} fillOpacity={0.2} style={{ pointerEvents: 'none' }} />
                 )}
 
                 {/* Unit tokens — 3D animated fantasy tokens */}
@@ -1245,15 +1246,15 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             </g>
           ))}
 
-          {/* ── Nation borders — double stroke for embossed 3D look ── */}
+          {/* ── Nation borders — thick colored outline to clearly separate nations ── */}
            {natBorderEdges.map((e, i) => (
              <g key={`nb${i}`} style={{ pointerEvents: 'none' }}>
                {/* Outer dark stroke */}
                <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-                 stroke="#000000" strokeWidth={4} strokeOpacity={0.95} />
-               {/* Inner nation-color highlight */}
+                 stroke="#000000" strokeWidth={6} strokeOpacity={1} />
+               {/* Nation-color highlight — bright and clearly visible */}
                <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-                 stroke={e.color} strokeWidth={1.2} strokeOpacity={0.55} />
+                 stroke={e.color} strokeWidth={2.5} strokeOpacity={0.9} />
              </g>
            ))}
 
