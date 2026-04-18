@@ -468,7 +468,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
           viewBox={`-120 -80 ${SVG_W + 240} ${SVG_H + 160}`}
           width="100%" height="100%"
           preserveAspectRatio="xMidYMid meet"
-          style={{ background: '#0a0c12', display: 'block' }}
+          style={{ background: 'radial-gradient(ellipse at 40% 35%, #0d1528 0%, #04080f 100%)', display: 'block' }}
         >
           <defs>
             {/* ── Filters ── */}
@@ -481,94 +481,161 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             </filter>
 
 
-            {/* ── Animated water gradient ── */}
-            <radialGradient id="waterGrad" cx="40%" cy="35%" r="70%">
-              <stop offset="0%" stopColor="#2a5a8a" stopOpacity="1">
-                <animate attributeName="stopColor" values="#2a5a8a;#1a3a6a;#2a5a8a" dur="6s" repeatCount="indefinite" />
-              </stop>
-              <stop offset="100%" stopColor="#0d1f36" stopOpacity="1">
-                <animate attributeName="stopColor" values="#0d1f36;#183a5c;#0d1f36" dur="6s" repeatCount="indefinite" />
-              </stop>
-            </radialGradient>
-            <radialGradient id="coastalGrad" cx="40%" cy="35%" r="70%">
-              <stop offset="0%" stopColor="#3a7a9a" stopOpacity="1">
-                <animate attributeName="stopColor" values="#3a7a9a;#2a5a7a;#3a7a9a" dur="4s" repeatCount="indefinite" />
-              </stop>
-              <stop offset="100%" stopColor="#1a4a60" stopOpacity="1">
-                <animate attributeName="stopColor" values="#1a4a60;#2a6080;#1a4a60" dur="4s" repeatCount="indefinite" />
-              </stop>
+            {/* ── Deep starfield background ── */}
+            <radialGradient id="bgGrad" cx="50%" cy="50%" r="80%">
+              <stop offset="0%" stopColor="#0d1020" />
+              <stop offset="100%" stopColor="#020306" />
             </radialGradient>
 
-            {/* ── Elevation radialGradients per terrain ── */}
-            <radialGradient id="gradMountain" cx="30%" cy="25%" r="75%">
-              <stop offset="0%" stopColor="#7a7a8a" />
-              <stop offset="100%" stopColor="#2a2a38" />
+            {/* ── Animated water gradients — deep fantasy ocean ── */}
+            <linearGradient id="waterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#0d2a4a">
+                <animate attributeName="stopColor" values="#0d2a4a;#163858;#0d2a4a" dur="5s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="50%" stopColor="#1a3d60">
+                <animate attributeName="stopColor" values="#1a3d60;#0d2240;#1a3d60" dur="7s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="100%" stopColor="#061420">
+                <animate attributeName="stopColor" values="#061420;#0d2030;#061420" dur="5s" repeatCount="indefinite" />
+              </stop>
+            </linearGradient>
+            <radialGradient id="waterShimmer" cx="35%" cy="30%" r="65%">
+              <stop offset="0%" stopColor="#4a9abf" stopOpacity="0.25">
+                <animate attributeName="cx" values="35%;55%;35%" dur="4s" repeatCount="indefinite" />
+                <animate attributeName="stopOpacity" values="0.25;0.05;0.25" dur="4s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="100%" stopColor="#0d2a4a" stopOpacity="0" />
             </radialGradient>
-            <radialGradient id="gradHills" cx="30%" cy="25%" r="70%">
-              <stop offset="0%" stopColor="#8a7a40" />
+            <linearGradient id="coastalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#1a5070">
+                <animate attributeName="stopColor" values="#1a5070;#2a6888;#1a5070" dur="4s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="100%" stopColor="#0a2838">
+                <animate attributeName="stopColor" values="#0a2838;#163050;#0a2838" dur="4s" repeatCount="indefinite" />
+              </stop>
+            </linearGradient>
+
+            {/* ── 3D elevated terrain gradients — top-lit with directional sun ── */}
+            <linearGradient id="gradMountain" x1="20%" y1="0%" x2="80%" y2="100%">
+              <stop offset="0%" stopColor="#c0c4d0" />
+              <stop offset="30%" stopColor="#8a8ca0" />
+              <stop offset="70%" stopColor="#4a4a5a" />
+              <stop offset="100%" stopColor="#1e1e2a" />
+            </linearGradient>
+            <linearGradient id="gradMountainSide" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#5a5a6a" />
+              <stop offset="100%" stopColor="#1a1a22" />
+            </linearGradient>
+
+            <linearGradient id="gradHills" x1="15%" y1="0%" x2="85%" y2="100%">
+              <stop offset="0%" stopColor="#b8a858" />
+              <stop offset="40%" stopColor="#8a7a38" />
               <stop offset="100%" stopColor="#3a3018" />
-            </radialGradient>
-            <radialGradient id="gradForest" cx="30%" cy="25%" r="70%">
-              <stop offset="0%" stopColor="#2e6a2e" />
-              <stop offset="100%" stopColor="#0e2a0e" />
-            </radialGradient>
-            <radialGradient id="gradPlains" cx="30%" cy="25%" r="80%">
-              <stop offset="0%" stopColor="#7a9a40" />
+            </linearGradient>
+
+            <linearGradient id="gradForest" x1="15%" y1="0%" x2="80%" y2="100%">
+              <stop offset="0%" stopColor="#4aaa4a" />
+              <stop offset="35%" stopColor="#287828" />
+              <stop offset="70%" stopColor="#164816" />
+              <stop offset="100%" stopColor="#082208" />
+            </linearGradient>
+
+            <linearGradient id="gradPlains" x1="15%" y1="0%" x2="85%" y2="100%">
+              <stop offset="0%" stopColor="#aac858" />
+              <stop offset="40%" stopColor="#7a9a38" />
               <stop offset="100%" stopColor="#3a5018" />
-            </radialGradient>
-            <radialGradient id="gradDesert" cx="30%" cy="25%" r="70%">
-              <stop offset="0%" stopColor="#c0942a" />
-              <stop offset="100%" stopColor="#5a4010" />
-            </radialGradient>
-            <radialGradient id="gradSwamp" cx="30%" cy="25%" r="70%">
-              <stop offset="0%" stopColor="#4a5a2a" />
-              <stop offset="100%" stopColor="#1a2a0a" />
-            </radialGradient>
-            <radialGradient id="gradTundra" cx="30%" cy="25%" r="70%">
-              <stop offset="0%" stopColor="#9aaabb" />
-              <stop offset="100%" stopColor="#4a5a6a" />
-            </radialGradient>
-            <radialGradient id="gradScorched" cx="30%" cy="25%" r="70%">
-              <stop offset="0%" stopColor="#6a2a0a" />
-              <stop offset="100%" stopColor="#1a0800" />
+            </linearGradient>
+
+            <linearGradient id="gradDesert" x1="15%" y1="0%" x2="85%" y2="100%">
+              <stop offset="0%" stopColor="#e8c060" />
+              <stop offset="35%" stopColor="#c09038" />
+              <stop offset="70%" stopColor="#7a5820" />
+              <stop offset="100%" stopColor="#3a2808" />
+            </linearGradient>
+
+            <linearGradient id="gradSwamp" x1="15%" y1="0%" x2="85%" y2="100%">
+              <stop offset="0%" stopColor="#6a8a4a" />
+              <stop offset="40%" stopColor="#3a5a28" />
+              <stop offset="100%" stopColor="#0e2208" />
+            </linearGradient>
+
+            <linearGradient id="gradTundra" x1="15%" y1="0%" x2="80%" y2="100%">
+              <stop offset="0%" stopColor="#ddeeff" />
+              <stop offset="35%" stopColor="#9aaabb" />
+              <stop offset="70%" stopColor="#5a7090" />
+              <stop offset="100%" stopColor="#2a3a4a" />
+            </linearGradient>
+
+            <linearGradient id="gradScorched" x1="15%" y1="0%" x2="85%" y2="100%">
+              <stop offset="0%" stopColor="#a04820" />
+              <stop offset="35%" stopColor="#6a2808" />
+              <stop offset="70%" stopColor="#380e02" />
+              <stop offset="100%" stopColor="#140400" />
+            </linearGradient>
+
+            {/* ── Top-light specular overlay for all non-water hexes ── */}
+            <radialGradient id="hexTopLight" cx="30%" cy="22%" r="65%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.22" />
+              <stop offset="50%" stopColor="#ffffff" stopOpacity="0.05" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0.18" />
             </radialGradient>
 
-            {/* ── Terrain texture patterns ── */}
-            <pattern id="patForest" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-              <rect width="8" height="8" fill="transparent" />
-              <circle cx="2" cy="2" r="1.2" fill="#1a5a1a" fillOpacity="0.6" />
-              <circle cx="6" cy="5" r="1.0" fill="#2a6a2a" fillOpacity="0.5" />
-              <line x1="4" y1="0" x2="4" y2="3" stroke="#3a2010" strokeWidth="0.6" strokeOpacity="0.5" />
+            {/* ── Edge shadow for 3D depth (bottom-right darkening) ── */}
+            <radialGradient id="hexEdgeShadow" cx="70%" cy="75%" r="65%">
+              <stop offset="0%" stopColor="#000000" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+            </radialGradient>
+
+            {/* ── Terrain texture patterns — enriched ── */}
+            <pattern id="patForest" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+              <rect width="10" height="10" fill="transparent" />
+              <circle cx="2" cy="3" r="1.8" fill="#0e4a0e" fillOpacity="0.7" />
+              <circle cx="7" cy="2" r="1.4" fill="#1a6a1a" fillOpacity="0.6" />
+              <circle cx="5" cy="7" r="1.6" fill="#124a12" fillOpacity="0.65" />
+              <line x1="2" y1="5" x2="2" y2="8" stroke="#2a1208" strokeWidth="0.7" strokeOpacity="0.6" />
+              <line x1="7" y1="4" x2="7" y2="7" stroke="#2a1208" strokeWidth="0.6" strokeOpacity="0.5" />
             </pattern>
-            <pattern id="patMountain" x="0" y="0" width="10" height="8" patternUnits="userSpaceOnUse">
+            <pattern id="patMountain" x="0" y="0" width="12" height="10" patternUnits="userSpaceOnUse">
+              <rect width="12" height="10" fill="transparent" />
+              <polyline points="0,8 3,2 6,8" fill="#5a5a6a" fillOpacity="0.3" stroke="#9a9aaa" strokeWidth="0.7" strokeOpacity="0.5" />
+              <polyline points="5,8 8.5,3 12,8" fill="#4a4a5a" fillOpacity="0.25" stroke="#7a7a8a" strokeWidth="0.7" strokeOpacity="0.4" />
+              <line x1="3" y1="2" x2="3" y2="2.5" stroke="#ffffff" strokeWidth="0.8" strokeOpacity="0.5" />
+              <line x1="8.5" y1="3" x2="8.5" y2="3.5" stroke="#ffffff" strokeWidth="0.6" strokeOpacity="0.4" />
+            </pattern>
+            <pattern id="patHills" x="0" y="0" width="10" height="8" patternUnits="userSpaceOnUse">
               <rect width="10" height="8" fill="transparent" />
-              <polyline points="0,6 3,2 6,6" fill="none" stroke="#8a8a9a" strokeWidth="0.6" strokeOpacity="0.45" />
-              <polyline points="4,6 7,3 10,6" fill="none" stroke="#6a6a7a" strokeWidth="0.6" strokeOpacity="0.35" />
+              <ellipse cx="5" cy="5.5" rx="4.5" ry="2.2" fill="#8a7a38" fillOpacity="0.25" stroke="#b0a050" strokeWidth="0.5" strokeOpacity="0.45" />
+              <ellipse cx="1" cy="6" rx="2" ry="1" fill="#6a5a28" fillOpacity="0.2" />
             </pattern>
-            <pattern id="patHills" x="0" y="0" width="8" height="6" patternUnits="userSpaceOnUse">
-              <rect width="8" height="6" fill="transparent" />
-              <ellipse cx="4" cy="4" rx="3" ry="1.5" fill="none" stroke="#9a8a40" strokeWidth="0.5" strokeOpacity="0.4" />
-            </pattern>
-            <pattern id="patDesert" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
-              <rect width="6" height="6" fill="transparent" />
-              <circle cx="1.5" cy="1.5" r="0.5" fill="#d4aa50" fillOpacity="0.35" />
-              <circle cx="4.5" cy="4.5" r="0.4" fill="#c09040" fillOpacity="0.3" />
-            </pattern>
-            <pattern id="patSwamp" x="0" y="0" width="10" height="6" patternUnits="userSpaceOnUse">
-              <rect width="10" height="6" fill="transparent" />
-              <path d="M0,3 Q2.5,1 5,3 Q7.5,5 10,3" fill="none" stroke="#5a7a3a" strokeWidth="0.6" strokeOpacity="0.4" />
-            </pattern>
-            <pattern id="patTundra" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <pattern id="patDesert" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
               <rect width="8" height="8" fill="transparent" />
-              <line x1="4" y1="1" x2="4" y2="7" stroke="#bdd6f1" strokeWidth="0.4" strokeOpacity="0.35" />
-              <line x1="1" y1="4" x2="7" y2="4" stroke="#bdd6f1" strokeWidth="0.4" strokeOpacity="0.35" />
-              <line x1="2" y1="2" x2="6" y2="6" stroke="#bdd6f1" strokeWidth="0.3" strokeOpacity="0.25" />
-              <line x1="6" y1="2" x2="2" y2="6" stroke="#bdd6f1" strokeWidth="0.3" strokeOpacity="0.25" />
+              <circle cx="2" cy="2" r="0.7" fill="#e8c060" fillOpacity="0.4" />
+              <circle cx="6" cy="5" r="0.5" fill="#d4a840" fillOpacity="0.35" />
+              <path d="M0,4 Q2,3.2 4,4 Q6,4.8 8,4" fill="none" stroke="#d4a840" strokeWidth="0.4" strokeOpacity="0.3" />
             </pattern>
-            <pattern id="patScorched" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-              <rect width="8" height="8" fill="transparent" />
-              <path d="M1,1 L3,3 M5,1 L7,4 M2,5 L4,7 M6,5 L8,8" stroke="#3a1a0a" strokeWidth="0.5" strokeOpacity="0.5" />
-              <circle cx="6" cy="2" r="0.6" fill="#cc4400" fillOpacity="0.4" />
+            <pattern id="patSwamp" x="0" y="0" width="12" height="8" patternUnits="userSpaceOnUse">
+              <rect width="12" height="8" fill="transparent" />
+              <path d="M0,4 Q3,2 6,4 Q9,6 12,4" fill="none" stroke="#5a8a3a" strokeWidth="0.7" strokeOpacity="0.45" />
+              <circle cx="2" cy="5" r="0.8" fill="#3a7a3a" fillOpacity="0.3" />
+              <circle cx="9" cy="3" r="0.6" fill="#4a8a4a" fillOpacity="0.25" />
+            </pattern>
+            <pattern id="patTundra" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+              <rect width="10" height="10" fill="transparent" />
+              <line x1="5" y1="1" x2="5" y2="9" stroke="#ddeeff" strokeWidth="0.5" strokeOpacity="0.4" />
+              <line x1="1" y1="5" x2="9" y2="5" stroke="#ddeeff" strokeWidth="0.5" strokeOpacity="0.4" />
+              <line x1="2" y1="2" x2="8" y2="8" stroke="#ddeeff" strokeWidth="0.35" strokeOpacity="0.28" />
+              <line x1="8" y1="2" x2="2" y2="8" stroke="#ddeeff" strokeWidth="0.35" strokeOpacity="0.28" />
+              <circle cx="5" cy="5" r="0.6" fill="#ffffff" fillOpacity="0.35" />
+            </pattern>
+            <pattern id="patScorched" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+              <rect width="10" height="10" fill="transparent" />
+              <path d="M1,2 L4,5 M6,1 L9,5 M2,7 L5,9 M7,6 L10,9" stroke="#3a1808" strokeWidth="0.6" strokeOpacity="0.55" />
+              <circle cx="7" cy="3" r="0.8" fill="#ff5500" fillOpacity="0.3">
+                <animate attributeName="fillOpacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite" />
+              </circle>
+              <circle cx="2" cy="7" r="0.5" fill="#ff3300" fillOpacity="0.25">
+                <animate attributeName="fillOpacity" values="0.15;0.4;0.15" dur="2.5s" repeatCount="indefinite" />
+              </circle>
             </pattern>
 
 
@@ -689,41 +756,100 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 onMouseLeave={handleHexMouseLeave}
                 style={{ cursor: isWater ? 'default' : 'pointer' }}>
 
-                {/* Base: water animated or terrain gradient */}
+                {/* ── 3D HEX RENDERING ── */}
                 {isWater ? (
-                  <polygon points={pts} fill={waterFill} fillOpacity={dimmed ? 0.15 : 0.7} stroke="#0a0c12" strokeWidth={0.5} />
+                  <g style={{ pointerEvents: 'none' }}>
+                    {/* Deep water base */}
+                    <polygon points={pts} fill="url(#waterGrad)" fillOpacity={dimmed ? 0.12 : 0.88} stroke="#0a0c18" strokeWidth={0.8} />
+                    {/* Shimmer overlay */}
+                    {!dimmed && <polygon points={pts} fill="url(#waterShimmer)" fillOpacity={0.9} />}
+                    {/* Thin bright edge on top-left faces */}
+                    {!dimmed && <polygon points={pts} fill="none" stroke="#4a8aaa" strokeWidth={0.6} strokeOpacity={0.3} />}
+                  </g>
                 ) : (
-                  <>
-                    {/* Elevation gradient base */}
-                    <polygon points={pts}
-                      fill={isSelected ? '#d4a853' : isAttackable ? '#c0392b' : isInSelectedProvince ? '#9370db' : isReachable ? '#4a9e6a' : isMyHighlighted ? playerColor : (elevGradId ? `url(#${elevGradId})` : fillColor)}
-                      fillOpacity={isSelected ? 0.9 : isAttackable ? 0.55 : isInSelectedProvince ? 0.65 : isReachable ? 0.6 : dimmed ? 0.15 : 0.85}
-                      stroke={isAttackable ? '#ff4444' : isReachable ? '#6dffaa' : isInSelectedProvince ? '#9370db' : isMyHighlighted ? playerColor : '#00000030'}
-                      strokeWidth={isAttackable ? 2.5 : isReachable ? 2 : isInSelectedProvince ? 2.5 : isMyHighlighted ? 3 : 0.5}
-                    />
-                    {/* Texture pattern overlay */}
-                    {patId && !isSelected && !isInSelectedProvince && !isReachable && !dimmed && (
-                      <polygon points={pts} fill={`url(#${patId})`} fillOpacity={0.55} style={{ pointerEvents: 'none' }} />
+                  <g>
+                    {/* ── 3D side face (drop shadow below hex = depth illusion) ── */}
+                    {!dimmed && (
+                      <polygon
+                        points={flatHexCorners(cx, cy + 3, HEX_PX * 0.97)}
+                        fill={fillColor}
+                        fillOpacity={0.55}
+                        stroke="none"
+                        style={{ pointerEvents: 'none' }}
+                      />
                     )}
-                  </>
+                    {/* ── Main terrain face ── */}
+                    <polygon points={pts}
+                      fill={
+                        isSelected ? '#c8900a' :
+                        isAttackable ? '#8b1a1a' :
+                        isInSelectedProvince ? '#5a3090' :
+                        isReachable ? '#1a6a3a' :
+                        isMyHighlighted ? playerColor :
+                        (elevGradId ? `url(#${elevGradId})` : fillColor)
+                      }
+                      fillOpacity={isSelected ? 0.95 : isAttackable ? 0.75 : isInSelectedProvince ? 0.75 : isReachable ? 0.75 : dimmed ? 0.12 : 1}
+                      stroke={
+                        isAttackable ? '#ff6666' :
+                        isReachable ? '#88ffcc' :
+                        isInSelectedProvince ? '#bb88ff' :
+                        isMyHighlighted ? playerColor :
+                        '#00000040'
+                      }
+                      strokeWidth={isAttackable ? 2.5 : isReachable ? 2 : isInSelectedProvince ? 2.5 : isMyHighlighted ? 2.5 : 0.6}
+                    />
+                    {/* ── Texture pattern overlay ── */}
+                    {patId && !isSelected && !isInSelectedProvince && !isReachable && !dimmed && (
+                      <polygon points={pts} fill={`url(#${patId})`} fillOpacity={0.65} style={{ pointerEvents: 'none' }} />
+                    )}
+                    {/* ── Top-light specular (3D dome effect) ── */}
+                    {!isSelected && !dimmed && (
+                      <polygon points={pts} fill="url(#hexTopLight)" fillOpacity={0.9} style={{ pointerEvents: 'none' }} />
+                    )}
+                    {/* ── Edge shadow (depth on bottom-right) ── */}
+                    {!isSelected && !dimmed && (
+                      <polygon points={pts} fill="url(#hexEdgeShadow)" fillOpacity={0.7} style={{ pointerEvents: 'none' }} />
+                    )}
+                    {/* ── Selected golden shimmer ── */}
+                    {isSelected && (
+                      <polygon points={pts} fill="#f0c040" fillOpacity={0.18} style={{ pointerEvents: 'none' }}>
+                        <animate attributeName="fillOpacity" values="0.1;0.28;0.1" dur="1.2s" repeatCount="indefinite" />
+                      </polygon>
+                    )}
+                    {/* ── Attackable red pulse ── */}
+                    {isAttackable && (
+                      <polygon points={pts} fill="#ff2200" fillOpacity={0.12} style={{ pointerEvents: 'none' }}>
+                        <animate attributeName="fillOpacity" values="0.05;0.22;0.05" dur="0.9s" repeatCount="indefinite" />
+                      </polygon>
+                    )}
+                    {/* ── Reachable green shimmer ── */}
+                    {isReachable && !isAttackable && (
+                      <polygon points={pts} fill="#00ff88" fillOpacity={0.1} style={{ pointerEvents: 'none' }}>
+                        <animate attributeName="fillOpacity" values="0.04;0.18;0.04" dur="1.4s" repeatCount="indefinite" />
+                      </polygon>
+                    )}
+                  </g>
                 )}
 
-                {/* Influence overlay (colored based on sentiment) */}
+                {/* ── Influence overlay ── */}
                 {showInfluenceOverlay && influenceColor && (
                   <polygon points={pts} fill={influenceColor} fillOpacity={influenceOpacity} style={{ pointerEvents: 'none' }} />
                 )}
 
-                {/* Player ownership overlay */}
+                {/* ── Player ownership — inner glowing tint ── */}
                 {owner && playerColor && !highlightMode && (
-                  <polygon points={ptsInner} fill={playerColor} fillOpacity={0.45} stroke={playerColor} strokeWidth={1.5} strokeOpacity={0.9} style={{ pointerEvents: 'none' }} />
+                  <>
+                    <polygon points={ptsInner} fill={playerColor} fillOpacity={0.3} style={{ pointerEvents: 'none' }} />
+                    <polygon points={ptsInner} fill="none" stroke={playerColor} strokeWidth={2} strokeOpacity={0.75} style={{ pointerEvents: 'none' }} />
+                  </>
                 )}
-                {/* Neutral garrison tint (grey shield pattern) */}
+                {/* Neutral garrison tint */}
                 {owner && !playerColor && owner.startsWith('neutral_') && !highlightMode && (
-                  <polygon points={ptsInner} fill="#777" fillOpacity={0.22} stroke="#999" strokeWidth={1} strokeOpacity={0.55} strokeDasharray="3,2" style={{ pointerEvents: 'none' }} />
+                  <polygon points={ptsInner} fill="#888" fillOpacity={0.18} stroke="#aaa" strokeWidth={1} strokeOpacity={0.5} strokeDasharray="3,2" style={{ pointerEvents: 'none' }} />
                 )}
-                {/* Nation tint */}
-                {!owner && nationColor && !highlightMode && (
-                  <polygon points={ptsInner} fill={nationColor} fillOpacity={0.28} style={{ pointerEvents: 'none' }} />
+                {/* Nation tint (unowned territory) */}
+                {!owner && nationColor && !highlightMode && !isWater && (
+                  <polygon points={ptsInner} fill={nationColor} fillOpacity={0.2} style={{ pointerEvents: 'none' }} />
                 )}
 
                 {/* Unit tokens — 3D animated fantasy tokens */}
@@ -887,18 +1013,26 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             />
           ))}
 
-          {/* ── Province borders (golden dashed) ── */}
+          {/* ── Province borders — glowing golden dashes ── */}
           {provBorderEdges.map((e, i) => (
-            <line key={`pb${i}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-              stroke="#d4a853" strokeWidth={1.5} strokeOpacity={0.5} strokeDasharray="4,2"
-              style={{ pointerEvents: 'none' }} />
+            <g key={`pb${i}`} style={{ pointerEvents: 'none' }}>
+              <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+                stroke="#000000" strokeWidth={2} strokeOpacity={0.6} />
+              <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+                stroke="#d4a853" strokeWidth={1} strokeOpacity={0.65} strokeDasharray="5,3" />
+            </g>
           ))}
 
-          {/* ── Nation borders (dark embossed) ── */}
+          {/* ── Nation borders — double stroke for embossed 3D look ── */}
            {natBorderEdges.map((e, i) => (
-             <line key={`nb${i}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-               stroke="#0a0806" strokeWidth={2.5} strokeOpacity={0.9}
-               style={{ pointerEvents: 'none' }} />
+             <g key={`nb${i}`} style={{ pointerEvents: 'none' }}>
+               {/* Outer dark stroke */}
+               <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+                 stroke="#000000" strokeWidth={4} strokeOpacity={0.95} />
+               {/* Inner nation-color highlight */}
+               <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+                 stroke={e.color} strokeWidth={1.2} strokeOpacity={0.55} />
+             </g>
            ))}
 
           {/* ── Current player territory borders (bright highlight) ── */}
@@ -936,20 +1070,34 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             ));
           }).flat()}
 
-          {/* ── Selected hex glow ── */}
-          {selected && (
-            <g style={{ pointerEvents: 'none' }}>
-              <polygon
-                points={flatHexCorners(toSVG(selected.x, selected.y).cx, toSVG(selected.x, selected.y).cy, HEX_PX * 1.05)}
-                fill="none" stroke="#d4a853" strokeWidth={1.5} strokeOpacity={0.4}
-                filter="url(#goldGlow)"
-              />
-              <polygon
-                points={flatHexCorners(toSVG(selected.x, selected.y).cx, toSVG(selected.x, selected.y).cy, HEX_PX)}
-                fill="none" stroke="#d4a853" strokeWidth={2.5}
-              />
-            </g>
-          )}
+          {/* ── Selected hex — epic gold glow ── */}
+          {selected && (() => {
+            const { cx: scx, cy: scy } = toSVG(selected.x, selected.y);
+            return (
+              <g style={{ pointerEvents: 'none' }} filter="url(#goldGlow)">
+                {/* Outermost diffuse ring */}
+                <polygon points={flatHexCorners(scx, scy, HEX_PX * 1.18)}
+                  fill="none" stroke="#f0c040" strokeWidth={1} strokeOpacity={0.25}>
+                  <animate attributeName="strokeOpacity" values="0.15;0.4;0.15" dur="1.5s" repeatCount="indefinite" />
+                </polygon>
+                {/* Mid ring */}
+                <polygon points={flatHexCorners(scx, scy, HEX_PX * 1.09)}
+                  fill="none" stroke="#d4a853" strokeWidth={2} strokeOpacity={0.6}>
+                  <animate attributeName="strokeOpacity" values="0.4;0.85;0.4" dur="1.2s" repeatCount="indefinite" />
+                </polygon>
+                {/* Inner bright ring */}
+                <polygon points={flatHexCorners(scx, scy, HEX_PX * 1.01)}
+                  fill="none" stroke="#ffe080" strokeWidth={3} strokeOpacity={0.9} />
+                {/* Corner accent dots */}
+                {Array.from({length:6},(_,k)=>{
+                  const a = (Math.PI/3)*k;
+                  const dx = scx + HEX_PX*1.04*Math.cos(a);
+                  const dy = scy + HEX_PX*1.04*Math.sin(a);
+                  return <circle key={k} cx={dx} cy={dy} r={2.5} fill="#ffe080" fillOpacity={0.9} />;
+                })}
+              </g>
+            );
+          })()}
 
           {/* ── Province labels with capital icons ── */}
           {provCentroidList.map((pc, i) => {
