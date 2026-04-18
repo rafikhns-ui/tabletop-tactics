@@ -119,7 +119,7 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
         borderLeft: isHighlighted ? `3px solid ${player.color}` : isActive ? `3px solid ${player.color}` : '3px solid transparent',
         outline: isHighlighted ? `1px solid ${player.color}55` : 'none',
       }}>
-      <div className="flex items-center justify-between px-3 py-2 cursor-pointer" onClick={() => setShowDetail(true)}>
+      <div className="flex items-center justify-between px-3 py-2 cursor-pointer" onClick={() => setExpanded(e => !e)}>
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: player.color }} />
           <div className="min-w-0">
@@ -182,10 +182,12 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
       {showObjectives && <ObjectivesModal player={player} onClose={() => setShowObjectives(false)} />}
       {showDetail && <PlayerDetailModal player={player} territories={territories} onClose={() => setShowDetail(false)} />}
 
-      <div className="px-3 pb-2 grid grid-cols-3 gap-1">
+      <div className="px-3 pb-2 grid grid-cols-5 gap-1">
         <StatBadge label="🪙" value={player.resources?.gold ?? 0} />
         <StatBadge label="🪵" value={player.resources?.wood ?? 0} />
         <StatBadge label="🌾" value={player.resources?.wheat ?? 0} />
+        <StatBadge label="✨" value={player.sp ?? 0} max={50} color="#8e44ad" />
+        <StatBadge label="💬" value={player.ip ?? 0} max={50} color="#2980b9" />
       </div>
 
       <div className="px-3 pb-2">
@@ -295,12 +297,19 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
   );
 }
 
-function StatBadge({ label, value }) {
+function StatBadge({ label, value, max, color }) {
   return (
-    <div className="flex items-center gap-1 px-1.5 py-1 rounded text-xs"
+    <div className="flex flex-col px-1.5 py-1 rounded text-xs"
       style={{ background: 'hsl(35,20%,20%)', border: '1px solid hsl(35,20%,30%)', color: 'hsl(40,25%,75%)' }}>
-      <span>{label}</span>
-      <span className="font-bold ml-auto" style={{ color: 'hsl(43,80%,65%)' }}>{value}</span>
+      <div className="flex items-center justify-between">
+        <span>{label}</span>
+        <span className="font-bold" style={{ color: max ? color : 'hsl(43,80%,65%)' }}>{value}{max ? `/${max}` : ''}</span>
+      </div>
+      {max && (
+        <div className="h-0.5 rounded-full mt-0.5" style={{ background: 'hsl(35,20%,30%)' }}>
+          <div className="h-full rounded-full" style={{ width: `${Math.min(100, (value / max) * 100)}%`, background: color }} />
+        </div>
+      )}
     </div>
   );
 }
