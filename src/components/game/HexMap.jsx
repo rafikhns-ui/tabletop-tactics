@@ -358,7 +358,13 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
     const hexWithBuildings = { ...hex, buildings: gameState?.hexes?.[hexId]?.buildings };
     setSelected(hexWithBuildings);
     setSelectedPanelUnits(new Set());
-    setPanelTab('selected');
+    // Auto-select the most relevant tab
+    const units = gameState?.hexes?.[hexId]?.units || [];
+    const hasUnits = units.length > 0;
+    const hasBuildings = Object.keys(gameState?.hexes?.[hexId]?.buildings || {}).length > 0 || !!CAPITAL_HEX_INFO[hexId];
+    if (hasUnits) setPanelTab('units');
+    else if (hasBuildings) setPanelTab('buildings');
+    else setPanelTab('selected');
     if (onHexClick) onHexClick(hexId);
     // Zoom into clicked hex
     const { cx, cy } = toSVG(hex.x, hex.y);
@@ -836,6 +842,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                     if (hex.nation_id && hex.province && onProvincClick) {
                       onProvincClick({ nation_id: hex.nation_id, province_id: hex.province });
                     }
+                  } else {
+                    setSelected(null);
                   }
                 }}
                 onMouseEnter={handleHexMouseEnter}
@@ -1578,8 +1586,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
         fontFamily: "'Cormorant Garamond', serif",
         color: '#c8c0b0',
       }}>
-        {/* Tabs */}
-         <div style={{ display: 'flex', borderBottom: '1px solid #2a2520' }}>
+        {/* Tabs + close button */}
+         <div style={{ display: 'flex', borderBottom: '1px solid #2a2520', alignItems: 'stretch' }}>
             {[
              { id: 'selected', icon: '🗺️', label: 'Territory' },
              { id: 'units', icon: '⚔️', label: 'Units' },
@@ -1595,6 +1603,12 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
               cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 1,
             }}>{t.icon} {t.label}</button>
           ))}
+          <button onClick={() => setSelected(null)} style={{
+            padding: '0 12px', background: 'transparent', border: 'none',
+            color: '#555', fontSize: 16, cursor: 'pointer', lineHeight: 1,
+            borderBottom: '2px solid transparent',
+            transition: 'color 0.15s',
+          }} onMouseEnter={e => e.target.style.color='#d4a853'} onMouseLeave={e => e.target.style.color='#555'}>✕</button>
         </div>
 
         {/* Panel content */}
