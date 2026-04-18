@@ -582,6 +582,21 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             <filter id="moveGlow">
               <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#d4a853" floodOpacity="0.9" />
             </filter>
+            <filter id="unitShadow">
+              <feDropShadow dx="1" dy="2" stdDeviation="2" floodColor="#000000" floodOpacity="0.7" />
+            </filter>
+            <filter id="unitGlowRed">
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#ff4444" floodOpacity="0.8" />
+            </filter>
+            <filter id="unitGlowGold">
+              <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#f0c040" floodOpacity="0.9" />
+            </filter>
+            <filter id="unitGlowBlue">
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#4488ff" floodOpacity="0.8" />
+            </filter>
+            <filter id="unitGlowGreen">
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#44ff88" floodOpacity="0.8" />
+            </filter>
 
           </defs>
 
@@ -711,44 +726,130 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   <polygon points={ptsInner} fill={nationColor} fillOpacity={0.28} style={{ pointerEvents: 'none' }} />
                 )}
 
-                {/* Unit icons — enhanced with player color ring + count badge */}
+                {/* Unit tokens — 3D animated fantasy tokens */}
                 {units.length > 0 && (
                   <g style={{ pointerEvents: 'none' }}>
                     {units.map((u, i) => {
-                       const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '⚙️', naval: '⚓' };
-                       const xPos = cx + (i % 2) * 8;
-                       const yPos = cy + Math.floor(i / 2) * 8;
-                       const ringColor = playerColor || (owner?.startsWith('neutral_') ? '#888' : '#d4a853');
+                       const tokenColor = playerColor || '#d4a853';
                        const isElite = u.type === 'elite';
+                       const isCavalry = u.type === 'cavalry';
+                       const isSiege = u.type === 'siege';
+                       const isNaval = u.type === 'naval';
                        const isRanged = u.type === 'ranged';
+
+                       // Layout: stack tokens slightly offset
+                       const cols = Math.min(units.length, 2);
+                       const col = i % cols;
+                       const row = Math.floor(i / cols);
+                       const spread = units.length === 1 ? 0 : 9;
+                       const xPos = cx + (col - (cols - 1) / 2) * spread;
+                       const yPos = cy - 4 + row * 9;
+
+                       // Unique animation offset per unit
+                       const animDelay = `${(i * 0.4).toFixed(1)}s`;
+                       const bobDur = isElite ? '1.2s' : isCavalry ? '0.9s' : '1.6s';
+
+                       // Pick icon & color accent
+                       const icons = {
+                         infantry: '⚔️', cavalry: '🐴', elite: '⭐',
+                         ranged: '🏹', siege: '💣', naval: '⛵',
+                       };
+                       const glowFilter = isElite ? 'url(#unitGlowGold)' : isSiege ? 'url(#unitGlowRed)' : isNaval ? 'url(#unitGlowBlue)' : 'url(#unitShadow)';
+                       const R = isElite ? 11 : isSiege ? 10 : 9;
+                       const darkened = tokenColor + 'aa';
+
+                       // Gradient id — unique per unit type per token color (just use inline)
+                       const topLight = '#ffffff';
+
                        return (
-                         <g key={i}>
-                           {/* Outer glow ring for elite */}
-                           {isElite && <circle cx={xPos} cy={yPos} r={10} fill="none" stroke="#f0c040" strokeWidth={1.5} strokeOpacity={0.6}>
-                             <animate attributeName="strokeOpacity" values="0.3;0.9;0.3" dur="1.5s" repeatCount="indefinite" />
-                             <animate attributeName="r" values="9;11;9" dur="1.5s" repeatCount="indefinite" />
-                           </circle>}
-                           {/* Background circle */}
-                           <circle cx={xPos} cy={yPos} r={8} fill="#111827" stroke={ringColor} strokeWidth={1.5} />
-                           {/* Custom unit images or emoji */}
-                           {isElite ? (
-                             <image href="https://media.base44.com/images/public/69b732e420481df67e8a6804/071bb3933_elite.png" x={xPos - 14} y={yPos - 14} width={28} height={28} preserveAspectRatio="xMidYMid slice" />
-                           ) : isRanged ? (
-                             <image href="https://media.base44.com/images/public/69b732e420481df67e8a6804/57eaf9620_crossbow.jpeg" x={xPos - 14} y={yPos - 14} width={28} height={28} preserveAspectRatio="xMidYMid slice" />
-                           ) : (
-                             <text x={xPos} y={yPos + 4} textAnchor="middle" fontSize={11} style={{ pointerEvents: 'none' }}>
+                         <g key={i} transform={`translate(${xPos},${yPos})`} filter={glowFilter}>
+                             {/* 3D ground shadow */}
+                             <ellipse cx={0} cy={R + 2} rx={R * 0.85} ry={R * 0.25}
+                               fill="#000000" fillOpacity={0.4} />
+
+                             {/* Token outer ring — faction color */}
+                             <circle cx={0} cy={0} r={R + 1.5}
+                               fill={tokenColor} fillOpacity={0.85}
+                               stroke="#000000" strokeWidth={0.8}>
+                               <animate attributeName="cy"
+                                 values={`-1;1;-1`}
+                                 dur={bobDur} begin={animDelay}
+                                 repeatCount="indefinite" additive="sum" />
+                             </circle>
+
+                             {/* Main token body */}
+                             <circle cx={0} cy={0} r={R} fill="#0f1218" stroke={tokenColor} strokeWidth={1.5}>
+                               <animate attributeName="cy"
+                                 values={`-1;1;-1`}
+                                 dur={bobDur} begin={animDelay}
+                                 repeatCount="indefinite" additive="sum" />
+                             </circle>
+
+                             {/* Specular highlight — top-left dome glint */}
+                             <ellipse cx={-R * 0.28} cy={-R * 0.38} rx={R * 0.32} ry={R * 0.18}
+                               fill={topLight} fillOpacity={0.28} transform="rotate(-25)">
+                               <animate attributeName="cy"
+                                 values={`${-R*0.38 - 1};${-R*0.38 + 1};${-R*0.38 - 1}`}
+                                 dur={bobDur} begin={animDelay}
+                                 repeatCount="indefinite" additive="sum" />
+                             </ellipse>
+
+                             {/* Unit icon */}
+                             <text x={0} y={4} textAnchor="middle" fontSize={isElite ? 12 : 10}
+                               style={{ userSelect: 'none' }}>
                                {icons[u.type] || '⚔️'}
+                               <animate attributeName="y"
+                                 values={`3;5;3`}
+                                 dur={bobDur} begin={animDelay}
+                                 repeatCount="indefinite" additive="sum" />
                              </text>
-                           )}
-                           {/* Count badge */}
-                           {u.count > 1 && (
-                             <g>
-                               <circle cx={xPos + 6} cy={yPos - 6} r={5} fill="#dc2626" stroke="#111" strokeWidth={0.8} />
-                               <text x={xPos + 6} y={yPos - 3} textAnchor="middle" fontSize={6} fill="#fff" fontWeight="bold" style={{ pointerEvents: 'none' }}>
-                                 {u.count > 9 ? '9+' : u.count}
-                               </text>
-                             </g>
-                           )}
+
+                             {/* Elite pulsing halo ring */}
+                             {isElite && (
+                               <circle cx={0} cy={0} r={R + 4} fill="none" stroke="#f0c040" strokeWidth={1.5}>
+                                 <animate attributeName="strokeOpacity" values="0.15;0.85;0.15" dur="1.2s" repeatCount="indefinite" begin={animDelay} />
+                                 <animate attributeName="r" values={`${R+3};${R+7};${R+3}`} dur="1.2s" repeatCount="indefinite" begin={animDelay} />
+                               </circle>
+                             )}
+
+                             {/* Cavalry dashed speed streak */}
+                             {isCavalry && (
+                               <path d={`M${-R-2},1 A${R+2},${R+2} 0 0,1 ${R+2},1`} fill="none"
+                                 stroke={tokenColor} strokeWidth={1.2} strokeOpacity={0.55} strokeDasharray="3,2">
+                                 <animate attributeName="strokeDashoffset" from="0" to="-10" dur="0.9s" repeatCount="indefinite" />
+                               </path>
+                             )}
+
+                             {/* Siege spinning gear ring */}
+                             {isSiege && (
+                               <circle cx={0} cy={0} r={R + 2.5} fill="none" stroke="#cc4400" strokeWidth={0.8}
+                                 strokeDasharray="4,2" strokeOpacity={0.75}>
+                                 <animateTransform attributeName="transform" type="rotate"
+                                   from="0 0 0" to="360 0 0" dur="4s" repeatCount="indefinite" />
+                               </circle>
+                             )}
+
+                             {/* Naval wave ring */}
+                             {isNaval && (
+                               <circle cx={0} cy={0} r={R + 3} fill="none" stroke="#4488ff" strokeWidth={0.8}
+                                 strokeDasharray="5,3" strokeOpacity={0.6}>
+                                 <animate attributeName="strokeDashoffset" from="0" to="16" dur="1.5s" repeatCount="indefinite" />
+                               </circle>
+                             )}
+
+                             {/* Count badge */}
+                             {u.count > 1 && (
+                               <g>
+                                 <circle cx={R} cy={-R} r={5.5}
+                                   fill="#1a0a0a" stroke={tokenColor} strokeWidth={1} />
+                                 <text x={R} y={-R + 3.5}
+                                   textAnchor="middle" fontSize={u.count > 9 ? 5.5 : 6.5}
+                                   fill={tokenColor} fontWeight="bold" fontFamily="'Cinzel',serif"
+                                   style={{ userSelect: 'none' }}>
+                                   {u.count > 99 ? '99+' : u.count}
+                                 </text>
+                               </g>
+                             )}
                          </g>
                        );
                      })}
