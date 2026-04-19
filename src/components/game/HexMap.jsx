@@ -1978,7 +1978,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   </div>
                 )}
                 {hexBuildings.port && isMyPort && <PortRecruitSection selHexId={selHexId} currentPlayer={currentPlayer} onRecruitReapership={onRecruitReapership} />}
-                {selected && <DisembarkPanel selHexId={selHexId} gameState={gameState} currentPlayer={currentPlayer} setGameState={setGameState} setSelected={setSelected} addMessage={addMessage} addLog={addLog} getNeighborHexIds={getNeighborHexIds} />
+                {selected && <DisembarkPanel selHexId={selHexId} gameState={gameState} currentPlayer={currentPlayer} setGameState={setGameState} setSelected={setSelected} addMessage={addMessage} addLog={addLog} getNeighborHexIds={getNeighborHexIds} />}
                 </div>
                 );
                 })()}
