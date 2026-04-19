@@ -1116,9 +1116,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                                  {/* Nation emblem image */}
                                  {NATION_EMBLEMS[unitNationId] && (
                                    <image
-                                     x={-9} y={-9} width={18} height={18}
+                                     x={-13} y={-13} width={26} height={26}
                                      href={NATION_EMBLEMS[unitNationId]}
-                                     style={{ userSelect: 'none', clipPath: 'circle(9px)' }}>
+                                     style={{ userSelect: 'none', clipPath: 'circle(13px)' }}>
                                      <animate attributeName="y"
                                        values={`-10;-8;-10`}
                                        dur={bobDur} begin={animDelay}
