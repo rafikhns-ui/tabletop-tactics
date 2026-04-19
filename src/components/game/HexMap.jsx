@@ -1803,7 +1803,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                           <div style={{ flex: 1 }}>
                             <div style={{ fontFamily: "'Cinzel', serif", fontWeight: 600, fontSize: 12 }}>{typeNames[u.type] || u.type}</div>
                             {u.count > 1 && <div style={{ fontSize: 11, color: '#7a6a50' }}>×{u.count} units</div>}
-                            {u.type === 'naval' && <div style={{ fontSize: 10, color: '#4488ff', marginTop: 2 }}>⚓ Water-only · d12 · Transport 4</div>}
+                            {(u.type === 'naval' || u.name === 'Reapership') && <div style={{ fontSize: 10, color: '#4488ff', marginTop: 2, fontWeight: 600 }}>⚓ Infamous Reapership · Water-only · d12 · Transport 4</div>}
+                            {u.type === 'naval' && u.name !== 'Reapership' && <div style={{ fontSize: 10, color: '#4488ff', marginTop: 2 }}>⚓ Naval unit · Water-only · d12</div>}
                             {u.type === 'siege' && <div style={{ fontSize: 10, color: '#ff8844', marginTop: 2 }}>🏰 +1 attack vs fortified · d8</div>}
                             {u.type === 'elite' && <div style={{ fontSize: 10, color: '#f0c040', marginTop: 2 }}>⭐ +1 die · Can capture · d10</div>}
                             {u.type === 'cavalry' && <div style={{ fontSize: 10, color: '#d4a853', marginTop: 2 }}>🐴 +1 movement · Cannot defend · d8</div>}
