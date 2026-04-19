@@ -62,6 +62,17 @@ export default function TransportedUnitsPanel({
                     addMessage(`⛔ Must be on or adjacent to coastal tile to disembark`);
                     return;
                   }
+                  const targetHex = gameState.hexes?.[hexId] || {};
+                  const targetOwner = targetHex.owner;
+                  const targetHasUnits = (targetHex.units || []).length > 0;
+                  const isEnemyTerritory = targetOwner && targetOwner !== currentPlayer.id;
+                  
+                  if (isEnemyTerritory && targetHasUnits) {
+                    addMessage(`⚔️ Attack triggered! Enemy units on this hex!`);
+                    addLog('attack', `Disembarked units into enemy territory — combat initiated`, hexId, 'Attack');
+                    return;
+                  }
+                  
                   setGameState(prev => {
                     const hex = prev.hexes[hexId] || {};
                     const newEmbarked = embarked.map((e, idx) => idx === i ? { ...e, count: e.count - 1 } : e).filter(e => e.count > 0);
@@ -73,7 +84,7 @@ export default function TransportedUnitsPanel({
                       ...prev,
                       hexes: {
                         ...prev.hexes,
-                        [hexId]: { ...hex, units: disembarkedUnits, embarked: newEmbarked },
+                        [hexId]: { ...hex, units: disembarkedUnits, embarked: newEmbarked, owner: currentPlayer.id },
                       },
                     };
                   });

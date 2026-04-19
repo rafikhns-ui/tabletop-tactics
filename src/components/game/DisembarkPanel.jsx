@@ -26,16 +26,31 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
   if (!canDisembark) return null;
 
   const handleDisembark = (targetHexId) => {
+    const dstHex = gameState.hexes?.[targetHexId] || {};
+    const targetOwner = dstHex.owner;
+    const targetHasUnits = (dstHex.units || []).length > 0;
+    const isEnemyTerritory = targetOwner && targetOwner !== currentPlayer.id;
+    const isAttack = isEnemyTerritory && targetHasUnits;
+
+    if (isAttack) {
+      // Trigger attack instead of normal disembark
+      addMessage(`⚔️ Attack triggered! Enemy units present on coastal hex!`);
+      addLog('attack', `Disembarked units into enemy territory — combat initiated`, targetHexId, 'Attack');
+      // For now, set selected to target to allow player to complete the attack
+      setSelected({ col: 0, row: 0 }); // This will need proper hex data if you want to show it
+      return;
+    }
+
     setGameState(prev => {
       const srcHex = prev.hexes[selHexId] || {};
-      const dstHex = prev.hexes[targetHexId] || {};
-      const mergedUnits = [...(dstHex.units || []), ...(srcHex.embarked || [])];
+      const updatedDstHex = prev.hexes[targetHexId] || {};
+      const mergedUnits = [...(updatedDstHex.units || []), ...(srcHex.embarked || [])];
       return {
         ...prev,
         hexes: {
           ...prev.hexes,
           [selHexId]: { ...srcHex, embarked: [] },
-          [targetHexId]: { ...dstHex, units: mergedUnits, owner: currentPlayer.id },
+          [targetHexId]: { ...updatedDstHex, units: mergedUnits, owner: currentPlayer.id },
         },
       };
     });
