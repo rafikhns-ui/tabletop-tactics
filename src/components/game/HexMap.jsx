@@ -1820,6 +1820,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const typeNames = { infantry: 'Infantry', cavalry: 'Cavalry', elite: 'Elite Guard', ranged: 'Ranged', siege: 'Siege Engine', naval: 'Warship' };
 
             const toggleUnit = (idx) => {
+              if (alreadyMoved) return;
               setSelectedPanelUnits(prev => {
                 const next = new Set(prev);
                 if (next.has(idx)) next.delete(idx);
@@ -1859,15 +1860,16 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                           onClick={() => toggleUnit(i)}
                           style={{
                             fontSize: 13,
-                            color: isSelected ? '#d4a853' : '#c8c0b0',
+                            color: alreadyMoved ? '#555' : isSelected ? '#d4a853' : '#c8c0b0',
                             marginBottom: 6,
                             paddingBottom: 6,
                             borderBottom: '1px solid #2a2520',
                             padding: '8px',
                             borderRadius: 4,
-                            cursor: isMyHex && !currentPlayer?.isAI ? 'pointer' : 'default',
+                            cursor: alreadyMoved ? 'not-allowed' : (isMyHex && !currentPlayer?.isAI ? 'pointer' : 'default'),
                             background: isSelected ? 'rgba(212,168,83,0.15)' : 'transparent',
                             border: isSelected ? '1px solid #d4a853' : '1px solid transparent',
+                            opacity: alreadyMoved ? 0.5 : 1,
                             transition: 'all 0.15s',
                             display: 'flex', alignItems: 'center', gap: 8,
                           }}>
