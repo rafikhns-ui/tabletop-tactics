@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { HEROES, FACTION_TO_NATION_ID } from './ardoniaData';
+import { HEROES, FACTION_TO_NATION_ID, BUILDING_DEFS } from './ardoniaData';
 import { NATION_PERSONALITIES } from './aiPersonalities';
 import { buildHexToProvinceMap } from './provinceSystem';
 import PlayerDetailModal from './PlayerDetailModal';
@@ -87,6 +87,7 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
   const [showObjectives, setShowObjectives] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [hoveredObjId, setHoveredObjId] = useState(null);
+  const [hoveredBuildingId, setHoveredBuildingId] = useState(null);
   const completedCount = player.completedObjectives?.length || 0;
   
   // Count provinces controlled by this player.
@@ -254,18 +255,50 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
             ) : null;
           })()}
 
-          <div>
+          <div className="relative">
             <div className="text-xs font-semibold mb-1 opacity-50" style={{ fontFamily: "'Cinzel',serif" }}>BUILDINGS</div>
             <div className="grid grid-cols-2 gap-1">
               {Object.values(player.buildings || {}).map(b => (
-                <div key={b.id} className="flex items-center gap-1 text-xs px-1.5 py-1 rounded"
-                  style={{ background: 'hsl(35,20%,20%)', border: `1px solid ${b.disabled ? 'hsl(0,50%,35%)' : 'hsl(35,20%,30%)'}`, color: b.disabled ? 'hsl(0,50%,60%)' : 'hsl(40,20%,70%)' }}>
+                <div key={b.id}
+                  className="flex items-center gap-1 text-xs px-1.5 py-1 rounded cursor-default"
+                  onMouseEnter={() => setHoveredBuildingId(b.id)}
+                  onMouseLeave={() => setHoveredBuildingId(null)}
+                  style={{ background: 'hsl(35,20%,20%)', border: `1px solid ${b.disabled ? 'hsl(0,50%,35%)' : hoveredBuildingId === b.id ? 'hsl(43,80%,45%)' : 'hsl(35,20%,30%)'}`, color: b.disabled ? 'hsl(0,50%,60%)' : 'hsl(40,20%,70%)', transition: 'border-color 0.15s' }}>
                   <span>{b.emoji}</span>
                   <span className="truncate">{b.name}</span>
                   {b.level && <span className="ml-auto font-bold flex-shrink-0" style={{ color: 'hsl(43,80%,60%)' }}>L{b.level}</span>}
                 </div>
               ))}
             </div>
+
+            {/* Building hover card */}
+            {hoveredBuildingId && (() => {
+              const b = player.buildings?.[hoveredBuildingId];
+              const def = BUILDING_DEFS[hoveredBuildingId];
+              if (!b && !def) return null;
+              const info = { ...def, ...b };
+              return (
+                <div className="fixed pointer-events-none z-50 w-52 rounded-xl overflow-hidden shadow-2xl"
+                  style={{ top: '50%', right: '1rem', transform: 'translateY(-50%)', background: 'linear-gradient(160deg, hsl(35,25%,14%), hsl(35,20%,10%))', border: '1px solid hsl(43,80%,40%)', boxShadow: '0 0 24px rgba(200,150,50,0.25)' }}>
+                  {info.image && (
+                    <img src={info.image} alt={info.name} className="w-full h-32 object-cover" />
+                  )}
+                  <div className="p-3">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span>{info.emoji}</span>
+                      <span className="font-bold text-sm" style={{ fontFamily: "'Cinzel',serif", color: 'hsl(43,80%,65%)' }}>{info.name}</span>
+                      {b?.level && <span className="ml-auto text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: 'hsl(43,80%,20%)', color: 'hsl(43,80%,65%)' }}>L{b.level}</span>}
+                    </div>
+                    {info.description && (
+                      <p className="text-xs leading-relaxed" style={{ color: 'hsl(40,20%,65%)' }}>{info.description}</p>
+                    )}
+                    {b?.disabled && (
+                      <div className="mt-1.5 text-xs font-semibold" style={{ color: 'hsl(0,60%,60%)' }}>⛔ Disabled</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {player.heroes?.length > 0 && (
