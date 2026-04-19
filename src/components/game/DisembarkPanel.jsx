@@ -28,8 +28,8 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
   const isReapership = navalUnit?.type === 'naval' && (navalUnit?.name === 'Reapership' || navalUnit?.name === 'Infamous Reapership');
   const boatCanRangedAttack = boatOnWater && isReapership;
   
-  // Find adjacent coastal hexes with enemy units or structures
-  const rangedTargets = adjacentCoastal.filter(nId => {
+  // Find adjacent coastal hexes with enemy units or structures for bombardment
+  const bombardmentTargets = adjacentCoastal.filter(nId => {
     const hex = gameState?.hexes?.[nId];
     if (!hex) return false;
     const hasUnits = (hex.units || []).length > 0;
@@ -38,9 +38,9 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
     return isEnemy && (hasUnits || hasFortress);
   });
   
-  const canRangedAttack = boatCanRangedAttack && rangedTargets.length > 0;
+  const canNavalBombardment = boatCanRangedAttack && bombardmentTargets.length > 0;
   
-  if (!canDisembark && !canRangedAttack) return null;
+  if (!canDisembark && !canNavalBombardment) return null;
 
   const handleDisembark = (targetHexId) => {
     const dstHex = gameState.hexes?.[targetHexId] || {};
@@ -197,15 +197,15 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
         </>
       )}
       
-      {/* Ranged attack only section (when no embarked units) */}
-      {canRangedAttack && !canDisembark && (
+      {/* Naval bombardment (always available when on water with enemies) */}
+      {canNavalBombardment && (
         <>
-          <div style={{ color: '#ff8844', fontFamily: "'Cinzel', serif", fontSize: 12, fontWeight: 700, marginBottom: 8 }}>🔥 RANGED ATTACK</div>
+          <div style={{ color: '#ff8844', fontFamily: "'Cinzel', serif", fontSize: 12, fontWeight: 700, marginBottom: 8 }}>🔥 NAVAL BOMBARDMENT</div>
           <div style={{ fontSize: 10, color: '#8a9a8a', marginBottom: 8 }}>
-            Bombard enemy targets on {rangedTargets.length} adjacent coastal hex{rangedTargets.length !== 1 ? 'es' : ''}
+            Bombard enemy targets on {bombardmentTargets.length} adjacent coastal hex{bombardmentTargets.length !== 1 ? 'es' : ''}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 4 }}>
-            {rangedTargets.map(nId => {
+            {bombardmentTargets.map(nId => {
               const nh = mapData.hex_grid.find(h => `${h.col},${h.row}` === nId);
               return (
                 <button
