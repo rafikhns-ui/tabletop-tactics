@@ -1719,6 +1719,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const isMyHex = hexOwner === currentPlayer?.id;
             const alreadyMoved = movedHexes?.has(hexId);
             const canMove = (phase === 'move' || phase === 'deploy' || phase === 'attack' || phase === 'fortify') && isMyHex && !currentPlayer?.isAI && !alreadyMoved;
+            const hasNavalUnits = panelUnits.some(u => u.type === 'naval');
+            const hasLandUnits = panelUnits.some(u => u.type !== 'naval');
             const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
             const typeNames = { infantry: 'Infantry', cavalry: 'Cavalry', elite: 'Elite Guard', ranged: 'Ranged', siege: 'Siege Engine', naval: 'Warship' };
 
@@ -1744,6 +1746,16 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
                   UNITS ON HEX
                 </div>
+                {hasNavalUnits && hasLandUnits && (
+                  <div style={{ fontSize: 11, color: '#ff9900', marginBottom: 8, padding: '6px 8px', background: 'rgba(255,153,0,0.1)', border: '1px solid #ff9900', borderRadius: 4 }}>
+                    ⚓ Naval units can only move to water tiles
+                  </div>
+                )}
+                {hasNavalUnits && !hasLandUnits && (
+                  <div style={{ fontSize: 11, color: '#4488ff', marginBottom: 8, padding: '6px 8px', background: 'rgba(68,136,255,0.1)', border: '1px solid #4488ff', borderRadius: 4 }}>
+                    ⚓ Naval unit — restricted to water tiles only
+                  </div>
+                )}
                 {alreadyMoved && (
                   <div style={{ fontSize: 11, color: '#c08030', marginBottom: 8, padding: '6px 8px', background: 'rgba(192,128,48,0.1)', border: '1px solid #8a6a30', borderRadius: 4 }}>
                     This unit already moved this turn
@@ -1791,6 +1803,11 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                           <div style={{ flex: 1 }}>
                             <div style={{ fontFamily: "'Cinzel', serif", fontWeight: 600, fontSize: 12 }}>{typeNames[u.type] || u.type}</div>
                             {u.count > 1 && <div style={{ fontSize: 11, color: '#7a6a50' }}>×{u.count} units</div>}
+                            {u.type === 'naval' && <div style={{ fontSize: 10, color: '#4488ff', marginTop: 2 }}>⚓ Water-only · d12 · Transport 4</div>}
+                            {u.type === 'siege' && <div style={{ fontSize: 10, color: '#ff8844', marginTop: 2 }}>🏰 +1 attack vs fortified · d8</div>}
+                            {u.type === 'elite' && <div style={{ fontSize: 10, color: '#f0c040', marginTop: 2 }}>⭐ +1 die · Can capture · d10</div>}
+                            {u.type === 'cavalry' && <div style={{ fontSize: 10, color: '#d4a853', marginTop: 2 }}>🐴 +1 movement · Cannot defend · d8</div>}
+                            {u.type === 'ranged' && <div style={{ fontSize: 10, color: '#88ff88', marginTop: 2 }}>🏹 Ranged attack · d8</div>}
                           </div>
                         </div>
                       );
