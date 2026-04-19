@@ -210,6 +210,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
   const [combatFlashes, setCombatFlashes] = useState([]); // [{hexId, key}]
   const [hoveredSpecialEvent, setHoveredSpecialEvent] = useState(null);
   const [hoveredFactionLabel, setHoveredFactionLabel] = useState(null);
+  const [hoveredStructure, setHoveredStructure] = useState(null);
 
   const SVG_W = 1200;
   const SVG_H = 900;
@@ -1921,8 +1922,6 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const capInfo = CAPITAL_HEX_INFO[selHexId];
             const hexOwnerForBuildings = getOwner(selHexId, selected?.nation_id);
             const isMyPort = hexOwnerForBuildings === currentPlayer?.id && !currentPlayer?.isAI;
-            const reaperDef = { gold: 2, wood: 3 }; // infamous_reapership cost
-            const canAffordReaper = isMyPort && Object.entries(reaperDef).every(([k, v]) => (currentPlayer?.resources?.[k] ?? 0) >= v);
             const BDEF = {
               fortress: { icon: '🏰', name: 'Fortress', effect: 'Defense +2 dice', color: '#8a8a9a', desc: 'Stone fortification. Defenders roll d8 instead of d6.' },
               port: { icon: '⚓', name: 'Harbour Port', effect: 'Naval access · Gold +1', color: '#4488ff', desc: 'Enables naval deployment and boosts coastal income.' },
@@ -1934,14 +1933,20 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const entries = [...capitalEntries, ...Object.entries(hexBuildings)];
             return (
               <div>
-                <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 13, fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>
-                  STRUCTURES ON HEX
-                </div>
+                {hoveredStructure === 'port' && (
+                  <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 9999, pointerEvents: 'none' }}>
+                    <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/36da616cb_22.png" alt="Port" style={{ width: 320, borderRadius: 12, border: '3px solid #4488ff', boxShadow: '0 0 60px #4488ff66' }} />
+                  </div>
+                )}
+                <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 13, fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>STRUCTURES ON HEX</div>
                 {entries.length > 0 ? entries.map(([key]) => {
                    const def = BDEF[key] || { icon: '🏛️', name: key, effect: '', color: '#888', desc: '' };
                    if (!def) return null;
                   return (
-                    <div key={key} style={{
+                    <div key={key}
+                      onMouseEnter={key === 'port' ? () => setHoveredStructure('port') : undefined}
+                      onMouseLeave={key === 'port' ? () => setHoveredStructure(null) : undefined}
+                      style={{
                       marginBottom: 10, borderRadius: 8, overflow: 'hidden',
                       border: `1px solid ${def.color}55`,
                       background: `linear-gradient(135deg, ${def.color}18, #0a0c12)`,
@@ -1981,12 +1986,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 })()}
 
           {panelTab === 'actions' && (
-            <div style={{ textAlign: 'center', color: '#555', marginTop: 40, fontStyle: 'italic', fontSize: 12 }}>
-              {phase === 'planning' ? 'Select provinces to reinforce' :
-               phase === 'action' ? 'Move units between provinces' :
-               phase === 'combat' ? 'Resolve battles' :
-               'Waiting for next phase...'}
-            </div>
+            <div style={{ textAlign: 'center', color: '#555', marginTop: 40, fontStyle: 'italic', fontSize: 12 }}>Waiting for next phase...</div>
           )}
         </div>
       </div>
