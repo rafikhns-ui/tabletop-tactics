@@ -1431,19 +1431,6 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             );
           })}
 
-          {/* ── Faction label hover areas (outside labels group so pointerEvents works) ── */}
-          {FACTION_CENTROIDS.map(fc => {
-            const { cx, cy } = toSVG(fc.x, fc.y);
-            const words = fc.name.split(' ');
-            const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
-            return (
-              <rect key={`flh${fc.fid}`} x={cx - 130} y={cy - 36} width={260} height={line2 ? 64 : 36} fill="transparent" 
-                style={{ pointerEvents: 'all' }}
-                onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
-                onMouseLeave={() => setHoveredFactionLabel(null)} />
-            );
-          })}
-
           {/* ── Faction labels ── */}
           {FACTION_CENTROIDS.map(fc => {
 
@@ -1485,8 +1472,20 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
           })}
           </g>
 
+          {/* ── Faction label hover areas (outside zoom transform, can click hexes) ── */}
+          {FACTION_CENTROIDS.map(fc => {
+            const { cx, cy } = toSVG(fc.x, fc.y);
+            const words = fc.name.split(' ');
+            const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
+            return (
+              <rect key={`flh${fc.fid}`} x={cx - 130} y={cy - 36} width={260} height={line2 ? 64 : 36} fill="transparent" 
+                style={{ pointerEvents: 'all' }}
+                onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
+                onMouseLeave={() => setHoveredFactionLabel(null)} />
+            );
+          })}
 
-        </svg>
+          </svg>
       </div>
 
       {/* ══════ SIDE PANEL ══════ */}
