@@ -38,7 +38,7 @@ function canDeployUnit(hexId, unitType) {
 
 // BFS reachable hexes from a col,row hex given movement speed
 // waterOnly=true: only traverse water hexes (for naval units like Reapership)
-// waterOnly=false: only traverse non-water hexes (land units)
+// waterOnly=false: only traverse non-water hexes (land units), but allow adjacent water for embarkation
 function computeReachableHexes(fromHexId, speed, waterOnly = false) {
   const [col0, row0] = fromHexId.split(',').map(Number);
   const visited = new Map([[fromHexId, 0]]);
@@ -56,7 +56,8 @@ function computeReachableHexes(fromHexId, speed, waterOnly = false) {
       const terrain = HEX_TERRAIN_LOOKUP[nId];
       if (!terrain) continue;
       if (waterOnly && terrain !== 'water') continue;
-      if (!waterOnly && terrain === 'water') continue;
+      // For land units: allow water hexes only if adjacent (cost 1) for embarkation
+      if (!waterOnly && terrain === 'water' && cost >= 1) continue;
       const newCost = cost + 1;
       if (newCost <= speed && !visited.has(nId)) {
         visited.set(nId, newCost);
