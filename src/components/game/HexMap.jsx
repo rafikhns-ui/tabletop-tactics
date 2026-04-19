@@ -862,7 +862,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
                 {/* ── 3D HEX RENDERING ── */}
                 {isWater ? (
-                  <g style={{ pointerEvents: 'none' }}>
+                  <g>
                     {/* Deep water base */}
                     <polygon points={pts} fill="url(#waterGrad)" fillOpacity={dimmed ? 0.12 : 0.88} stroke="#0a0c18" strokeWidth={0.8} />
                     {/* Shimmer overlay */}
