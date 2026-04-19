@@ -600,27 +600,23 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
             else mergedToUnits.push({ ...mu });
           }
           
-          // Auto-disembark if naval unit with cargo moves to coastal hex
-          const toTerrain = HEX_TERRAIN_LOOKUP[hexId];
-          const hasEmbarked = (fromHex.embarked || []).length > 0;
-          const autoDisembark = isNavalUnit(unitType) && hasEmbarked && toTerrain === 'coastal';
-          const finalToUnits = autoDisembark ? [...mergedToUnits, ...(fromHex.embarked || [])] : mergedToUnits;
+          // Naval units keep their embarked cargo when moving
+          const embarkedUnits = isNavalUnit(unitType) ? (fromHex.embarked || []) : [];
           
           return {
             ...prev,
             hexes: {
               ...prev.hexes,
-              [fromHexId]: { ...fromHex, units: remainingFromUnitsSnap, embarked: autoDisembark ? [] : (fromHex.embarked || []) },
-              [hexId]: { ...toHex, units: finalToUnits, embarked: toHex.embarked || [], owner: currentPlayer.id },
+              [fromHexId]: { ...fromHex, units: remainingFromUnitsSnap, embarked: [] },
+              [hexId]: { ...toHex, units: mergedToUnits, embarked: embarkedUnits, owner: currentPlayer.id },
             },
           };
         });
 
-        const didAutoDisembark = isNavalUnit(unitType) && (gameState.hexes[fromHexId]?.embarked || []).length > 0 && HEX_TERRAIN_LOOKUP[hexId] === 'coastal';
         setMovedHexes(prev => new Set([...prev, fromHexId, hexId]));
         setSelectedTerritory(null);
         setMovementState(null);
-        addMessage(didAutoDisembark ? `⚓ Naval unit arrived at coast — units disembarked!` : `🚶 Moved ${unitType} to hex`);
+        addMessage(`🚶 Moved ${unitType} to hex`);
         addLog('move', `Moved ${unitType} to new hex`, null, 'Move');
       }
     } else if (phase === 'fortify') {

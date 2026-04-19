@@ -2,6 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import mapData from './ardonia_game_map.json';
 import { FACTIONS, FACTION_TO_NATION_ID } from './ardoniaData';
 import PortRecruitSection from './PortRecruitSection';
+import DisembarkPanel from './DisembarkPanel';
 import { NationFortress, NationPort } from './HexStructures';
 import { NATION_EMBLEMS } from '../../lib/nationEmblems';
 
@@ -1977,6 +1978,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                   </div>
                 )}
                 {hexBuildings.port && isMyPort && <PortRecruitSection selHexId={selHexId} currentPlayer={currentPlayer} onRecruitReapership={onRecruitReapership} />}
+                {selected && <DisembarkPanel selHexId={selHexId} gameState={gameState} currentPlayer={currentPlayer} setGameState={setGameState} setSelected={setSelected} addMessage={addMessage} addLog={addLog} getNeighborHexIds={getNeighborHexIds} />
                 </div>
                 );
                 })()}
