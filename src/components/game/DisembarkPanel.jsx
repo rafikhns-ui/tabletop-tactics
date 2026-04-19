@@ -23,8 +23,24 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
   // Block disembark if boat is on water with no adjacent coastal tiles
   const hasValidDisembarkTarget = adjacentCoastal.length > 0 || boatOnCoastal;
   const canDisembark = navalUnit && embarked.length > 0 && hexOwner === currentPlayer?.id && !currentPlayer?.isAI && hasValidDisembarkTarget;
-
-  if (!canDisembark) return null;
+  
+  // Check if this is a Reapership (ranged naval unit)
+  const isReapership = navalUnit?.type === 'naval' && (navalUnit?.name === 'Reapership' || navalUnit?.name === 'Infamous Reapership');
+  const boatCanRangedAttack = boatOnWater && isReapership;
+  
+  // Find adjacent coastal hexes with enemy units or structures
+  const rangedTargets = adjacentCoastal.filter(nId => {
+    const hex = gameState?.hexes?.[nId];
+    if (!hex) return false;
+    const hasUnits = (hex.units || []).length > 0;
+    const hasFortress = hex.buildings?.fortress;
+    const isEnemy = hex.owner && hex.owner !== currentPlayer?.id;
+    return isEnemy && (hasUnits || hasFortress);
+  });
+  
+  const canRangedAttack = boatCanRangedAttack && rangedTargets.length > 0;
+  
+  if (!canDisembark && !canRangedAttack) return null;
 
   const handleDisembark = (targetHexId) => {
     const dstHex = gameState.hexes?.[targetHexId] || {};
@@ -111,72 +127,111 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
     addLog('attack', `Reapership ranged attack — No retaliation (siege-like)`, targetHexId, 'Ranged Attack');
   };
 
-  // Check if this is a Reapership (ranged naval unit)
-  const isReapership = navalUnit?.type === 'naval' && navalUnit?.name === 'Reapership' || navalUnit?.name === 'Infamous Reapership';
-  const boatCanRangedAttack = boatOnWater && isReapership;
-
   return (
     <div style={{ marginTop: 12, padding: '12px', borderRadius: 8, background: 'linear-gradient(135deg, #1a3a2a, #0e1a12)', border: '1px solid #4a8a6a' }}>
-      <div style={{ color: '#7aaa8a', fontFamily: "'Cinzel', serif", fontSize: 12, fontWeight: 700, marginBottom: 8 }}>⚓ DISEMBARK OPTIONS</div>
-      <div style={{ fontSize: 10, color: '#8a9a8a', marginBottom: 8 }}>
-        {embarked.length} unit{embarked.length > 1 ? 's' : ''} aboard · Available: {adjacentCoastal.length} adjacent coastal hex{adjacentCoastal.length !== 1 ? 'es' : ''}
-      </div>
-      {adjacentCoastal.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6 }}>
-          {adjacentCoastal.map(nId => {
-            const nh = mapData.hex_grid.find(h => `${h.col},${h.row}` === nId);
-            const dstHex = gameState.hexes?.[nId] || {};
-            const targetOwner = dstHex.owner;
-            const targetHasUnits = (dstHex.units || []).length > 0;
-            const isEnemyTerritory = targetOwner && targetOwner !== currentPlayer.id;
-            return (
-              <div key={nId} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+      {/* Disembark section */}
+      {canDisembark && (
+        <>
+          <div style={{ color: '#7aaa8a', fontFamily: "'Cinzel', serif", fontSize: 12, fontWeight: 700, marginBottom: 8 }}>⚓ DISEMBARK OPTIONS</div>
+          <div style={{ fontSize: 10, color: '#8a9a8a', marginBottom: 8 }}>
+            {embarked.length} unit{embarked.length > 1 ? 's' : ''} aboard · Available: {adjacentCoastal.length} adjacent coastal hex{adjacentCoastal.length !== 1 ? 'es' : ''}
+          </div>
+          {adjacentCoastal.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6, marginBottom: 8 }}>
+              {adjacentCoastal.map(nId => {
+                const nh = mapData.hex_grid.find(h => `${h.col},${h.row}` === nId);
+                const dstHex = gameState.hexes?.[nId] || {};
+                const targetOwner = dstHex.owner;
+                const targetHasUnits = (dstHex.units || []).length > 0;
+                const targetHasFortress = dstHex.buildings?.fortress;
+                const isEnemyTerritory = targetOwner && targetOwner !== currentPlayer.id;
+                return (
+                  <div key={nId} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+                    <button
+                      onClick={() => handleDisembark(nId)}
+                      style={{
+                        padding: '8px 12px',
+                        background: 'linear-gradient(135deg, #1a4a3a, #0a2a1a)',
+                        border: '1px solid #5aaa7a',
+                        borderRadius: 4,
+                        color: '#8aaa9a',
+                        fontSize: 10,
+                        fontFamily: "'Cinzel', serif",
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                        fontWeight: 600,
+                      }}
+                      onMouseEnter={(e) => { e.target.style.background = 'linear-gradient(135deg, #2a6a5a, #1a3a2a)'; e.target.style.color = '#aacaaa'; }}
+                      onMouseLeave={(e) => { e.target.style.background = 'linear-gradient(135deg, #1a4a3a, #0a2a1a)'; e.target.style.color = '#8aaa9a'; }}
+                    >
+                      Land [{nh.col},{nh.row}]
+                    </button>
+                    {boatCanRangedAttack && isEnemyTerritory && (targetHasUnits || targetHasFortress) && (
+                      <button
+                        onClick={() => handleRangedAttack(nId)}
+                        style={{
+                          padding: '8px 12px',
+                          background: 'linear-gradient(135deg, #4a2a1a, #2a1a0a)',
+                          border: '1px solid #8a5a4a',
+                          borderRadius: 4,
+                          color: '#ff8844',
+                          fontSize: 10,
+                          fontFamily: "'Cinzel', serif",
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
+                          fontWeight: 700,
+                        }}
+                        onMouseEnter={(e) => { e.target.style.background = 'linear-gradient(135deg, #6a4a3a, #4a2a1a)'; e.target.style.color = '#ffaa66'; }}
+                        onMouseLeave={(e) => { e.target.style.background = 'linear-gradient(135deg, #4a2a1a, #2a1a0a)'; e.target.style.color = '#ff8844'; }}
+                      >
+                        Attack [{nh.col},{nh.row}]
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ fontSize: 10, color: '#6a7a6a', fontStyle: 'italic', marginBottom: 8 }}>No adjacent coastal hexes — move naval unit closer to coast</div>
+          )}
+        </>
+      )}
+      
+      {/* Ranged attack only section (when no embarked units) */}
+      {canRangedAttack && !canDisembark && (
+        <>
+          <div style={{ color: '#ff8844', fontFamily: "'Cinzel', serif", fontSize: 12, fontWeight: 700, marginBottom: 8 }}>🔥 RANGED ATTACK</div>
+          <div style={{ fontSize: 10, color: '#8a9a8a', marginBottom: 8 }}>
+            Bombard enemy targets on {rangedTargets.length} adjacent coastal hex{rangedTargets.length !== 1 ? 'es' : ''}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 4 }}>
+            {rangedTargets.map(nId => {
+              const nh = mapData.hex_grid.find(h => `${h.col},${h.row}` === nId);
+              return (
                 <button
-                  onClick={() => handleDisembark(nId)}
+                  key={nId}
+                  onClick={() => handleRangedAttack(nId)}
                   style={{
                     padding: '8px 12px',
-                    background: 'linear-gradient(135deg, #1a4a3a, #0a2a1a)',
-                    border: '1px solid #5aaa7a',
+                    background: 'linear-gradient(135deg, #4a2a1a, #2a1a0a)',
+                    border: '1px solid #8a5a4a',
                     borderRadius: 4,
-                    color: '#8aaa9a',
+                    color: '#ff8844',
                     fontSize: 10,
                     fontFamily: "'Cinzel', serif",
                     cursor: 'pointer',
                     transition: 'all 0.15s',
-                    fontWeight: 600,
+                    fontWeight: 700,
                   }}
-                  onMouseEnter={(e) => { e.target.style.background = 'linear-gradient(135deg, #2a6a5a, #1a3a2a)'; e.target.style.color = '#aacaaa'; }}
-                  onMouseLeave={(e) => { e.target.style.background = 'linear-gradient(135deg, #1a4a3a, #0a2a1a)'; e.target.style.color = '#8aaa9a'; }}
+                  onMouseEnter={(e) => { e.target.style.background = 'linear-gradient(135deg, #6a4a3a, #4a2a1a)'; e.target.style.color = '#ffaa66'; }}
+                  onMouseLeave={(e) => { e.target.style.background = 'linear-gradient(135deg, #4a2a1a, #2a1a0a)'; e.target.style.color = '#ff8844'; }}
                 >
-                  Land [{nh.col},{nh.row}]
+                  🔥 Bombard [{nh.col},{nh.row}]
                 </button>
-                {boatCanRangedAttack && isEnemyTerritory && targetHasUnits && (
-                  <button
-                    onClick={() => handleRangedAttack(nId)}
-                    style={{
-                      padding: '8px 12px',
-                      background: 'linear-gradient(135deg, #4a2a1a, #2a1a0a)',
-                      border: '1px solid #8a5a4a',
-                      borderRadius: 4,
-                      color: '#ff8844',
-                      fontSize: 10,
-                      fontFamily: "'Cinzel', serif",
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                      fontWeight: 700,
-                    }}
-                    onMouseEnter={(e) => { e.target.style.background = 'linear-gradient(135deg, #6a4a3a, #4a2a1a)'; e.target.style.color = '#ffaa66'; }}
-                    onMouseLeave={(e) => { e.target.style.background = 'linear-gradient(135deg, #4a2a1a, #2a1a0a)'; e.target.style.color = '#ff8844'; }}
-                  >
-                    Attack [{nh.col},{nh.row}]
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div style={{ fontSize: 10, color: '#6a7a6a', fontStyle: 'italic' }}>No adjacent coastal hexes — move naval unit closer to coast</div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );
