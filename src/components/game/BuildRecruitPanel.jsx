@@ -62,9 +62,10 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
   const buildingQueue = currentPlayer.buildingQueue || [];
   const recruitmentQueue = currentPlayer.recruitmentQueue || [];
 
-  // Faction-specific buildable list (exclude already-owned and starting buildings)
+  // Faction-specific buildable list (exclude already-owned, starting, and placeable buildings)
+  const PLACEABLE_IDS = new Set(['imperial_stronghold', 'crimson_port']);
   const factionBuildableIds = FACTION_BUILDINGS[currentPlayer.factionId] || Object.keys(BUILDING_DEFS).filter(id => !['mine','lumber_mill','farm','treasury'].includes(id));
-  const buildable = factionBuildableIds.filter(id => !ownedBuildings.includes(id));
+  const buildable = factionBuildableIds.filter(id => !ownedBuildings.includes(id) && !PLACEABLE_IDS.has(id));
 
   // Faction-specific unit unlock — show all units a building CAN unlock (for build preview)
   const factionUnits = FACTION_UNITS[currentPlayer.factionId] || [];
@@ -111,7 +112,9 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
                const inventory = currentPlayer[`${item.id}_inventory`] || 0;
                const isPlacing = buildingPlacementMode === item.id;
                return (
-                 <div key={item.id} className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: `1px solid ${isPlacing ? 'hsl(43,80%,50%)' : 'hsl(35,20%,30%)'}` }}>
+                 <div key={item.id} className="rounded p-2" style={{ background: 'hsl(35,20%,21%)', border: `1px solid ${isPlacing ? 'hsl(43,80%,50%)' : 'hsl(35,20%,30%)'}` }}
+                   onMouseEnter={() => def?.image && setPreviewImage(def.image)}
+                   onMouseLeave={() => setPreviewImage(null)}>
                    <div className="flex items-center justify-between mb-0.5">
                      <span className="text-xs font-bold" style={{ ...s, color: 'hsl(40,30%,80%)' }}>
                        {item.emoji} {item.name}
