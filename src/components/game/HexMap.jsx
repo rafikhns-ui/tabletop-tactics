@@ -1546,7 +1546,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const isHovered = hoveredFactionLabel === fc.fid;
             return (
               <g key={`fl${fc.fid}`}
-                style={{ pointerEvents: 'all', cursor: 'default', opacity: isHovered ? 0 : 1, transition: 'opacity 0.15s' }}
+                style={{ pointerEvents: 'none', cursor: 'default', opacity: isHovered ? 0 : 1, transition: 'opacity 0.15s' }}
                 onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
                 onMouseLeave={() => setHoveredFactionLabel(null)}>
                 {/* Transparent hit area so hover works reliably */}
