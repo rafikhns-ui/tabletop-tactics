@@ -1093,7 +1093,7 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
                              {isReapership ? (
                                <image
                                  x={-8} y={-8} width={16} height={16}
-                                 href="https://media.base44.com/images/public/69b732e420481df67e8a6804/318b98203_reapership_aesthetic.png"
+                                 href="https://media.base44.com/images/public/69b732e420481df67e8a6804/1b9545e98_reapership_aesthetic.png"
                                  style={{ userSelect: 'none' }}>
                                  <animate attributeName="y"
                                    values={`-9;-7;-9`}
