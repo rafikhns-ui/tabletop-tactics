@@ -1116,9 +1116,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                                  {/* Nation emblem image */}
                                  {NATION_EMBLEMS[unitNationId] && (
                                    <image
-                                     x={-13} y={-13} width={26} height={26}
+                                     x={unitNationId === 'kintei' ? -13 : -9} y={unitNationId === 'kintei' ? -13 : -9} width={unitNationId === 'kintei' ? 26 : 18} height={unitNationId === 'kintei' ? 26 : 18}
                                      href={NATION_EMBLEMS[unitNationId]}
-                                     style={{ userSelect: 'none', clipPath: 'circle(13px)' }}>
+                                     style={{ userSelect: 'none', clipPath: unitNationId === 'kintei' ? 'circle(13px)' : 'circle(9px)' }}>
                                      <animate attributeName="y"
                                        values={`-10;-8;-10`}
                                        dur={bobDur} begin={animDelay}
