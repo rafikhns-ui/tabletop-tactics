@@ -25,8 +25,8 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
   const canDisembark = navalUnit && embarked.length > 0 && hexOwner === currentPlayer?.id && !currentPlayer?.isAI && hasValidDisembarkTarget;
   
   // Check if this is a Reapership (ranged naval unit)
-  const isReapership = navalUnit?.type === 'naval' && (navalUnit?.name === 'Reapership' || navalUnit?.name === 'Infamous Reapership');
-  const boatCanRangedAttack = boatOnWater && isReapership;
+  const isReapership = navalUnit && (navalUnit?.type === 'naval' || navalUnit?.type === 'infamous_reapership');
+  const boatCanRangedAttack = boatOnWater && isReapership && navalUnit;
   
   // Find adjacent coastal hexes with enemy units or structures for bombardment
   const bombardmentTargets = adjacentCoastal.filter(nId => {
@@ -114,7 +114,7 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
       };
     });
 
-    let attackMessage = `⚔️ Reapership ranged attack on [${targetHexId}]!`;
+    let attackMessage = `⚔️ Naval bombardment on [${targetHexId}]!`;
     if (result.defenderLosses > 0) {
       attackMessage += ` Enemy lost ${result.defenderLosses} unit${result.defenderLosses > 1 ? 's' : ''}`;
     }
@@ -124,7 +124,7 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
       attackMessage += ` (Fortress held)`;
     }
     addMessage(attackMessage);
-    addLog('attack', `Reapership ranged attack — No retaliation (siege-like)`, targetHexId, 'Ranged Attack');
+    addLog('attack', `Naval bombardment — No retaliation`, targetHexId, 'Naval Bombardment');
   };
 
   return (
