@@ -24,5 +24,5 @@ export const NATION_EMBLEMS = {
 };
 
 export const UNIT_LOGOS = {
-  infamous_reapership: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/japanese-ship-emblem.png',
+  infamous_reapership: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/8f4f35690_ReapershipJapaneseGalley.png',
 };
