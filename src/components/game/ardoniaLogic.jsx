@@ -546,17 +546,17 @@ export const resolveBattle = (attackerUnits, defenderUnits, hasDefenderFortress,
 // ---- Ranged attack (Reapership from water to adjacent coastal) ----
 export const resolveRangedAttack = (attackerUnits, defenderUnits, hasDefenderFortress = false) => {
   // Reapership ranged attack: defender takes losses, attacker takes NO losses (no retaliation)
-  // Use 2 attack dice (naval ranged unit)
-  const attackDice = 2;
-  const aRolls = rollDice(attackDice, 6);
+  // Reapership uses d12, defender uses their unit dice (d6-d10 depending on type)
+  const attackDice = 1;
+  const aRolls = rollDice(attackDice, 12); // Reapership rolls d12
   
-  // Defender rolls d6 for defense (only defending, no counter-attack)
+  // Defender rolls based on unit count (d6 per troop, max 2 dice)
   const defenderTroops = defenderUnits.reduce((s, u) => s + u.count, 0);
-  const defendDice = Math.min(2, defenderTroops);
+  const defendDice = Math.min(2, Math.max(1, defenderTroops));
   const dRolls = rollDice(defendDice, 6);
 
-  // Attacker bonuses: Reapership +1
-  const aBonus = 1;
+  // Attacker bonuses: Reapership +2
+  const aBonus = 2;
   
   // Defender bonuses from units + fortress
   const unitDefenseBonus = calculateUnitBonuses(defenderUnits);
@@ -584,7 +584,7 @@ export const resolveRangedAttack = (attackerUnits, defenderUnits, hasDefenderFor
     attackDice, 
     aBonus, 
     dBonus, 
-    terrainNotes: ['Ranged attack — Attacker takes no damage'],
+    terrainNotes: ['Naval bombardment — Defender takes no counter-damage'],
     isRangedAttack: true,
     terrain: 'water',
     fortressDestroyed
