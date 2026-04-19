@@ -858,7 +858,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 }}
                 onMouseEnter={handleHexMouseEnter}
                 onMouseLeave={handleHexMouseLeave}
-                style={{ cursor: draggingDeployUnit && !isWater ? 'copy' : isWater ? 'default' : 'pointer' }}>
+                style={{ cursor: draggingDeployUnit && !isWater ? 'copy' : 'pointer' }}>
 
                 {/* ── 3D HEX RENDERING ── */}
                 {isWater ? (
