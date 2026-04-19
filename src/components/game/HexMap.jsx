@@ -1092,11 +1092,11 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
                              {/* Unit icon with animation */}
                              {isReapership ? (
                                <image
-                                 x={-16} y={-16} width={32} height={32}
+                                 x={-16} y={-13} width={32} height={32}
                                  href="https://media.base44.com/images/public/69b732e420481df67e8a6804/1b9545e98_reapership_aesthetic.png"
                                  style={{ userSelect: 'none' }}>
                                  <animate attributeName="y"
-                                   values={`-17;-15;-17`}
+                                   values={`-14;-12;-14`}
                                    dur={bobDur} begin={animDelay}
                                    repeatCount="indefinite" additive="sum" />
                                </image>
