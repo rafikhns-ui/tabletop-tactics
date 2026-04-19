@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import mapData from './ardonia_game_map.json';
 import { isNavalUnit } from '../../lib/embarkationLogic';
 import { resolveRangedAttack } from './ardoniaLogic';
+import BombardmentResultModal from './BombardmentResultModal';
 
 export default function DisembarkPanel({ selHexId, gameState, currentPlayer, setGameState, setSelected, addMessage, addLog, getNeighborHexIds }) {
+  const [bombardmentResult, setBombardmentResult] = useState(null);
+  const [bombardmentTargetHex, setBombardmentTargetHex] = useState(null);
+
   const hexOwner = gameState?.hexes?.[selHexId]?.owner;
   const units = gameState?.hexes?.[selHexId]?.units || [];
   const embarked = gameState?.hexes?.[selHexId]?.embarked || [];
@@ -88,16 +92,29 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
 
     const attackerUnits = [navalUnit];
     const result = resolveRangedAttack(attackerUnits, targetUnits, targetHasFortress);
+    
+    // Show dice roll modal
+    setBombardmentResult(result);
+    setBombardmentTargetHex(targetHexId);
+  };
+
+  const handleBombardmentClose = () => {
+    if (!bombardmentResult) return;
+    
+    const targetHexId = bombardmentTargetHex;
+    const dstHex = gameState.hexes?.[targetHexId] || {};
+    const targetUnits = dstHex.units || [];
+    const targetHasFortress = dstHex.buildings?.fortress;
 
     setGameState(prev => {
       const updatedDstHex = { ...prev.hexes[targetHexId] };
       const newUnits = targetUnits.map(u => ({
         ...u,
-        count: Math.max(0, u.count - result.defenderLosses)
+        count: Math.max(0, u.count - bombardmentResult.defenderLosses)
       })).filter(u => u.count > 0);
       
       let newBuildings = updatedDstHex.buildings;
-      if (result.fortressDestroyed) {
+      if (bombardmentResult.fortressDestroyed) {
         newBuildings = { ...newBuildings };
         delete newBuildings.fortress;
         if (Object.keys(newBuildings).length === 0) {
@@ -115,20 +132,27 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
     });
 
     let attackMessage = `⚔️ Naval bombardment on [${targetHexId}]!`;
-    if (result.defenderLosses > 0) {
-      attackMessage += ` Enemy lost ${result.defenderLosses} unit${result.defenderLosses > 1 ? 's' : ''}`;
+    if (bombardmentResult.defenderLosses > 0) {
+      attackMessage += ` Enemy lost ${bombardmentResult.defenderLosses} unit${bombardmentResult.defenderLosses > 1 ? 's' : ''}`;
     }
-    if (result.fortressDestroyed) {
+    if (bombardmentResult.fortressDestroyed) {
       attackMessage += ` and the Fortress was destroyed!`;
     } else if (targetHasFortress) {
       attackMessage += ` (Fortress held)`;
     }
     addMessage(attackMessage);
     addLog('attack', `Naval bombardment — No retaliation`, targetHexId, 'Naval Bombardment');
+    
+    setBombardmentResult(null);
+    setBombardmentTargetHex(null);
   };
 
   return (
-    <div style={{ marginTop: 12, padding: '12px', borderRadius: 8, background: 'linear-gradient(135deg, #1a3a2a, #0e1a12)', border: '1px solid #4a8a6a' }}>
+    <>
+      {bombardmentResult && (
+        <BombardmentResultModal result={bombardmentResult} targetHexId={bombardmentTargetHex} onClose={handleBombardmentClose} />
+      )}
+      <div style={{ marginTop: 12, padding: '12px', borderRadius: 8, background: 'linear-gradient(135deg, #1a3a2a, #0e1a12)', border: '1px solid #4a8a6a' }}>
       {/* Disembark section */}
       {canDisembark && (
         <>
@@ -233,6 +257,7 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
           </div>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 }
