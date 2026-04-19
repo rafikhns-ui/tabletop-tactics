@@ -976,7 +976,7 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
                 )}
 
                 {/* ── Player ownership — inner glowing tint + border ring ── */}
-                {owner && playerColor && !highlightMode && (
+                {owner && playerColor && !highlightMode && !isWater && (
                   <>
                     <polygon points={ptsInner} fill={playerColor} fillOpacity={0.22} style={{ pointerEvents: 'none' }} />
                     <polygon points={ptsInner} fill="none" stroke={playerColor} strokeWidth={2.5} strokeOpacity={0.85} style={{ pointerEvents: 'none' }} />
