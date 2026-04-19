@@ -545,11 +545,12 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         const destOwner = toHexSnap.owner;
         const hasHostileUnits = destUnits.length > 0 && destOwner && destOwner !== currentPlayer.id;
 
-        // Check for embarkation (land units moving to naval unit on coastal hex)
+        // Check for embarkation (land units moving to naval unit on coastal or water hex)
         const terrain = HEX_TERRAIN_LOOKUP[hexId];
         const isCoastal = terrain === 'coastal';
+        const isWater = terrain === 'water';
         const destNavalUnit = destUnits.find(u => isNavalUnit(u.type));
-        const canEmbarkHere = isLandUnit(unitType) && destNavalUnit && isCoastal && destOwner === currentPlayer.id;
+        const canEmbarkHere = isLandUnit(unitType) && destNavalUnit && (isCoastal || isWater) && destOwner === currentPlayer.id;
 
         if (canEmbarkHere) {
           const { embarked } = embarkUnits({ embarked: toHexSnap.embarked }, unitsToMoveSnap);
