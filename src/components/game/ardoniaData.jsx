@@ -900,18 +900,18 @@ export const EVENT_CARDS = [
 export const AVATARS = {
   onishiman: [
     {
-      id: 'elder_protectors', name: 'Elder Protectors', tier: 'Lesser',
-      cost: { sp: 2, crystals: 2 }, gateLevel: 1, duration: 3,
-      passive: 'Waters of Silence: Enemy units entering your province roll -1 on their first attack roll, as if the spirit drowns their will to fight.',
-      active: 'Tidal Awakening: Spend 3 SP — force your enemy to reroll any one dice action and take the lowest result. Once per round.',
-      emoji: '🌊', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/6ec299a80_20.png'
-    },
-    {
-      id: 'guardian_eternal', name: 'Guardian of the Eternal Emperor', tier: 'Intermediate',
-      cost: { sacrificeUnit: 1, crystals: 2 }, gateLevel: 2, duration: 3,
+      id: 'guardian_eternal', name: 'Guardian of the Eternal Emperor', tier: 'Lesser',
+      cost: { sacrificeUnit: 1, crystals: 2 }, gateLevel: 1, duration: 3,
       passive: 'Eternal Vigil: All friendly units in the same province roll +1 when defending.',
       active: 'Soul Surge: Spend 2 SP to grant all units in the same battle +2 to their rolls for one round. Use once per summon.',
       emoji: '🔱', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/ac7245089_19.png'
+    },
+    {
+      id: 'elder_protectors', name: 'Elder Protectors', tier: 'Intermediate',
+      cost: { sp: 2, crystals: 3 }, gateLevel: 2, duration: 3,
+      passive: 'Waters of Silence: Enemy units entering your province roll -1 on their first attack roll, as if the spirit drowns their will to fight.',
+      active: 'Tidal Awakening: Spend 3 SP — force your enemy to reroll any one dice action and take the lowest result. Once per round.',
+      emoji: '🌊', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/6ec299a80_20.png'
     },
     {
       id: 'eternal_emperor', name: 'The Eternal Emperor', tier: 'Legendary',
