@@ -1036,16 +1036,37 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                        // Gradient id — unique per unit type per token color (just use inline)
                        const topLight = '#ffffff';
 
+                       // Unit type styling
+                       const typeStyles = {
+                         infantry: { innerColor: '#2a5a8a', borderPattern: 'none', strokeDash: '' },
+                         cavalry: { innerColor: '#8a5a2a', borderPattern: 'dashed', strokeDash: '3,1' },
+                         elite: { innerColor: '#f0c040', borderPattern: 'dotted', strokeDash: '1,2' },
+                         ranged: { innerColor: '#4a8a4a', borderPattern: 'dashed', strokeDash: '2,2' },
+                         siege: { innerColor: '#8a3a2a', borderPattern: 'solid', strokeDash: '' },
+                         naval: { innerColor: '#2a5a9a', borderPattern: 'wave', strokeDash: '' },
+                       };
+                       const typeStyle = typeStyles[u.type] || typeStyles.infantry;
+
                        return (
                          <g key={i} transform={`translate(${xPos},${yPos})`} filter={glowFilter}>
                              {/* 3D ground shadow */}
                              <ellipse cx={0} cy={R + 2} rx={R * 0.85} ry={R * 0.25}
                                fill="#000000" fillOpacity={0.4} />
 
-                             {/* Token outer ring — nation color */}
-                             <circle cx={0} cy={0} r={R + 1.5}
-                               fill={nationColor} fillOpacity={0.85}
-                               stroke="#000000" strokeWidth={0.8}>
+                             {/* Outer nation color ring */}
+                             <circle cx={0} cy={0} r={R + 1.8}
+                               fill={nationColor} fillOpacity={0.9}
+                               stroke="#1a1a1a" strokeWidth={1}>
+                               <animate attributeName="cy"
+                                 values={`-1;1;-1`}
+                                 dur={bobDur} begin={animDelay}
+                                 repeatCount="indefinite" additive="sum" />
+                             </circle>
+
+                             {/* Unit type inner ring */}
+                             <circle cx={0} cy={0} r={R + 0.5}
+                               fill={typeStyle.innerColor} fillOpacity={0.6}
+                               stroke={nationColor} strokeWidth={1.2} strokeDasharray={typeStyle.strokeDash}>
                                <animate attributeName="cy"
                                  values={`-1;1;-1`}
                                  dur={bobDur} begin={animDelay}
@@ -1053,7 +1074,15 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                              </circle>
 
                              {/* Main token body */}
-                             <circle cx={0} cy={0} r={R} fill="#0f1218" stroke={nationColor} strokeWidth={1.5}>
+                             <circle cx={0} cy={0} r={R} fill="#1a1a2a" stroke={nationColor} strokeWidth={2}>
+                               <animate attributeName="cy"
+                                 values={`-1;1;-1`}
+                                 dur={bobDur} begin={animDelay}
+                                 repeatCount="indefinite" additive="sum" />
+                             </circle>
+
+                             {/* Unit type symbol background */}
+                             <circle cx={0} cy={0} r={R - 1} fill={typeStyle.innerColor} fillOpacity={0.15}>
                                <animate attributeName="cy"
                                  values={`-1;1;-1`}
                                  dur={bobDur} begin={animDelay}
@@ -1062,14 +1091,14 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
                              {/* Specular highlight — top-left dome glint */}
                              <ellipse cx={-R * 0.28} cy={-R * 0.38} rx={R * 0.32} ry={R * 0.18}
-                               fill={topLight} fillOpacity={0.28} transform="rotate(-25)">
+                               fill={topLight} fillOpacity={0.35} transform="rotate(-25)">
                                <animate attributeName="cy"
                                  values={`${-R*0.38 - 1};${-R*0.38 + 1};${-R*0.38 - 1}`}
                                  dur={bobDur} begin={animDelay}
                                  repeatCount="indefinite" additive="sum" />
                              </ellipse>
 
-                             {/* Unit icon */}
+                             {/* Unit icon with animation */}
                              {isReapership ? (
                                <g>
                                  {/* Japanese dragon boat hull */}
@@ -1092,14 +1121,19 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                                  </path>
                                </g>
                              ) : (
-                               <text x={0} y={4} textAnchor="middle" fontSize={isElite ? 12 : 10}
-                                 style={{ userSelect: 'none' }}>
-                                 {nationEmblemsForUnit[u.type] || '⚔️'}
-                                 <animate attributeName="y"
-                                   values={`3;5;3`}
-                                   dur={bobDur} begin={animDelay}
-                                   repeatCount="indefinite" additive="sum" />
-                               </text>
+                               <g>
+                                 {/* Nation emblem background circle */}
+                                 <circle cx={0} cy={0} r={6} fill={nationColor} fillOpacity={0.3} stroke={nationColor} strokeWidth={0.8}/>
+                                 {/* Unit emblem icon */}
+                                 <text x={0} y={4} textAnchor="middle" fontSize={isElite ? 13 : 11}
+                                   style={{ userSelect: 'none', fontWeight: 'bold' }}>
+                                   {nationEmblemsForUnit[u.type] || '⚔️'}
+                                   <animate attributeName="y"
+                                     values={`3;5;3`}
+                                     dur={bobDur} begin={animDelay}
+                                     repeatCount="indefinite" additive="sum" />
+                                 </text>
+                               </g>
                              )}
 
                              {/* Elite pulsing halo ring */}
