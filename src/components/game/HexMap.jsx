@@ -997,14 +997,36 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                        const xPos = cx + (col - (cols - 1) / 2) * spread;
                        const yPos = cy - 4 + row * 9;
 
+                       // Get nation from owner player
+                       const ownerPlayer = gameState?.players?.find(p => p.id === owner);
+                       const factionId = ownerPlayer?.factionId;
+                       const nationId = factionId ? FACTION_TO_NATION_ID[factionId] : null;
+                       const nationColor = nationId ? NATION_COLORS[nationId] : tokenColor;
+                       
                        // Unique animation offset per unit
                        const animDelay = `${(i * 0.4).toFixed(1)}s`;
                        const bobDur = isElite ? '1.2s' : isCavalry ? '0.9s' : '1.6s';
 
-                       // Pick icon & color accent
-                       const icons = {
-                         infantry: '⚔️', cavalry: '🐴', elite: '⭐',
-                         ranged: '🏹', siege: '💣', naval: '⛵',
+                       // Nation-specific unit emblems
+                       const nationEmblems = {
+                         gojeon: { infantry: '🎭', cavalry: '🎪', elite: '👑', ranged: '🏯', siege: '⛩️', naval: '🐉' },
+                         ruskel: { infantry: '🛡️', cavalry: '🗡️', elite: '⚜️', ranged: '❄️', siege: '⛏️', naval: '🧊' },
+                         oakhaven: { infantry: '🌳', cavalry: '🦌', elite: '🔰', ranged: '🍃', siege: '🪓', naval: '🌊' },
+                         onishiman: { infantry: '⚔️', cavalry: '🗻', elite: '💎', ranged: '🎯', siege: '🔥', naval: '🐉' },
+                         kadjimaran: { infantry: '🏜️', cavalry: '🐪', elite: '👸', ranged: '⚡', siege: '🏺', naval: '🐚' },
+                         nimrudan: { infantry: '🦅', cavalry: '🦁', elite: '👼', ranged: '☀️', siege: '⚱️', naval: '🌀' },
+                         azure: { infantry: '🌙', cavalry: '💫', elite: '✨', ranged: '🌊', siege: '🏰', naval: '⛵' },
+                         kinetic: { infantry: '⚙️', cavalry: '🔧', elite: '🔩', ranged: '💥', siege: '🔨', naval: '⚡' },
+                         ilalocatotlan: { infantry: '🌺', cavalry: '🦜', elite: '🪶', ranged: '🌿', siege: '🗿', naval: '🌴' },
+                         hestia: { infantry: '🔥', cavalry: '🐴', elite: '💛', ranged: '🏛️', siege: '🔱', naval: '🌊' },
+                         icebound: { infantry: '❄️', cavalry: '🐺', elite: '👹', ranged: '❓', siege: '🗻', naval: '🧊' },
+                         inuvak: { infantry: '🏹', cavalry: '🦅', elite: '🏔️', ranged: '🌬️', siege: '⛰️', naval: '🌪️' },
+                         silver: { infantry: '💠', cavalry: '💎', elite: '👑', ranged: '✨', siege: '⚒️', naval: '🌟' },
+                         shadowsfall: { infantry: '👤', cavalry: '🦇', elite: '👻', ranged: '🌑', siege: '⚰️', naval: '🌫️' },
+                         scorched: { infantry: '🔥', cavalry: '🦂', elite: '🌋', ranged: '☠️', siege: '💀', naval: '🌡️' },
+                       };
+                       const nationEmblemsForUnit = nationEmblems[normNationId(selected?.nation_id)] || {
+                         infantry: '⚔️', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '💣', naval: '⛵',
                        };
                        const isReapership = u.name === 'Reapership';
                        const glowFilter = isElite ? 'url(#unitGlowGold)' : isSiege ? 'url(#unitGlowRed)' : isNaval ? 'url(#unitGlowBlue)' : 'url(#unitShadow)';
@@ -1020,9 +1042,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                              <ellipse cx={0} cy={R + 2} rx={R * 0.85} ry={R * 0.25}
                                fill="#000000" fillOpacity={0.4} />
 
-                             {/* Token outer ring — faction color */}
+                             {/* Token outer ring — nation color */}
                              <circle cx={0} cy={0} r={R + 1.5}
-                               fill={tokenColor} fillOpacity={0.85}
+                               fill={nationColor} fillOpacity={0.85}
                                stroke="#000000" strokeWidth={0.8}>
                                <animate attributeName="cy"
                                  values={`-1;1;-1`}
@@ -1031,7 +1053,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                              </circle>
 
                              {/* Main token body */}
-                             <circle cx={0} cy={0} r={R} fill="#0f1218" stroke={tokenColor} strokeWidth={1.5}>
+                             <circle cx={0} cy={0} r={R} fill="#0f1218" stroke={nationColor} strokeWidth={1.5}>
                                <animate attributeName="cy"
                                  values={`-1;1;-1`}
                                  dur={bobDur} begin={animDelay}
@@ -1072,7 +1094,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                              ) : (
                                <text x={0} y={4} textAnchor="middle" fontSize={isElite ? 12 : 10}
                                  style={{ userSelect: 'none' }}>
-                                 {icons[u.type] || '⚔️'}
+                                 {nationEmblemsForUnit[u.type] || '⚔️'}
                                  <animate attributeName="y"
                                    values={`3;5;3`}
                                    dur={bobDur} begin={animDelay}
