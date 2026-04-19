@@ -10,16 +10,20 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
   
   // Boat must be on water or coastal tile
   const boatTerrain = mapData.hex_grid.find(h => `${h.col},${h.row}` === selHexId)?.terrain;
-  const boatOnWaterOrCoastal = boatTerrain === 'water' || boatTerrain === 'coastal';
-  const canDisembark = navalUnit && embarked.length > 0 && hexOwner === currentPlayer?.id && !currentPlayer?.isAI && boatOnWaterOrCoastal;
-
-  if (!canDisembark) return null;
-
+  const boatOnWater = boatTerrain === 'water';
+  const boatOnCoastal = boatTerrain === 'coastal';
+  
   // Only allow disembark to adjacent coastal tiles
   const adjacentCoastal = getNeighborHexIds(selHexId).filter(nId => {
     const terrain = mapData.hex_grid.find(h => `${h.col},${h.row}` === nId)?.terrain;
     return terrain === 'coastal';
   });
+  
+  // Block disembark if boat is on water with no adjacent coastal tiles
+  const hasValidDisembarkTarget = adjacentCoastal.length > 0 || boatOnCoastal;
+  const canDisembark = navalUnit && embarked.length > 0 && hexOwner === currentPlayer?.id && !currentPlayer?.isAI && hasValidDisembarkTarget;
+
+  if (!canDisembark) return null;
 
   const handleDisembark = (targetHexId) => {
     setGameState(prev => {
