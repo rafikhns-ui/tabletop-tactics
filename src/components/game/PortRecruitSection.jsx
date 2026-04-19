@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+const REAPER_IMAGE = 'https://media.base44.com/images/public/69b732e420481df67e8a6804/4c3f57a91_16.png';
 
 export default function PortRecruitSection({ selHexId, currentPlayer, onRecruitReapership }) {
+  const [hovered, setHovered] = useState(false);
   const reaperDef = { gold: 2, wood: 3 };
   const canAfford = Object.entries(reaperDef).every(([k, v]) => (currentPlayer?.resources?.[k] ?? 0) >= v);
 
@@ -9,7 +12,14 @@ export default function PortRecruitSection({ selHexId, currentPlayer, onRecruitR
       <div style={{ color: '#4488ff', fontFamily: "'Cinzel', serif", fontSize: 12, fontWeight: 700, marginBottom: 8 }}>
         ⚓ PORT RECRUITMENT
       </div>
-      <div style={{ borderRadius: 8, border: '1px solid #4488ff55', background: 'linear-gradient(135deg,#4488ff18,#0a0c12)' }}>
+      {hovered && (
+        <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 9999, pointerEvents: 'none' }}>
+          <img src={REAPER_IMAGE} alt="Infamous Reapership" style={{ width: 320, height: 'auto', borderRadius: 12, border: '3px solid #4488ff', boxShadow: '0 0 60px #4488ff66' }} />
+        </div>
+      )}
+      <div style={{ borderRadius: 8, border: '1px solid #4488ff55', background: 'linear-gradient(135deg,#4488ff18,#0a0c12)', cursor: 'default' }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: '1px solid #4488ff33' }}>
           <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, background: 'radial-gradient(circle at 35% 30%,#4488ff88,#0a0c12)', border: '2px solid #4488ff88', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
             ⛵
