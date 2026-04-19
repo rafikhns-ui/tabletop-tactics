@@ -1007,23 +1007,23 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                        const animDelay = `${(i * 0.4).toFixed(1)}s`;
                        const bobDur = isElite ? '1.2s' : isCavalry ? '0.9s' : '1.6s';
 
-                       // Nation-specific unit emblems
+                       // Nation emblem images
                        const nationEmblems = {
-                         gojeon: { infantry: '🎭', cavalry: '🎪', elite: '👑', ranged: '🏯', siege: '⛩️', naval: '🐉' },
-                         ruskel: { infantry: '🛡️', cavalry: '🗡️', elite: '⚜️', ranged: '❄️', siege: '⛏️', naval: '🧊' },
-                         oakhaven: { infantry: '🌳', cavalry: '🦌', elite: '🔰', ranged: '🍃', siege: '🪓', naval: '🌊' },
-                         onishiman: { infantry: '⚔️', cavalry: '🗻', elite: '💎', ranged: '🎯', siege: '🔥', naval: '🐉' },
-                         kadjimaran: { infantry: '🏜️', cavalry: '🐪', elite: '👸', ranged: '⚡', siege: '🏺', naval: '🐚' },
-                         nimrudan: { infantry: '🦅', cavalry: '🦁', elite: '👼', ranged: '☀️', siege: '⚱️', naval: '🌀' },
-                         azure: { infantry: '🌙', cavalry: '💫', elite: '✨', ranged: '🌊', siege: '🏰', naval: '⛵' },
-                         kinetic: { infantry: '⚙️', cavalry: '🔧', elite: '🔩', ranged: '💥', siege: '🔨', naval: '⚡' },
-                         ilalocatotlan: { infantry: '🌺', cavalry: '🦜', elite: '🪶', ranged: '🌿', siege: '🗿', naval: '🌴' },
-                         hestia: { infantry: '🔥', cavalry: '🐴', elite: '💛', ranged: '🏛️', siege: '🔱', naval: '🌊' },
-                         icebound: { infantry: '❄️', cavalry: '🐺', elite: '👹', ranged: '❓', siege: '🗻', naval: '🧊' },
-                         inuvak: { infantry: '🏹', cavalry: '🦅', elite: '🏔️', ranged: '🌬️', siege: '⛰️', naval: '🌪️' },
-                         silver: { infantry: '💠', cavalry: '💎', elite: '👑', ranged: '✨', siege: '⚒️', naval: '🌟' },
-                         shadowsfall: { infantry: '👤', cavalry: '🦇', elite: '👻', ranged: '🌑', siege: '⚰️', naval: '🌫️' },
-                         scorched: { infantry: '🔥', cavalry: '🦂', elite: '🌋', ranged: '☠️', siege: '💀', naval: '🌡️' },
+                         gojeon: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d68a471ae_photo-output672.png',
+                         ruskel: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/0ef66cce6_photo-output4.png',
+                         oakhaven: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/449a73901_oakhaven.png',
+                         onishiman: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/8a875b40d_photo-output.png',
+                         kadjimaran: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/5e6882e48_photo-output2.png',
+                         nimrudan: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/c8851f071_empireassyrian.png',
+                         azure: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/08a33f4a8_bluemoo.png',
+                         icebound: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/011bfc403_thehorde.png',
+                         ilalocatotlan: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/75e3d6016_photo-output3.png',
+                         kinetic: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/kinetic.png',
+                         hestia: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/hestia.png',
+                         inuvak: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/inuvak.png',
+                         silver: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/silver.png',
+                         shadowsfall: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/shadowsfall.png',
+                         scorched: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/scorched.png',
                        };
                        // Use unit's actual nation (from owner), not selected hex nation
                        const unitNationId = nationId ? normNationId(nationId) : normNationId(hex.nation_id);
@@ -1124,15 +1124,18 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                                <g>
                                  {/* Nation emblem background circle */}
                                  <circle cx={0} cy={0} r={6} fill={nationColor} fillOpacity={0.3} stroke={nationColor} strokeWidth={0.8}/>
-                                 {/* Unit emblem icon */}
-                                 <text x={0} y={4} textAnchor="middle" fontSize={isElite ? 13 : 11}
-                                   style={{ userSelect: 'none', fontWeight: 'bold' }}>
-                                   {nationEmblemsForUnit[u.type] || '⚔️'}
-                                   <animate attributeName="y"
-                                     values={`3;5;3`}
-                                     dur={bobDur} begin={animDelay}
-                                     repeatCount="indefinite" additive="sum" />
-                                 </text>
+                                 {/* Nation emblem image */}
+                                 {nationEmblems[unitNationId] && (
+                                   <image
+                                     x={-5} y={-5} width={10} height={10}
+                                     href={nationEmblems[unitNationId]}
+                                     style={{ userSelect: 'none', clipPath: 'circle(5px)' }}>
+                                     <animate attributeName="y"
+                                       values={`-6;-4;-6`}
+                                       dur={bobDur} begin={animDelay}
+                                       repeatCount="indefinite" additive="sum" />
+                                   </image>
+                                 )}
                                </g>
                              )}
 
