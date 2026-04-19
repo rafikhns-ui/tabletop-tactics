@@ -197,7 +197,7 @@ function estimateCombat(attackerUnits, defenderUnits, hasFortress) {
   };
 }
 
-export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit, showInfluenceOverlay, sentiment, draggingDeployUnit, onDragDeployDrop }) {
+export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit, showInfluenceOverlay, sentiment, draggingDeployUnit, onDragDeployDrop, onRecruitReapership }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -1918,6 +1918,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const selHexId = `${selected.col},${selected.row}`;
             const hexBuildings = gameState?.hexes?.[selHexId]?.buildings || {};
             const capInfo = CAPITAL_HEX_INFO[selHexId];
+            const hexOwnerForBuildings = getOwner(selHexId, selected?.nation_id);
+            const isMyPort = hexOwnerForBuildings === currentPlayer?.id && !currentPlayer?.isAI;
+            const reaperDef = { gold: 2, wood: 3 }; // infamous_reapership cost
+            const canAffordReaper = isMyPort && Object.entries(reaperDef).every(([k, v]) => (currentPlayer?.resources?.[k] ?? 0) >= v);
             const BDEF = {
               fortress: { icon: '🏰', name: 'Fortress', effect: 'Defense +2 dice', color: '#8a8a9a', desc: 'Stone fortification. Defenders roll d8 instead of d6.' },
               port: { icon: '⚓', name: 'Harbour Port', effect: 'Naval access · Gold +1', color: '#4488ff', desc: 'Enables naval deployment and boosts coastal income.' },
