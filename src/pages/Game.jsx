@@ -85,6 +85,8 @@ import DiplomacyInfluenceMergedPanel from '../components/game/DiplomacyInfluence
 import CardPlayOverlay from '../components/game/CardPlayOverlay';
 import { applyInstantCardEffects, getPlayerCombatCardBonus } from '../components/game/cardEffects';
 import { buildPlayCardHandler } from '../lib/cardHandler';
+import { isNavalUnit, isLandUnit, embarkUnits } from '../lib/embarkationLogic';
+import { processEmbarkMovement } from '../lib/embarkMovementHandler';
 import MarketPanel from '../components/game/MarketPanel';
 import SilverUnionMenu from '../components/game/SilverUnionMenu';
 import TopBar from '../components/game/TopBar';
@@ -543,6 +545,34 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         const destOwner = toHexSnap.owner;
         const hasHostileUnits = destUnits.length > 0 && destOwner && destOwner !== currentPlayer.id;
 
+        // Check for embarkation (land units moving to naval unit on coastal hex)
+        const terrain = HEX_TERRAIN_LOOKUP[hexId];
+        const isCoastal = terrain === 'coastal';
+        const destNavalUnit = destUnits.find(u => isNavalUnit(u.type));
+        const canEmbarkHere = isLandUnit(unitType) && destNavalUnit && isCoastal && destOwner === currentPlayer.id;
+
+        if (canEmbarkHere) {
+          const { embarked } = embarkUnits({ embarked: toHexSnap.embarked }, unitsToMoveSnap);
+          setGameState(prev => {
+            const fromHex = prev.hexes[fromHexId] || {};
+            const toHex = prev.hexes[hexId] || {};
+            return {
+              ...prev,
+              hexes: {
+                ...prev.hexes,
+                [fromHexId]: { ...fromHex, units: remainingFromUnitsSnap },
+                [hexId]: { ...toHex, units: destUnits, embarked, owner: currentPlayer.id },
+              },
+            };
+          });
+          setMovedHexes(prev => new Set([...prev, fromHexId]));
+          setSelectedTerritory(null);
+          setMovementState(null);
+          addMessage(`⚓ Land units embarked onto naval unit!`);
+          addLog('move', 'Embarked on naval unit', null, 'Move');
+          return;
+        }
+
         if (hasHostileUnits) {
           // Stage the move and open battle modal
           setHexBattle({
@@ -569,20 +599,28 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
             if (ex) ex.count += mu.count;
             else mergedToUnits.push({ ...mu });
           }
+          
+          // Auto-disembark if naval unit with cargo moves to coastal hex
+          const toTerrain = HEX_TERRAIN_LOOKUP[hexId];
+          const hasEmbarked = (fromHex.embarked || []).length > 0;
+          const autoDisembark = isNavalUnit(unitType) && hasEmbarked && toTerrain === 'coastal';
+          const finalToUnits = autoDisembark ? [...mergedToUnits, ...(fromHex.embarked || [])] : mergedToUnits;
+          
           return {
             ...prev,
             hexes: {
               ...prev.hexes,
-              [fromHexId]: { ...fromHex, units: remainingFromUnitsSnap },
-              [hexId]: { ...toHex, units: mergedToUnits, owner: currentPlayer.id },
+              [fromHexId]: { ...fromHex, units: remainingFromUnitsSnap, embarked: autoDisembark ? [] : (fromHex.embarked || []) },
+              [hexId]: { ...toHex, units: finalToUnits, embarked: toHex.embarked || [], owner: currentPlayer.id },
             },
           };
         });
 
+        const didAutoDisembark = isNavalUnit(unitType) && (gameState.hexes[fromHexId]?.embarked || []).length > 0 && HEX_TERRAIN_LOOKUP[hexId] === 'coastal';
         setMovedHexes(prev => new Set([...prev, fromHexId, hexId]));
         setSelectedTerritory(null);
         setMovementState(null);
-        addMessage(`🚶 Moved ${unitType} to hex`);
+        addMessage(didAutoDisembark ? `⚓ Naval unit arrived at coast — units disembarked!` : `🚶 Moved ${unitType} to hex`);
         addLog('move', `Moved ${unitType} to new hex`, null, 'Move');
       }
     } else if (phase === 'fortify') {

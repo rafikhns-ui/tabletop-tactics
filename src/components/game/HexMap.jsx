@@ -1875,7 +1875,12 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                           <div style={{ flex: 1 }}>
                             <div style={{ fontFamily: "'Cinzel', serif", fontWeight: 600, fontSize: 12 }}>{typeNames[u.type] || u.type}</div>
                             {u.count > 1 && <div style={{ fontSize: 11, color: '#7a6a50' }}>×{u.count} units</div>}
-                            {(u.type === 'naval' || u.name === 'Reapership') && <div style={{ fontSize: 10, color: '#4488ff', marginTop: 2, fontWeight: 600 }}>⚓ Infamous Reapership · Water-only · d12 · Transport 4</div>}
+                            {(u.type === 'naval' || u.name === 'Reapership') && <div style={{ fontSize: 10, color: '#4488ff', marginTop: 2, fontWeight: 600 }}>⚓ Infamous Reapership · Water-only · d12 · Transport 3</div>}
+                            {(u.type === 'naval' || u.name === 'Reapership') && (() => {
+                              const embarked = getUnits(hexId).length > 0 ? (gameState?.hexes?.[hexId]?.embarked || []) : [];
+                              const count = embarked.reduce((s, e) => s + e.count, 0);
+                              return count > 0 ? <div style={{ fontSize: 10, color: '#ffcc44', marginTop: 2 }}>👥 Carrying {count}/3 unit{count > 1 ? 's' : ''} embarked</div> : null;
+                            })()}
                             {u.type === 'naval' && u.name !== 'Reapership' && <div style={{ fontSize: 10, color: '#4488ff', marginTop: 2 }}>⚓ Naval unit · Water-only · d12</div>}
                             {u.type === 'siege' && <div style={{ fontSize: 10, color: '#ff8844', marginTop: 2 }}>🏰 +1 attack vs fortified · d8</div>}
                             {u.type === 'elite' && <div style={{ fontSize: 10, color: '#f0c040', marginTop: 2 }}>⭐ +1 die · Can capture · d10</div>}
