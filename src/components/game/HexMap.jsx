@@ -553,6 +553,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
           width="100%" height="100%"
           preserveAspectRatio="xMidYMid meet"
           style={{ background: 'radial-gradient(ellipse at 40% 35%, #0d1528 0%, #04080f 100%)', display: 'block' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setSelected(null); }}
         >
           <defs>
             {/* ── Filters ── */}
@@ -759,14 +760,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
           </defs>
 
-          {/* Click on empty SVG background to deselect */}
-          <rect x={-120} y={-80} width={SVG_W + 240} height={SVG_H + 160} fill="transparent"
-            onClick={() => setSelected(null)} style={{ cursor: 'default' }} />
-
           {zoomTransform && (
             <g>
               <rect x={0} y={0} width={SVG_W} height={SVG_H} fill="transparent"
-                onClick={handleZoomOut} style={{ cursor: 'zoom-out', pointerEvents: 'none' }} />
+                onClick={handleZoomOut} style={{ cursor: 'zoom-out' }} />
             </g>
           )}
 
