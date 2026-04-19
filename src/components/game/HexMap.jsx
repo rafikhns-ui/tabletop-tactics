@@ -1025,9 +1025,8 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                          shadowsfall: { infantry: '👤', cavalry: '🦇', elite: '👻', ranged: '🌑', siege: '⚰️', naval: '🌫️' },
                          scorched: { infantry: '🔥', cavalry: '🦂', elite: '🌋', ranged: '☠️', siege: '💀', naval: '🌡️' },
                        };
-                       const nationEmblemsForUnit = nationEmblems[normNationId(selected?.nation_id)] || {
-                         infantry: '⚔️', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '💣', naval: '⛵',
-                       };
+                       // Use unit's actual nation (from owner), not selected hex nation
+                       const nationEmblemsForUnit = nationId ? (nationEmblems[normNationId(nationId)] || nationEmblems.gojeon) : nationEmblems.gojeon;
                        const isReapership = u.name === 'Reapership';
                        const glowFilter = isElite ? 'url(#unitGlowGold)' : isSiege ? 'url(#unitGlowRed)' : isNaval ? 'url(#unitGlowBlue)' : 'url(#unitShadow)';
                        const R = isElite || isReapership ? 11 : isSiege ? 10 : 9;
