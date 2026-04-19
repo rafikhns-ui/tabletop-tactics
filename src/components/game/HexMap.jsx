@@ -3,6 +3,7 @@ import mapData from './ardonia_game_map.json';
 import { FACTIONS, FACTION_TO_NATION_ID } from './ardoniaData';
 import PortRecruitSection from './PortRecruitSection';
 import { NationFortress, NationPort } from './HexStructures';
+import { NATION_EMBLEMS } from '../../lib/nationEmblems';
 
 // Special event locations pinned to specific nation centroids
 const SPECIAL_EVENTS = [
@@ -1007,27 +1008,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                        const animDelay = `${(i * 0.4).toFixed(1)}s`;
                        const bobDur = isElite ? '1.2s' : isCavalry ? '0.9s' : '1.6s';
 
-                       // Nation emblem images
-                       const nationEmblems = {
-                         gojeon: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d68a471ae_photo-output672.png',
-                         ruskel: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/0ef66cce6_photo-output4.png',
-                         oakhaven: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/449a73901_oakhaven.png',
-                         onishiman: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/8a875b40d_photo-output.png',
-                         kadjimaran: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/5e6882e48_photo-output2.png',
-                         nimrudan: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/c8851f071_empireassyrian.png',
-                         azure: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/08a33f4a8_bluemoo.png',
-                         icebound: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/011bfc403_thehorde.png',
-                         ilalocatotlan: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d92d76e51_photo-output3.png',
-                         kinetic: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/720953d4f_Greiterkintei.png',
-                         hestia: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/hestia.png',
-                         inuvak: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/inuvak.png',
-                         silver: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/03334c5b1_silverunion1.png',
-                         shadowsfall: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/5c05b18f1_Shadowsfall.png',
-                         scorched: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/c116e858f_scorchedlands.png',
-                       };
+
                        // Use unit's actual nation (from owner), not selected hex nation
                        const unitNationId = nationId ? normNationId(nationId) : normNationId(hex.nation_id);
-                       const nationEmblemsForUnit = nationEmblems[unitNationId] || nationEmblems.gojeon;
+                       const nationEmblemsForUnit = NATION_EMBLEMS[unitNationId] || NATION_EMBLEMS.gojeon;
                        const isReapership = u.name === 'Reapership';
                        const glowFilter = isElite ? 'url(#unitGlowGold)' : isSiege ? 'url(#unitGlowRed)' : isNaval ? 'url(#unitGlowBlue)' : 'url(#unitShadow)';
                        const R = isElite || isReapership ? 11 : isSiege ? 10 : 9;

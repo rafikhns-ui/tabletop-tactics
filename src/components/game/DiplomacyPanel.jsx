@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import DiplomacyDiscussion from './DiplomacyDiscussion';
+import { NATION_EMBLEMS } from '../../lib/nationEmblems';
 
 const RELATION_STYLES = {
   neutral:  { label: 'Neutral',  icon: '🤝', bg: 'hsl(35,20%,20%)',  border: 'hsl(35,20%,32%)',  text: 'hsl(40,20%,65%)' },
@@ -147,6 +148,9 @@ export default function DiplomacyPanel({
                 <div key={p.id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs"
                   style={{ background: style.bg, border: `1px solid ${style.border}` }}>
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.color }} />
+                  {NATION_EMBLEMS[p.factionId] && (
+                    <img src={NATION_EMBLEMS[p.factionId]} alt="" style={{ width: 14, height: 14, objectFit: 'contain', flexShrink: 0 }} />
+                  )}
                   <span className="flex-1 font-semibold truncate" style={{ color: 'hsl(40,25%,80%)' }}>
                     {p.name} {p.isAI && <span className="opacity-40">🤖</span>}
                   </span>
@@ -178,6 +182,9 @@ export default function DiplomacyPanel({
                       border: `1px solid ${proposeTo === p.id ? 'hsl(43,80%,50%)' : style.border}`,
                     }}>
                     <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.color }} />
+                    {NATION_EMBLEMS[p.factionId] && (
+                      <img src={NATION_EMBLEMS[p.factionId]} alt="" style={{ width: 14, height: 14, objectFit: 'contain', flexShrink: 0 }} />
+                    )}
                     <span className="flex-1 text-left" style={{ color: 'hsl(40,25%,78%)' }}>{p.name}</span>
                     <span className="opacity-50" style={{ color: style.text }}>{style.icon} {style.label}</span>
                   </button>
@@ -249,6 +256,9 @@ export default function DiplomacyPanel({
                       color: 'hsl(40,20%,70%)',
                     }}>
                     <div className="w-2 h-2 rounded-full" style={{ background: p.color }} />
+                    {NATION_EMBLEMS[p.factionId] && (
+                      <img src={NATION_EMBLEMS[p.factionId]} alt="" style={{ width: 12, height: 12, objectFit: 'contain', flexShrink: 0 }} />
+                    )}
                     {p.name}
                   </button>
                 ))}

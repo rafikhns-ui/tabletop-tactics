@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FACTIONS } from './ardoniaData';
+import { NATION_EMBLEMS } from '../../lib/nationEmblems';
 
 const PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
 const PLAYER_LABELS = ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5'];
@@ -22,7 +23,7 @@ function FactionCard({ faction, selected, disabled, onClick }) {
       }}
     >
       <div className="flex items-center gap-2 mb-1">
-        {faction.logo && <img src={faction.logo} alt={faction.name} style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />}
+        {NATION_EMBLEMS[faction.id] && <img src={NATION_EMBLEMS[faction.id]} alt={faction.name} style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />}
         <div className="font-black text-sm" style={{ color: selected ? faction.color : 'inherit' }}>{faction.emoji} {faction.name}</div>
       </div>
       <div className="text-xs opacity-40 mb-2 truncate">{faction.continent}</div>
