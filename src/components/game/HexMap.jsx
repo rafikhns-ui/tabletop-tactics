@@ -1440,34 +1440,39 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
             const isHovered = hoveredFactionLabel === fc.fid;
             return (
-              <g key={`fl${fc.fid}`}
-                style={{ pointerEvents: 'none', cursor: 'default', opacity: isHovered ? 0 : 1, transition: 'opacity 0.3s' }}
-                onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
-                onMouseLeave={() => setHoveredFactionLabel(null)}>
-                {/* Transparent hit area — always captures mouse but lets clicks through */}
-                <rect x={cx - 130} y={cy - 36} width={260} height={line2 ? 64 : 36} fill="transparent" style={{ pointerEvents: 'all', cursor: 'default' }} />
+              <g key={`fl${fc.fid}`} style={{ pointerEvents: 'none', opacity: isHovered ? 0 : 1, transition: 'opacity 0.3s' }}>
                 <text x={cx} y={cy - (line2 ? 10 : 0)} textAnchor="middle" fontSize={26}
                   fill="none" stroke={fc.color} strokeWidth={6} strokeOpacity={0.4}
-                  fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}>
+                  fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}
+                  style={{ pointerEvents: 'all' }}
+                  onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
+                  onMouseLeave={() => setHoveredFactionLabel(null)}>
                   {line1.toUpperCase()}
                 </text>
                 <text x={cx} y={cy - (line2 ? 10 : 0)} textAnchor="middle" fontSize={26}
                   fill="#fff" stroke="#0a0806" strokeWidth={5} paintOrder="stroke"
                   fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}
-                  style={{ opacity: 0.95 }}>
+                  style={{ pointerEvents: 'all', opacity: 0.95 }}
+                  onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
+                  onMouseLeave={() => setHoveredFactionLabel(null)}>
                   {line1.toUpperCase()}
                 </text>
                 {line2 && (
                   <>
                     <text x={cx} y={cy + 18} textAnchor="middle" fontSize={26}
                       fill="none" stroke={fc.color} strokeWidth={6} strokeOpacity={0.4}
-                      fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}>
+                      fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}
+                      style={{ pointerEvents: 'all' }}
+                      onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
+                      onMouseLeave={() => setHoveredFactionLabel(null)}>
                       {line2.toUpperCase()}
                     </text>
                     <text x={cx} y={cy + 18} textAnchor="middle" fontSize={26}
                       fill="#fff" stroke="#0a0806" strokeWidth={5} paintOrder="stroke"
                       fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}
-                      style={{ opacity: 0.95 }}>
+                      style={{ pointerEvents: 'all', opacity: 0.95 }}
+                      onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
+                      onMouseLeave={() => setHoveredFactionLabel(null)}>
                       {line2.toUpperCase()}
                     </text>
                   </>
