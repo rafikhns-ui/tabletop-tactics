@@ -75,6 +75,7 @@ import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDecl
 import DiplomacyInfluenceMergedPanel from '../components/game/DiplomacyInfluenceMergedPanel';
 import CardPlayOverlay from '../components/game/CardPlayOverlay';
 import { applyInstantCardEffects, getPlayerCombatCardBonus } from '../components/game/cardEffects';
+import { buildPlayCardHandler } from '../lib/cardHandler';
 import MarketPanel from '../components/game/MarketPanel';
 import SilverUnionMenu from '../components/game/SilverUnionMenu';
 import TopBar from '../components/game/TopBar';
@@ -567,10 +568,13 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         const units = hex.units?.reduce((s, u) => s + u.count, 0) || 0;
         if (hex.owner === currentPlayer.id && units > 0) {
           setSelectedTerritory(hexId);
-          addMessage(`🛡️ Moving from hex — pick adjacent friendly hex`);
+          addMessage(`🛡️ Fortify — pick a friendly hex to move troops into`);
         }
-      } else if (hexId !== selectedTerritory) {
-        if (hex.owner === currentPlayer.id) {
+      } else if (hexId === selectedTerritory) {
+        setSelectedTerritory(null);
+      } else {
+        const targetOwner = resolveHexOwner(hexId);
+        if (targetOwner === currentPlayer.id) {
           setGameState(prev => {
             const srcHex = prev.hexes[selectedTerritory];
             const dstHex = prev.hexes[hexId];
@@ -583,10 +587,12 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                 [hexId]: { ...dstHex, units: [...(dstHex?.units || []), ...movedUnits] },
               },
             };
-          });          setSelectedTerritory(null);
-          addMessage(`🛡️ Moved troops to hex`);
-        } else if (hex.owner === currentPlayer.id) {
-          setSelectedTerritory(hexId);
+          });
+          setSelectedTerritory(null);
+          addMessage(`🛡️ Troops fortified`);
+        } else {
+          addMessage(`⛔ Fortify: can only move to your own territories`);
+          setSelectedTerritory(null);
         }
       }
     }
@@ -998,110 +1004,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     addMessage(`🃏 Drew ${card.name}!`);
   };
 
-  const handlePlayCard = (card) => {
-    setGameState(prev => {
-      const player = prev.players.find(p => p.id === currentPlayer.id);
-      const newResources = { ...player.resources };
-      let newIp = player.ip ?? 0;
-      let newSp = player.sp ?? 0;
-      for (const [k, v] of Object.entries(card.cost || {})) {
-        if (k === 'ip') newIp -= v;
-        else if (k === 'sp') newSp -= v;
-        else newResources[k] = (newResources[k] || 0) - v;
-      }
-      
-      // Apply immediate effects based on card ID
-      let cardEffects = { ...player.cardEffects || {} };
-      if (card.id === 'faith_surge') {
-        newSp = Math.min(10, newSp + 3);
-      } else if (card.id === 'peace_treaty') {
-        newIp += 1;
-        cardEffects.peace_treaty = { duration: 3, active: true };
-      } else if (card.id === 'embargo') {
-        cardEffects.embargo = { duration: 2, active: true };
-      } else if (card.id === 'trade_diplomacy') {
-        newIp += 1;
-        cardEffects.trade_diplomacy = { duration: 3, active: true };
-      } else if (card.id === 'merchant_fleet') {
-        cardEffects.merchant_fleet = { duration: 2, active: true };
-      } else if (card.id === 'exclusive_contract') {
-        cardEffects.exclusive_contract = { duration: 3, active: true };
-      } else if (card.id === 'tariff_deal') {
-        cardEffects.tariff_deal = { duration: 3, active: true, tariffBonus: 1 };
-      } else if (card.id === 'wood_monopoly') {
-        cardEffects.wood_monopoly = { duration: 3, active: true, resource: 'wood' };
-      } else if (card.id === 'wheat_monopoly') {
-        cardEffects.wheat_monopoly = { duration: 3, active: true, resource: 'wheat' };
-      } else if (card.id === 'trade_corridor') {
-        cardEffects.trade_corridor = { duration: 2, active: true };
-      } else if (card.id === 'merchant_guild') {
-        cardEffects.merchant_guild = { duration: Infinity, active: true };
-      } else if (card.id === 'economic_boom') {
-        cardEffects.economic_boom = { duration: 3, active: true, goldBonus: 2 };
-      } else if (card.id === 'war_profiteering') {
-        cardEffects.war_profiteering = { duration: Infinity, active: true };
-      } else if (card.id === 'economic_manipulation') {
-        cardEffects.economic_manipulation = { duration: 1, active: true };
-      } else if (card.id === 'tariff_war') {
-        cardEffects.tariff_war = { duration: 1, active: true };
-      } else if (card.id === 'slave_trade') {
-        cardEffects.slave_trade = { duration: 3, active: true };
-      } else if (card.id === 'debt_forgiveness') {
-        cardEffects.debt_forgiveness = { duration: 1, active: true };
-      } else if (card.id === 'luxury_tax') {
-        cardEffects.luxury_tax = { duration: 1, active: true };
-      } else if (card.id === 'forced_tribute') {
-        cardEffects.forced_tribute = { duration: 1, active: true };
-      } else if (card.id === 'royal_marriage') {
-        newIp += 0; // IP effect handled in diplomacy
-        cardEffects.royal_marriage = { duration: 3, active: true };
-      } else if (card.id === 'allied_barracks') {
-        newIp += 1;
-        cardEffects.allied_barracks = { duration: 1, active: true };
-      } else if (card.id === 'diplomatic_favor') {
-        newIp += 3;
-      } else if (card.id === 'non_aggression_pact') {
-        newIp += 1;
-        cardEffects.non_aggression_pact = { duration: 2, active: true };
-      } else if (card.id === 'spiritual_pilgrimage') {
-        newSp += 3;
-      } else if (card.id === 'holy_shield') {
-        newSp += 1;
-        cardEffects.holy_shield = { duration: 1, active: true };
-      } else if (card.id === 'ritual_of_summoning') {
-        newSp += 1;
-        cardEffects.ritual_of_summoning = { duration: 1, active: true };
-      } else if (card.id === 'temple_blessing') {
-        cardEffects.temple_blessing = { duration: 1, active: true };
-      } else if (card.id === 'mystic_barrier') {
-        newSp += 1;
-        cardEffects.mystic_barrier = { duration: 1, active: true };
-      } else if (card.id === 'prophets_vision') {
-        newSp += 1;
-        cardEffects.prophets_vision = { duration: 1, active: true };
-      } else if (card.id === 'wrath_of_divine') {
-        newSp += 2;
-        cardEffects.wrath_of_divine = { duration: 1, active: true };
-      } else if (card.id === 'avatars_echo') {
-        newSp -= 1;
-        cardEffects.avatars_echo = { duration: 1, active: true };
-      } else if (card.id === 'sanctified_ground') {
-        cardEffects.sanctified_ground = { duration: 1, active: true };
-      } else if (card.id === 'echoes_of_prophecy') {
-        cardEffects.echoes_of_prophecy = { duration: 1, active: true };
-      }
-      
-      const newCards = (player.actionCards || []).filter(id => id !== card.id);
-      const newPlayer = { ...player, resources: newResources, ip: newIp, sp: newSp, actionCards: newCards, cardEffects };
-      const baseState = { ...prev, players: prev.players.map(p => p.id === currentPlayer.id ? newPlayer : p) };
-      // Apply instant effects (tributes, wrath damage, taxes, etc.)
-      const { newPlayers, newHexes } = applyInstantCardEffects(card, baseState, currentPlayer.id);
-      return { ...baseState, players: newPlayers, hexes: newHexes };
-    });
-    setCardPlayAnnouncement({ card, playerName: currentPlayer.name, playerColor: currentPlayer.color });
-    addMessage(`🃏 Played ${card.name}: ${card.effect}`);
-    addLog('card', `Played card: ${card.name}`, card.effect, 'Action');
-  };
+  const handlePlayCard = buildPlayCardHandler({ setGameState, setCardPlayAnnouncement, addMessage, addLog, getCurrentPlayer: () => currentPlayer });
 
   // AI evaluates relationships and takes proactive diplomacy actions
   const generateAiDiplomacyActions = useCallback((aiPlayer, gameStateSnap) => {
