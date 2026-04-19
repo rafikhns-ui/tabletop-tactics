@@ -1091,26 +1091,15 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
 
                              {/* Unit icon with animation */}
                              {isReapership ? (
-                               <g>
-                                 {/* Japanese dragon boat hull */}
-                                 <ellipse cx={0} cy={2} rx={5} ry={2} fill="#3a1a08" stroke="#d4a853" strokeWidth={0.6}>
-                                   <animate attributeName="cy" values={`1;3;1`} dur={bobDur} begin={animDelay} repeatCount="indefinite" additive="sum" />
-                                 </ellipse>
-                                 {/* Dragon head */}
-                                 <circle cx={-3} cy={-1} r={2} fill="#8b1a1a" stroke="#d4a853" strokeWidth={0.5}>
-                                   <animate attributeName="cy" values={`-2;0;-2`} dur={bobDur} begin={animDelay} repeatCount="indefinite" additive="sum" />
-                                 </circle>
-                                 <path d="M-5,-1 L-7,-2" stroke="#d4a853" strokeWidth={0.6} fill="none">
-                                   <animate attributeName="d" values={`M-5,-1 L-7,-2;M-5,0 L-7,-1;M-5,-1 L-7,-2`} dur={bobDur} begin={animDelay} repeatCount="indefinite" />
-                                 </path>
-                                 <circle cx={-3.5} cy={-2} r={0.5} fill="#d4a853">
-                                   <animate attributeName="cy" values={`-3;-1;-3`} dur={bobDur} begin={animDelay} repeatCount="indefinite" additive="sum" />
-                                 </circle>
-                                 {/* Sail */}
-                                 <path d="M0,-2 L3,-1 L1,2" fill="#c0392b" fillOpacity={0.8}>
-                                   <animate attributeName="d" values={`M0,-2 L3,-1 L1,2;M0,-1 L4,0 L1,3;M0,-2 L3,-1 L1,2`} dur={bobDur} begin={animDelay} repeatCount="indefinite" />
-                                 </path>
-                               </g>
+                               <image
+                                 x={-8} y={-8} width={16} height={16}
+                                 href="https://media.base44.com/images/public/69b732e420481df67e8a6804/318b98203_reapership_aesthetic.png"
+                                 style={{ userSelect: 'none' }}>
+                                 <animate attributeName="y"
+                                   values={`-9;-7;-9`}
+                                   dur={bobDur} begin={animDelay}
+                                   repeatCount="indefinite" additive="sum" />
+                               </image>
                              ) : (
                                <g>
                                  {/* Nation emblem background circle */}
