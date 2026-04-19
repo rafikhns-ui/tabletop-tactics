@@ -842,11 +842,11 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             return (
               <g key={hexId}
                 onClick={() => {
-                  // Prevent naval units from moving to land tiles
+                  // Prevent water-only units (naval + Reapership) from moving to land tiles
                   if (selected && movementState) {
                     const selectedUnits = getUnits(`${selected.col},${selected.row}`);
-                    const hasNavalUnit = selectedUnits.some(u => u.type === 'naval');
-                    if (hasNavalUnit && !isWater) return;
+                    const hasWaterOnlyUnit = selectedUnits.some(u => u.type === 'naval' || u.name === 'Reapership');
+                    if (hasWaterOnlyUnit && !isWater) return;
                   }
                   handleHexClick(hex);
                   if (hex.nation_id && hex.province && onProvincClick) {
@@ -985,10 +985,11 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                     {units.map((u, i) => {
                        const tokenColor = playerColor || '#d4a853';
                        const isElite = u.type === 'elite';
-                       const isCavalry = u.type === 'cavalry';
-                       const isSiege = u.type === 'siege';
-                       const isNaval = u.type === 'naval' || u.name === 'Reapership';
-                       const isRanged = u.type === 'ranged';
+                        const isCavalry = u.type === 'cavalry';
+                        const isSiege = u.type === 'siege';
+                        const isNaval = u.type === 'naval' || u.name === 'Reapership';
+                        const isReapership = u.name === 'Infamous Reapership' || u.name === 'Reapership';
+                        const isRanged = u.type === 'ranged';
 
                        // Layout: stack tokens slightly offset
                        const cols = Math.min(units.length, 2);
@@ -1010,11 +1011,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
 
                        // Use unit's actual nation (from owner), not selected hex nation
-                       const unitNationId = nationId ? normNationId(nationId) : normNationId(hex.nation_id);
-                       const nationEmblemsForUnit = NATION_EMBLEMS[unitNationId] || NATION_EMBLEMS.gojeon;
-                       const isReapership = u.name === 'Reapership';
-                       const glowFilter = isElite ? 'url(#unitGlowGold)' : isSiege ? 'url(#unitGlowRed)' : isNaval ? 'url(#unitGlowBlue)' : 'url(#unitShadow)';
-                       const R = isElite || isReapership ? 11 : isSiege ? 10 : 9;
+                        const unitNationId = nationId ? normNationId(nationId) : normNationId(hex.nation_id);
+                        const glowFilter = isElite ? 'url(#unitGlowGold)' : isSiege ? 'url(#unitGlowRed)' : isNaval ? 'url(#unitGlowBlue)' : 'url(#unitShadow)';
+                        const R = isElite || isReapership ? 11 : isSiege ? 10 : 9;
                        const darkened = tokenColor + 'aa';
 
                        // Gradient id — unique per unit type per token color (just use inline)
