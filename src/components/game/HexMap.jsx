@@ -759,10 +759,14 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
 
           </defs>
 
+          {/* Click on empty SVG background to deselect */}
+          <rect x={-120} y={-80} width={SVG_W + 240} height={SVG_H + 160} fill="transparent"
+            onClick={() => setSelected(null)} style={{ cursor: 'default' }} />
+
           {zoomTransform && (
             <g>
               <rect x={0} y={0} width={SVG_W} height={SVG_H} fill="transparent"
-                onClick={handleZoomOut} style={{ cursor: 'zoom-out' }} />
+                onClick={handleZoomOut} style={{ cursor: 'zoom-out', pointerEvents: 'none' }} />
             </g>
           )}
 
@@ -1814,7 +1818,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const hexOwner = getOwner(hexId, selected?.nation_id);
             const isMyHex = hexOwner === currentPlayer?.id;
             const alreadyMoved = movedHexes?.has(hexId);
-            const canMove = phase === 'move' && isMyHex && !currentPlayer?.isAI && !alreadyMoved;
+            const canMove = (phase === 'move' || phase === 'deploy' || phase === 'attack' || phase === 'fortify') && isMyHex && !currentPlayer?.isAI && !alreadyMoved;
             const icons = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
             const typeNames = { infantry: 'Infantry', cavalry: 'Cavalry', elite: 'Elite Guard', ranged: 'Ranged', siege: 'Siege Engine', naval: 'Warship' };
 
