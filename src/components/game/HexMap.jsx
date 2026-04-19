@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import mapData from './ardonia_game_map.json';
 import { FACTIONS, FACTION_TO_NATION_ID } from './ardoniaData';
+import PortRecruitSection from './PortRecruitSection';
 
 // Special event locations pinned to specific nation centroids
 const SPECIAL_EVENTS = [
@@ -1974,13 +1975,10 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                     No structures on this hex
                   </div>
                 )}
-              </div>
-            );
-          })()}
-
-
-
-
+                {hexBuildings.port && isMyPort && <PortRecruitSection selHexId={selHexId} currentPlayer={currentPlayer} onRecruitReapership={onRecruitReapership} />}
+                </div>
+                );
+                })()}
 
           {panelTab === 'actions' && (
             <div style={{ textAlign: 'center', color: '#555', marginTop: 40, fontStyle: 'italic', fontSize: 12 }}>
