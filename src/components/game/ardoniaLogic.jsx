@@ -568,6 +568,14 @@ export const resolveRangedAttack = (attackerUnits, defenderUnits, hasDefenderFor
     if ((aRolls[i] + aBonus) > (dRolls[i] + dBonus)) defenderLosses++;
   }
 
+  // Fortress destruction logic: if there are defender losses and a fortress is present
+  let fortressDestroyed = false;
+  if (hasDefenderFortress && defenderLosses > 0) {
+    if (defenderLosses >= 2 || Math.random() < 0.5) {
+      fortressDestroyed = true;
+    }
+  }
+
   return { 
     aRolls, 
     dRolls, 
@@ -578,7 +586,8 @@ export const resolveRangedAttack = (attackerUnits, defenderUnits, hasDefenderFor
     dBonus, 
     terrainNotes: ['Ranged attack — Attacker takes no damage'],
     isRangedAttack: true,
-    terrain: 'water'
+    terrain: 'water',
+    fortressDestroyed
   };
 };
 

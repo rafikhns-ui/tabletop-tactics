@@ -63,14 +63,15 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
   const handleRangedAttack = (targetHexId) => {
     const dstHex = gameState.hexes?.[targetHexId] || {};
     const targetUnits = dstHex.units || [];
+    const targetHasFortress = dstHex.buildings?.fortress;
     
-    if (targetUnits.length === 0) {
-      addMessage(`⚔️ No units to attack on this coastal hex`);
+    if (targetUnits.length === 0 && !targetHasFortress) {
+      addMessage(`⚔️ No units or structures to attack on this coastal hex`);
       return;
     }
 
     const attackerUnits = [navalUnit];
-    const result = resolveRangedAttack(attackerUnits, targetUnits, dstHex.buildings?.fortress);
+    const result = resolveRangedAttack(attackerUnits, targetUnits, targetHasFortress);
 
     setGameState(prev => {
       const updatedDstHex = { ...prev.hexes[targetHexId] };
@@ -79,16 +80,34 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
         count: Math.max(0, u.count - result.defenderLosses)
       })).filter(u => u.count > 0);
       
+      let newBuildings = updatedDstHex.buildings;
+      if (result.fortressDestroyed) {
+        newBuildings = { ...newBuildings };
+        delete newBuildings.fortress;
+        if (Object.keys(newBuildings).length === 0) {
+          newBuildings = undefined;
+        }
+      }
+      
       return {
         ...prev,
         hexes: {
           ...prev.hexes,
-          [targetHexId]: { ...updatedDstHex, units: newUnits }
+          [targetHexId]: { ...updatedDstHex, units: newUnits, buildings: newBuildings }
         }
       };
     });
 
-    addMessage(`⚔️ Reapership ranged attack on [{targetHexId}]! Enemy lost ${result.defenderLosses} unit${result.defenderLosses > 1 ? 's' : ''}`);
+    let attackMessage = `⚔️ Reapership ranged attack on [${targetHexId}]!`;
+    if (result.defenderLosses > 0) {
+      attackMessage += ` Enemy lost ${result.defenderLosses} unit${result.defenderLosses > 1 ? 's' : ''}`;
+    }
+    if (result.fortressDestroyed) {
+      attackMessage += ` and the Fortress was destroyed!`;
+    } else if (targetHasFortress) {
+      attackMessage += ` (Fortress held)`;
+    }
+    addMessage(attackMessage);
     addLog('attack', `Reapership ranged attack — No retaliation (siege-like)`, targetHexId, 'Ranged Attack');
   };
 
