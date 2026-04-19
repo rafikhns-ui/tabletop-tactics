@@ -22,3 +22,7 @@ export const NATION_EMBLEMS = {
   shadowfell: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/5c05b18f1_Shadowsfall.png',
   scorched: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/c116e858f_scorchedlands.png',
 };
+
+export const UNIT_LOGOS = {
+  infamous_reapership: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/japanese-ship-emblem.png',
+};

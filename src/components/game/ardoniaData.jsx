@@ -815,7 +815,7 @@ export const UNIT_DEFS = {
   // Wildfire Thrower (Siege): unlocked at Siege Workshop L2; kept at gold 2 + wood 2
   wildfire_thrower: { id: 'wildfire_thrower', name: 'Wildfire Thrower', emoji: '🔥', dice: 10, cost: { gold: 2, wood: 2 }, canCapture: false, requires: 'siege_engine_workshop', requiredBuildingLevel: 2, movementRange: 1, description: 'Siege-class ranged unit with wildfire attack. 1 hex/turn.', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/89286a7f8_15.png' },
   // Infamous Reapership (Naval): gold 3 + wood 3
-  infamous_reapership: { id: 'infamous_reapership', name: 'Infamous Reapership', emoji: '⛵', dice: 12, cost: { gold: 2, wood: 3 }, canCapture: false, requires: 'crimson_port', movementRange: 3, description: 'Naval flagship. Transports up to 4 units. Naval bombardment: +1 attack to adjacent units. Can blockade enemy ports. 3 hexes/turn.', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/4c3f57a91_16.png' },
+  infamous_reapership: { id: 'infamous_reapership', name: 'Infamous Reapership', emoji: '⛵', dice: 12, cost: { gold: 2, wood: 3 }, canCapture: false, requires: 'crimson_port', movementRange: 3, waterOnly: true, description: 'Naval flagship. Transports up to 4 units. Naval bombardment: +1 attack to adjacent units. Can blockade enemy ports. 3 hexes/turn.', image: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/4c3f57a91_16.png' },
 };
 
 // ---- Action Cards ----
