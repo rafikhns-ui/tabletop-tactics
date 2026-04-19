@@ -841,6 +841,12 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             return (
               <g key={hexId}
                 onClick={() => {
+                  // Prevent naval units from moving to land tiles
+                  if (selected && movementState) {
+                    const selectedUnits = getUnits(`${selected.col},${selected.row}`);
+                    const hasNavalUnit = selectedUnits.some(u => u.type === 'naval');
+                    if (hasNavalUnit && !isWater) return;
+                  }
                   handleHexClick(hex);
                   if (hex.nation_id && hex.province && onProvincClick) {
                     onProvincClick({ nation_id: hex.nation_id, province_id: hex.province });
