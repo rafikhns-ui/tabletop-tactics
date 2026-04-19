@@ -10,6 +10,9 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
 
   if (!gameState || !currentPlayer) return null;
 
+  const grandMarketLevel = currentPlayer.buildings?.grand_market?.level || 0;
+  const hasGrandMarketL3 = grandMarketLevel >= 3;
+
   const silverUnion = {
     id: 'silver_union',
     name: 'Silver Union',
@@ -185,6 +188,17 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
 
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px', color: '#c8c0b0', fontSize: 13 }}>
+          {!hasGrandMarketL3 && (
+            <div style={{ padding: 16, background: 'rgba(200,50,50,0.12)', border: '1px solid #8a3030', borderRadius: 6, marginBottom: 16 }}>
+              <div style={{ color: '#f87171', fontFamily: "'Cinzel', serif", fontWeight: 700, marginBottom: 6 }}>
+                🔒 Grand Market Level 3 Required
+              </div>
+              <div style={{ fontSize: 12, color: '#888' }}>
+                You must upgrade your Grand Market to Level 3 to unlock trade with the Silver Union.
+                Currently: Level {grandMarketLevel}/3.
+              </div>
+            </div>
+          )}
           {/* Loans Tab */}
           {activeTab === 'loans' && (
             <div>
@@ -278,7 +292,8 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
           )}
 
           {/* Trade Tab */}
-          {activeTab === 'trade' && (
+          {activeTab === 'trade' && !hasGrandMarketL3 && null}
+          {activeTab === 'trade' && hasGrandMarketL3 && (
            <div>
              <div style={{ marginBottom: 20, padding: 12, background: 'rgba(212,168,83,0.1)', border: '1px solid #8a6a30', borderRadius: 6, fontSize: 11 }}>
                <div style={{ color: '#d4a853', fontWeight: 600, marginBottom: 4 }}>⚠️ UNFAVORABLE RATES</div>
@@ -340,7 +355,8 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
           )}
 
           {/* Mercenaries Tab */}
-          {activeTab === 'mercenaries' && (
+          {activeTab === 'mercenaries' && !hasGrandMarketL3 && null}
+          {activeTab === 'mercenaries' && hasGrandMarketL3 && (
             <div>
               <div style={{ marginBottom: 20 }}>
                 {mercenaryUnits.map((unit, i) => {
@@ -389,7 +405,8 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
           )}
 
           {/* Heroes Tab */}
-          {activeTab === 'heroes' && (
+          {activeTab === 'heroes' && !hasGrandMarketL3 && null}
+          {activeTab === 'heroes' && hasGrandMarketL3 && (
             <div>
               <div style={{ marginBottom: 20 }}>
                 {mercenaryHeroes.map((hero, i) => {

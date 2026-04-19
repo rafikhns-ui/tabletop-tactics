@@ -305,10 +305,24 @@ export const calculateIncome = (player, territories) => {
   const ownedTerritories = Object.values(territories).filter(t => t.owner === player.id);
   const territoryGold = ownedTerritories.length; // 1 Gold per territory
 
+  // Mine: L1=+2, L2=+3, L3=+6 gold/turn
+  const mineGold = mine && !mine.disabled ? ({ 1: 2, 2: 3, 3: 6 }[mine.level] || mine.level) : 0;
+  // Lumber Mill: L1=+1, L2=+1, L3=+2 wood/turn
+  const lumberWood = lumber_mill && !lumber_mill.disabled ? ({ 1: 1, 2: 1, 3: 2 }[lumber_mill.level] || lumber_mill.level) : 0;
+  // Farm: L1=+1, L2=+3, L3=+5 wheat/turn
+  const farmWheat = farm && !farm.disabled ? ({ 1: 1, 2: 3, 3: 5 }[farm.level] || farm.level) : 0;
+  // Crimson Vault: L1=+1, L2=+2, L3=+3 crystals/turn
+  const treasury = player.buildings.treasury;
+  const vaultCrystals = treasury && !treasury.disabled ? (treasury.level || 1) : 0;
+  // Port bonus: +1 gold per crimson_port owned
+  const portCount = Object.values(player.buildings || {}).filter(b => b.id === 'crimson_port').length
+    + (Object.keys(player.buildings || {}).filter(k => k === 'crimson_port').length);
+
   const income = {
-    gold: territoryGold + (mine && !mine.disabled ? mine.level : 0) + (market ? 1 : 0),
-    wood: (lumber_mill && !lumber_mill.disabled ? lumber_mill.level : 0),
-    wheat: (farm && !farm.disabled ? farm.level : 0),
+    gold: territoryGold + mineGold + (market ? 1 : 0) + portCount,
+    wood: lumberWood,
+    wheat: farmWheat,
+    crystals: vaultCrystals,
     sp: (temple && !temple.disabled ? temple.level : 0) + (player.factionId === 'sultanate' ? 1 : 0),
     ip: (market ? 1 : 0) + (player.factionId === 'republic' ? 1 : 0),
   };
@@ -399,6 +413,7 @@ export const collectIncome = (gameState) => {
         wood: Math.min(maxStorage, p.resources.wood + income.wood),
         wheat: Math.min(maxStorage, p.resources.wheat + income.wheat),
       },
+      crystals: Math.min(50, (p.crystals || 0) + (income.crystals || 0)),
       sp: Math.min(50, p.sp + income.sp),
       ip: Math.min(50, p.ip + income.ip),
       cardEffects: newCardEffects,
@@ -885,9 +900,8 @@ export const getAiTurnSteps = (gameState) => {
       const def = BUILDING_DEFS[bId];
       if (!b || !def || b.level >= (def.maxLevel || 3)) continue;
       const ub = def.upgradeBase || {};
-      const upgCost = typeof ub === 'object' && !Array.isArray(ub)
-        ? Object.fromEntries(Object.entries(ub).map(([k, v]) => [k, Math.ceil(v * b.level)]))
-        : {};
+      // Flat upgrade cost (not multiplied by level) per the spreadsheet
+      const upgCost = typeof ub === 'object' && !Array.isArray(ub) ? { ...ub } : {};
       const ugold = upgCost.gold || 4;
       const uwood = upgCost.wood || 2;
       if (gold >= ugold && wood >= uwood) {

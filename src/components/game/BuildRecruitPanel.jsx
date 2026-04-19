@@ -211,7 +211,7 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
             const def = BUILDING_DEFS[id];
             if (!def || !def.maxLevel) return null;
             const isMaxed = b.level >= def.maxLevel;
-            const upgradeCost = def.upgradeBase ? Object.entries(def.upgradeBase).reduce((acc, [k, v]) => ({ ...acc, [k]: v * b.level }), {}) : {};
+            const upgradeCost = def.upgradeBase ? { ...def.upgradeBase } : {};
             const affordable = !isMaxed && canAfford(resources, upgradeCost);
             return (
               <div key={id}
