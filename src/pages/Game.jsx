@@ -1664,6 +1664,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
             <HexMap
               ref={hexMapRef}
               gameState={gameState}
+              setGameState={setGameState}
               selectedHex={selectedTerritory}
               selectedProvince={selectedProvince}
               phase={phase}
@@ -1704,6 +1705,9 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               onRecruitReapership={handleRecruitReapership}
               showInfluenceOverlay={showInfluenceOverlay}
               sentiment={sentiment}
+              addMessage={addMessage}
+              addLog={addLog}
+              getNeighborHexIds={getNeighborHexIds}
             />
             {mapZoomTransform && (
               <MiniMap

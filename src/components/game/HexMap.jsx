@@ -201,7 +201,7 @@ function estimateCombat(attackerUnits, defenderUnits, hasFortress) {
   };
 }
 
-export default function HexMap({ gameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit, showInfluenceOverlay, sentiment, draggingDeployUnit, onDragDeployDrop, onRecruitReapership }) {
+export default function HexMap({ gameState, setGameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit, showInfluenceOverlay, sentiment, draggingDeployUnit, onDragDeployDrop, onRecruitReapership, addMessage, addLog, getNeighborHexIds }) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
