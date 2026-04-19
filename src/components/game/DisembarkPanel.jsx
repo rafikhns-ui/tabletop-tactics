@@ -1,6 +1,7 @@
 import React from 'react';
 import mapData from './ardonia_game_map.json';
 import { isNavalUnit } from '../../lib/embarkationLogic';
+import { resolveRangedAttack } from './ardoniaLogic';
 
 export default function DisembarkPanel({ selHexId, gameState, currentPlayer, setGameState, setSelected, addMessage, addLog, getNeighborHexIds }) {
   const hexOwner = gameState?.hexes?.[selHexId]?.owner;
@@ -60,7 +61,6 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
   };
 
   const handleRangedAttack = (targetHexId) => {
-    const { resolveRangedAttack } = require('../../components/game/ardoniaLogic');
     const dstHex = gameState.hexes?.[targetHexId] || {};
     const targetUnits = dstHex.units || [];
     
