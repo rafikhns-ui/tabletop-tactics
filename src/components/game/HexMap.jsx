@@ -1441,31 +1441,31 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const isHovered = hoveredFactionLabel === fc.fid;
             return (
               <g key={`fl${fc.fid}`}
-                style={{ pointerEvents: isHovered ? 'none' : 'all', cursor: 'default', opacity: isHovered ? 0 : 1, transition: 'opacity 0.15s' }}
+                style={{ pointerEvents: 'all', cursor: 'default', opacity: isHovered ? 0 : 1, transition: 'opacity 0.15s' }}
                 onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
                 onMouseLeave={() => setHoveredFactionLabel(null)}>
                 {/* Transparent hit area so hover works reliably */}
-                <rect x={cx - 65} y={cy - 20} width={130} height={line2 ? 38 : 20} fill="transparent" />
-                <text x={cx} y={cy - (line2 ? 6 : 0)} textAnchor="middle" fontSize={13}
-                  fill="none" stroke={fc.color} strokeWidth={4} strokeOpacity={0.4}
+                <rect x={cx - 130} y={cy - 36} width={260} height={line2 ? 64 : 36} fill="transparent" />
+                <text x={cx} y={cy - (line2 ? 10 : 0)} textAnchor="middle" fontSize={26}
+                  fill="none" stroke={fc.color} strokeWidth={6} strokeOpacity={0.4}
                   fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}>
                   {line1.toUpperCase()}
                 </text>
-                <text x={cx} y={cy - (line2 ? 6 : 0)} textAnchor="middle" fontSize={13}
-                  fill="#fff" stroke="#0a0806" strokeWidth={3} paintOrder="stroke"
+                <text x={cx} y={cy - (line2 ? 10 : 0)} textAnchor="middle" fontSize={26}
+                  fill="#fff" stroke="#0a0806" strokeWidth={5} paintOrder="stroke"
                   fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}
                   style={{ opacity: 0.95 }}>
                   {line1.toUpperCase()}
                 </text>
                 {line2 && (
                   <>
-                    <text x={cx} y={cy + 10} textAnchor="middle" fontSize={13}
-                      fill="none" stroke={fc.color} strokeWidth={4} strokeOpacity={0.4}
+                    <text x={cx} y={cy + 18} textAnchor="middle" fontSize={26}
+                      fill="none" stroke={fc.color} strokeWidth={6} strokeOpacity={0.4}
                       fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}>
                       {line2.toUpperCase()}
                     </text>
-                    <text x={cx} y={cy + 10} textAnchor="middle" fontSize={13}
-                      fill="#fff" stroke="#0a0806" strokeWidth={3} paintOrder="stroke"
+                    <text x={cx} y={cy + 18} textAnchor="middle" fontSize={26}
+                      fill="#fff" stroke="#0a0806" strokeWidth={5} paintOrder="stroke"
                       fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}
                       style={{ opacity: 0.95 }}>
                       {line2.toUpperCase()}
