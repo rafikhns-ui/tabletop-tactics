@@ -1017,7 +1017,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                          nimrudan: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/c8851f071_empireassyrian.png',
                          azure: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/08a33f4a8_bluemoo.png',
                          icebound: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/011bfc403_thehorde.png',
-                         ilalocatotlan: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/75e3d6016_photo-output3.png',
+                         ilalocatotlan: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d92d76e51_photo-output3.png',
                          kinetic: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/kinetic.png',
                          hestia: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/hestia.png',
                          inuvak: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/inuvak.png',
