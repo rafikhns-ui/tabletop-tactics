@@ -291,6 +291,8 @@ export const createGameState = (mode, playersArr = null) => {  let players;
     log: ['⚜️ Rulers of Ardonia begins! May your reign be glorious.'],
     eventCountdown: 3,
     activeEvent: null,
+    wars: {}, // { "playerId1|playerId2": true } for active wars
+    influence: {}, // { playerId: { otherId: value (0-100) } } for influence with other players
   };
 };
 
@@ -591,7 +593,7 @@ export const resolveRangedAttack = (attackerUnits, defenderUnits, hasDefenderFor
   };
 };
 
-export const executeAttack = (gameState, attackerId, defenderId, result) => {
+export const executeAttack = (gameState, attackerId, defenderId, result, attackerPlayerId, defenderPlayerId) => {
   const newState = { ...gameState };
   newState.territories = { ...newState.territories };
   const attacker = { ...newState.territories[attackerId] };
@@ -599,6 +601,37 @@ export const executeAttack = (gameState, attackerId, defenderId, result) => {
 
   attacker.troops = Math.max(1, attacker.troops - result.attackerLosses);
   defender.troops = Math.max(0, defender.troops - result.defenderLosses);
+
+  // Declare war if not already at war
+  if (attackerPlayerId && defenderPlayerId && attackerPlayerId !== defenderPlayerId) {
+    const warKey = [attackerPlayerId, defenderPlayerId].sort().join('|');
+    if (!newState.wars) newState.wars = {};
+    if (!newState.wars[warKey]) {
+      newState.wars[warKey] = true;
+      newState.log = [...(newState.log || []), `⚔️ WAR DECLARED! ${gameState.players.find(p => p.id === attackerPlayerId)?.name} and ${gameState.players.find(p => p.id === defenderPlayerId)?.name} are now at war!`];
+    }
+    
+    // Update influence: attacker's aggression reduces their influence with others
+    if (!newState.influence) newState.influence = {};
+    if (!newState.influence[attackerPlayerId]) newState.influence[attackerPlayerId] = {};
+    
+    gameState.players.forEach(p => {
+      if (p.id !== attackerPlayerId && p.id !== defenderPlayerId) {
+        // Other players view aggression negatively
+        if (!newState.influence[attackerPlayerId][p.id]) newState.influence[attackerPlayerId][p.id] = 50;
+        newState.influence[attackerPlayerId][p.id] = Math.max(0, newState.influence[attackerPlayerId][p.id] - 5);
+      }
+    });
+    
+    // Defender gets sympathy boost from other players
+    if (!newState.influence[defenderPlayerId]) newState.influence[defenderPlayerId] = {};
+    gameState.players.forEach(p => {
+      if (p.id !== attackerPlayerId && p.id !== defenderPlayerId) {
+        if (!newState.influence[defenderPlayerId][p.id]) newState.influence[defenderPlayerId][p.id] = 50;
+        newState.influence[defenderPlayerId][p.id] = Math.min(100, newState.influence[defenderPlayerId][p.id] + 3);
+      }
+    });
+  }
 
   if (defender.troops <= 0) {
     const movedTroops = Math.max(1, Math.min(attacker.troops - 1, result.attackDice));

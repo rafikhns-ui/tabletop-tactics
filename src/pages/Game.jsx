@@ -820,7 +820,9 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
       aBonus: (result.aBonus || 0) + atkCardBonus.attackBonus,
       dBonus: (result.dBonus || 0) + defCardBonus.defenseBonus,
     };
-    const newState = checkObjectives(executeAttack(gameState, battle.attackerId, battle.defenderId, result));
+    const attackerPlayer = gameState.territories[battle.attackerId]?.owner;
+    const defenderPlayer = gameState.territories[battle.defenderId]?.owner;
+    const newState = checkObjectives(executeAttack(gameState, battle.attackerId, battle.defenderId, result, attackerPlayer, defenderPlayer));
     setGameState(newState);
     setBattle(null);
     if (conquered) {

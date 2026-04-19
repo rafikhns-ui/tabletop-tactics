@@ -16,6 +16,7 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
   const defender = territories[battle.defenderId];
   const attackerPlayer = players.find(p => p.id === attacker.owner);
   const defenderPlayer = players.find(p => p.id === defender.owner);
+  const isNeutral = !defender.owner || defender.owner?.startsWith('neutral_');
 
   const [result, setResult] = useState(null);
   const [rolling, setRolling] = useState(false);
@@ -60,7 +61,9 @@ export default function BattleModal({ gameState, battle, onResult, onCancel }) {
           <div className="flex items-center justify-center gap-3 mt-1">
             <span className="text-sm font-bold" style={{ color: attackerPlayer?.color }}>{attackerPlayer?.name}</span>
             <span className="text-xs opacity-40">attacks</span>
-            <span className="text-sm font-bold" style={{ color: defenderPlayer?.color }}>{defenderPlayer?.name}</span>
+            <span className="text-sm font-bold" style={{ color: defenderPlayer?.color || '#888' }}>
+              {isNeutral ? '⚔️ Neutral Forces' : defenderPlayer?.name}
+            </span>
           </div>
         </div>
 
