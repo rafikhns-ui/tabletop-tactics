@@ -81,6 +81,14 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
   };
 
   const handleRangedAttack = (targetHexId) => {
+    const srcHex = gameState.hexes?.[selHexId] || {};
+    
+    // Check if this ship has already bombarded this turn
+    if (srcHex.bombardedThisTurn) {
+      addMessage(`⚓ This ship has already bombarded this turn!`);
+      return;
+    }
+
     const dstHex = gameState.hexes?.[targetHexId] || {};
     const targetUnits = dstHex.units || [];
     const targetHasFortress = dstHex.buildings?.fortress;
@@ -107,6 +115,7 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
     const targetHasFortress = dstHex.buildings?.fortress;
 
     setGameState(prev => {
+      const srcHex = prev.hexes[selHexId] || {};
       const updatedDstHex = { ...prev.hexes[targetHexId] };
       const newUnits = targetUnits.map(u => ({
         ...u,
@@ -126,6 +135,7 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
         ...prev,
         hexes: {
           ...prev.hexes,
+          [selHexId]: { ...srcHex, bombardedThisTurn: true },
           [targetHexId]: { ...updatedDstHex, units: newUnits, buildings: newBuildings }
         }
       };
