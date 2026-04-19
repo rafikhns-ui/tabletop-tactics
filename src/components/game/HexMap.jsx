@@ -1006,9 +1006,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                          infantry: '⚔️', cavalry: '🐴', elite: '⭐',
                          ranged: '🏹', siege: '💣', naval: '⛵',
                        };
-                       const unitIcon = u.name === 'Reapership' ? '💀' : (icons[u.type] || '⚔️');
+                       const isReapership = u.name === 'Reapership';
                        const glowFilter = isElite ? 'url(#unitGlowGold)' : isSiege ? 'url(#unitGlowRed)' : isNaval ? 'url(#unitGlowBlue)' : 'url(#unitShadow)';
-                       const R = isElite ? 11 : isSiege ? 10 : 9;
+                       const R = isElite || isReapership ? 11 : isSiege ? 10 : 9;
                        const darkened = tokenColor + 'aa';
 
                        // Gradient id — unique per unit type per token color (just use inline)
@@ -1048,25 +1048,31 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                              </ellipse>
 
                              {/* Unit icon */}
-                             {u.name === 'Reapership' ? (
+                             {isReapership ? (
                                <g>
                                  {/* Japanese dragon boat hull */}
-                                 <ellipse cx={0} cy={2} rx={5} ry={2} fill="#3a1a08" stroke="#d4a853" strokeWidth={0.6}/>
+                                 <ellipse cx={0} cy={2} rx={5} ry={2} fill="#3a1a08" stroke="#d4a853" strokeWidth={0.6}>
+                                   <animate attributeName="cy" values={`1;3;1`} dur={bobDur} begin={animDelay} repeatCount="indefinite" additive="sum" />
+                                 </ellipse>
                                  {/* Dragon head */}
-                                 <circle cx={-3} cy={-1} r={2} fill="#8b1a1a" stroke="#d4a853" strokeWidth={0.5}/>
-                                 <path d="M-5,-1 L-7,-2" stroke="#d4a853" strokeWidth={0.6} fill="none"/>
-                                 <circle cx={-3.5} cy={-2} r={0.5} fill="#d4a853"/>
+                                 <circle cx={-3} cy={-1} r={2} fill="#8b1a1a" stroke="#d4a853" strokeWidth={0.5}>
+                                   <animate attributeName="cy" values={`-2;0;-2`} dur={bobDur} begin={animDelay} repeatCount="indefinite" additive="sum" />
+                                 </circle>
+                                 <path d="M-5,-1 L-7,-2" stroke="#d4a853" strokeWidth={0.6} fill="none">
+                                   <animate attributeName="d" values={`M-5,-1 L-7,-2;M-5,0 L-7,-1;M-5,-1 L-7,-2`} dur={bobDur} begin={animDelay} repeatCount="indefinite" />
+                                 </path>
+                                 <circle cx={-3.5} cy={-2} r={0.5} fill="#d4a853">
+                                   <animate attributeName="cy" values={`-3;-1;-3`} dur={bobDur} begin={animDelay} repeatCount="indefinite" additive="sum" />
+                                 </circle>
                                  {/* Sail */}
-                                 <path d="M0,-2 L3,-1 L1,2" fill="#c0392b" fillOpacity={0.8}/>
-                                 <animate attributeName="transform" type="translate" 
-                                   values={`0,-1;0,1;0,-1`}
-                                   dur={bobDur} begin={animDelay}
-                                   repeatCount="indefinite" additive="sum" />
+                                 <path d="M0,-2 L3,-1 L1,2" fill="#c0392b" fillOpacity={0.8}>
+                                   <animate attributeName="d" values={`M0,-2 L3,-1 L1,2;M0,-1 L4,0 L1,3;M0,-2 L3,-1 L1,2`} dur={bobDur} begin={animDelay} repeatCount="indefinite" />
+                                 </path>
                                </g>
                              ) : (
                                <text x={0} y={4} textAnchor="middle" fontSize={isElite ? 12 : 10}
                                  style={{ userSelect: 'none' }}>
-                                 {unitIcon}
+                                 {icons[u.type] || '⚔️'}
                                  <animate attributeName="y"
                                    values={`3;5;3`}
                                    dur={bobDur} begin={animDelay}
