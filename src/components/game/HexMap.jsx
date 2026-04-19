@@ -1878,7 +1878,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
               <div>
                 {hoveredStructure === 'port' && (
                   <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 9999, pointerEvents: 'none' }}>
-                    <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/36da616cb_22.png" alt="Port" style={{ width: 320, borderRadius: 12, border: '3px solid #4488ff', boxShadow: '0 0 60px #4488ff66' }} />
+                    <img src="https://media.base44.com/images/public/69b732e420481df67e8a6804/36da616cb_22.png" alt="Port" style={{ width: 240, borderRadius: 12, border: '3px solid #4488ff', boxShadow: '0 0 60px #4488ff66' }} />
                   </div>
                 )}
                 <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 13, fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>STRUCTURES ON HEX</div>
