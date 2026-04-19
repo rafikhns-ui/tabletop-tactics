@@ -1596,8 +1596,14 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               onDragDeployDrop={(hexId, unitType) => {
                 const type = unitType || draggingDeployUnit;
                 if (!type) return;
-                handleSelectDeployUnit(type);
-                setTimeout(() => { handleTerritoryClick(hexId); setDraggingDeployUnit(null); }, 0);
+                // Building placement drag (fortress / port)
+                if (type === 'fortress' || type === 'port') {
+                  setBuildingPlacementMode(type);
+                  setTimeout(() => { handleTerritoryClick(hexId); setDraggingDeployUnit(null); setBuildingPlacementMode(null); }, 0);
+                } else {
+                  handleSelectDeployUnit(type);
+                  setTimeout(() => { handleTerritoryClick(hexId); setDraggingDeployUnit(null); }, 0);
+                }
               }}
               reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
               attackableHexes={phase === 'attack' && selectedTerritory ? (() => {
@@ -1788,14 +1794,16 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                 />
               )}
               {openModal === 'build' && gameState && currentPlayer && !currentPlayer.isAI && (
-                <BuildRecruitPanel
-                  currentPlayer={currentPlayer}
-                  gameState={gameState}
-                  onBuild={handleBuild}
-                  onUpgrade={handleUpgrade}
-                  onSetBuildingPlacementMode={setBuildingPlacementMode}
-                  buildingPlacementMode={buildingPlacementMode}
-                />
+                 <BuildRecruitPanel
+                   currentPlayer={currentPlayer}
+                   gameState={gameState}
+                   onBuild={handleBuild}
+                   onUpgrade={handleUpgrade}
+                   onSetBuildingPlacementMode={(mode) => { setBuildingPlacementMode(mode); if (mode) setOpenModal(null); }}
+                   buildingPlacementMode={buildingPlacementMode}
+                   onDragPlaceStart={(type) => { setDraggingDeployUnit(type); setBuildingPlacementMode(type); setOpenModal(null); }}
+                   onDragPlaceEnd={() => { setDraggingDeployUnit(null); }}
+                 />
               )}
               {openModal === 'build' && currentPlayer?.isAI && (
                 <div style={{ padding: '20px', textAlign: 'center', color: 'hsl(40,20%,60%)' }}>
