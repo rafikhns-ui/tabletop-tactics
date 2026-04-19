@@ -40,6 +40,7 @@ export default function ObjectiveDeckAnimation({ players, onComplete }) {
 
         {/* Animated cards coming out */}
         {revealed.map((i, idx) => {
+          if (!players[i]) return null;
           const objective = players[i]?.objectives?.[0];
           const xOffset = Math.sin(idx * 0.7) * 60 - 80;
           const yOffset = idx * 45;
