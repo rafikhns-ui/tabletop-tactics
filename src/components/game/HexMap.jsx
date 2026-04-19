@@ -1431,6 +1431,19 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             );
           })}
 
+          {/* ── Faction label hover areas (outside labels group so pointerEvents works) ── */}
+          {FACTION_CENTROIDS.map(fc => {
+            const { cx, cy } = toSVG(fc.x, fc.y);
+            const words = fc.name.split(' ');
+            const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
+            return (
+              <rect key={`flh${fc.fid}`} x={cx - 130} y={cy - 36} width={260} height={line2 ? 64 : 36} fill="transparent" 
+                style={{ pointerEvents: 'all' }}
+                onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
+                onMouseLeave={() => setHoveredFactionLabel(null)} />
+            );
+          })}
+
           {/* ── Faction labels ── */}
           {FACTION_CENTROIDS.map(fc => {
 
@@ -1441,10 +1454,6 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const isHovered = hoveredFactionLabel === fc.fid;
             return (
               <g key={`fl${fc.fid}`} style={{ opacity: isHovered ? 0 : 1, transition: 'opacity 0.3s', pointerEvents: 'none' }}>
-                <rect x={cx - 130} y={cy - 36} width={260} height={line2 ? 64 : 36} fill="transparent" 
-                  style={{ pointerEvents: 'all', cursor: 'default' }}
-                  onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
-                  onMouseLeave={() => setHoveredFactionLabel(null)} />
                 <text x={cx} y={cy - (line2 ? 10 : 0)} textAnchor="middle" fontSize={26}
                   fill="none" stroke={fc.color} strokeWidth={6} strokeOpacity={0.4}
                   fontFamily="'Cinzel', serif" fontWeight="900" letterSpacing={1}>
