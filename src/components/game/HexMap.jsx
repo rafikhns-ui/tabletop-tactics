@@ -995,8 +995,8 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
                        const isElite = u.type === 'elite';
                         const isCavalry = u.type === 'cavalry';
                         const isSiege = u.type === 'siege';
-                        const isNaval = u.type === 'naval' || u.name === 'Reapership';
-                        const isReapership = u.name === 'Infamous Reapership' || u.name === 'Reapership';
+                        const isNaval = u.type === 'naval' || u.type === 'infamous_reapership';
+                        const isReapership = u.type === 'infamous_reapership';
                         const isRanged = u.type === 'ranged';
 
                        // Layout: stack tokens slightly offset
