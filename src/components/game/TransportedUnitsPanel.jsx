@@ -17,11 +17,12 @@ export default function TransportedUnitsPanel({
 }) {
   if (embarked.length === 0) return null;
 
-  // Check if boat can disembark (on water/coastal with adjacent coastal tiles, or directly on coastal)
+  // Check if boat can disembark (must be on water or coastal)
   const boatTerrain = mapData.hex_grid.find(h => `${h.col},${h.row}` === hexId)?.terrain;
+  const boatOnWater = boatTerrain === 'water';
   const boatOnCoastal = boatTerrain === 'coastal';
   
-  // Get adjacent coastal tiles
+  // Get adjacent coastal tiles (only if on water)
   const [col, row] = hexId.split(',').map(Number);
   const even = col % 2 === 0;
   const neighbors = [
@@ -34,7 +35,8 @@ export default function TransportedUnitsPanel({
     return terrain === 'coastal';
   }).length > 0;
   
-  const canDisembark = boatOnCoastal || adjacentCoastal;
+  // Can only disembark if on coastal directly, or on water with adjacent coastal
+  const canDisembark = boatOnCoastal || (boatOnWater && adjacentCoastal);
 
   return (
     <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #2a2520' }}>
