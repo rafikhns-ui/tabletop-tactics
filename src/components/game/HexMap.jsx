@@ -986,7 +986,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                        const isElite = u.type === 'elite';
                        const isCavalry = u.type === 'cavalry';
                        const isSiege = u.type === 'siege';
-                       const isNaval = u.type === 'naval';
+                       const isNaval = u.type === 'naval' || u.name === 'Reapership';
                        const isRanged = u.type === 'ranged';
 
                        // Layout: stack tokens slightly offset
@@ -1006,6 +1006,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                          infantry: '⚔️', cavalry: '🐴', elite: '⭐',
                          ranged: '🏹', siege: '💣', naval: '⛵',
                        };
+                       const unitIcon = u.name === 'Reapership' ? '💀' : (icons[u.type] || '⚔️');
                        const glowFilter = isElite ? 'url(#unitGlowGold)' : isSiege ? 'url(#unitGlowRed)' : isNaval ? 'url(#unitGlowBlue)' : 'url(#unitShadow)';
                        const R = isElite ? 11 : isSiege ? 10 : 9;
                        const darkened = tokenColor + 'aa';
@@ -1049,7 +1050,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                              {/* Unit icon */}
                              <text x={0} y={4} textAnchor="middle" fontSize={isElite ? 12 : 10}
                                style={{ userSelect: 'none' }}>
-                               {icons[u.type] || '⚔️'}
+                               {unitIcon}
                                <animate attributeName="y"
                                  values={`3;5;3`}
                                  dur={bobDur} begin={animDelay}
