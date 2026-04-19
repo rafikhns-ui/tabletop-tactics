@@ -1776,21 +1776,24 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
           )}
 
           {panelTab === 'units' && (
-            <UnitsTabPanel
-              selected={selected}
-              gameState={gameState}
-              currentPlayer={currentPlayer}
-              movedHexes={movedHexes}
-              phase={phase}
-              onSelectPanelUnit={onSelectPanelUnit}
-              getUnits={getUnits}
-              getOwner={getOwner}
-              setGameState={setGameState}
-              addMessage={addMessage}
-              addLog={addLog}
-              selectedPanelUnits={selectedPanelUnits}
-              setSelectedPanelUnits={setSelectedPanelUnits}
-            />
+            <>
+              <UnitsTabPanel
+                selected={selected}
+                gameState={gameState}
+                currentPlayer={currentPlayer}
+                movedHexes={movedHexes}
+                phase={phase}
+                onSelectPanelUnit={onSelectPanelUnit}
+                getUnits={getUnits}
+                getOwner={getOwner}
+                setGameState={setGameState}
+                addMessage={addMessage}
+                addLog={addLog}
+                selectedPanelUnits={selectedPanelUnits}
+                setSelectedPanelUnits={setSelectedPanelUnits}
+              />
+              {selected && <DisembarkPanel selHexId={`${selected.col},${selected.row}`} gameState={gameState} currentPlayer={currentPlayer} setGameState={setGameState} setSelected={setSelected} addMessage={addMessage} addLog={addLog} getNeighborHexIds={getNeighborHexIds} />}
+            </>
           )}
 
           {panelTab === 'buildings' && selected && (() => {
