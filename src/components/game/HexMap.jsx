@@ -874,6 +874,12 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                     <polygon points={pts} fill="url(#waterGrad)" fillOpacity={dimmed ? 0.12 : 0.88} stroke="#0a0c18" strokeWidth={0.8} />
                     {/* Shimmer overlay */}
                     {!dimmed && <polygon points={pts} fill="url(#waterShimmer)" fillOpacity={0.9} />}
+                    {/* ── Water hex reachable highlight (for naval units) ── */}
+                    {isReachable && (
+                      <polygon points={pts} fill="#4488ff" fillOpacity={0.25} stroke="#88ccff" strokeWidth={2} style={{ pointerEvents: 'none' }}>
+                        <animate attributeName="fillOpacity" values="0.15;0.35;0.15" dur="1.4s" repeatCount="indefinite" />
+                      </polygon>
+                    )}
                     {/* Wave ripple 1 */}
                     {!dimmed && <ellipse cx={cx - 4} cy={cy + 2} rx={7} ry={2} fill="none" stroke="#4a9abf" strokeWidth={0.7} strokeOpacity={0.0}>
                       <animate attributeName="rx" values="3;9;3" dur="3s" repeatCount="indefinite" begin={`${(hex.col*0.3+hex.row*0.2)%3}s`} />

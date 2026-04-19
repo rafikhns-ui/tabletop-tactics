@@ -37,7 +37,9 @@ function canDeployUnit(hexId, unitType) {
 }
 
 // BFS reachable hexes from a col,row hex given movement speed
-function computeReachableHexes(fromHexId, speed) {
+// waterOnly=true: only traverse water hexes (for naval units like Reapership)
+// waterOnly=false: only traverse non-water hexes (land units)
+function computeReachableHexes(fromHexId, speed, waterOnly = false) {
   const [col0, row0] = fromHexId.split(',').map(Number);
   const visited = new Map([[fromHexId, 0]]);
   const queue = [{ col: col0, row: row0, cost: 0 }];
@@ -52,7 +54,9 @@ function computeReachableHexes(fromHexId, speed) {
     for (const [nc, nr] of neighbors) {
       const nId = `${nc},${nr}`;
       const terrain = HEX_TERRAIN_LOOKUP[nId];
-      if (!terrain || terrain === 'water') continue;
+      if (!terrain) continue;
+      if (waterOnly && terrain !== 'water') continue;
+      if (!waterOnly && terrain === 'water') continue;
       const newCost = cost + 1;
       if (newCost <= speed && !visited.has(nId)) {
         visited.set(nId, newCost);
@@ -62,6 +66,11 @@ function computeReachableHexes(fromHexId, speed) {
   }
   visited.delete(fromHexId);
   return visited; // Map of hexId -> cost
+}
+
+// Determine if a unit is water-only
+function isWaterOnlyUnit(unitType) {
+  return unitType === 'naval' || unitType === 'infamous_reapership';
 }
 import BuildRecruitPanel from '../components/game/BuildRecruitPanel';
 import RecruitPanel from '../components/game/RecruitPanel';
@@ -495,10 +504,11 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
         const fromHexId = movementState.fromHexId;
         const unitType = movementState.selectedUnit;
         const speed = movementState.speed;
-        const reachable = computeReachableHexes(fromHexId, speed);
+        const reachable = computeReachableHexes(fromHexId, speed, isWaterOnlyUnit(unitType));
 
         if (!reachable.has(hexId)) {
-          addMessage('⛔ Hex out of movement range');
+          const isNavalUnit = isWaterOnlyUnit(unitType);
+          addMessage(isNavalUnit ? '⛔ Reapership can only move on water hexes' : '⛔ Hex out of movement range');
           return;
         }
 
@@ -1642,7 +1652,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                   setTimeout(() => { handleTerritoryClick(hexId); setDraggingDeployUnit(null); }, 0);
                 }
               }}
-              reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed) : null}
+              reachableHexes={movementState ? computeReachableHexes(movementState.fromHexId, movementState.speed, isWaterOnlyUnit(movementState.selectedUnit)) : null}
               attackableHexes={phase === 'attack' && selectedTerritory ? (() => {
                 const attackerHex = gameState.hexes[selectedTerritory];
                 if (!attackerHex) return null;
