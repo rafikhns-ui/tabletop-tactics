@@ -841,13 +841,9 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             return (
               <g key={hexId}
                 onClick={() => {
-                  if (!isWater) {
-                    handleHexClick(hex);
-                    if (hex.nation_id && hex.province && onProvincClick) {
-                      onProvincClick({ nation_id: hex.nation_id, province_id: hex.province });
-                    }
-                  } else {
-                    setSelected(null);
+                  handleHexClick(hex);
+                  if (hex.nation_id && hex.province && onProvincClick) {
+                    onProvincClick({ nation_id: hex.nation_id, province_id: hex.province });
                   }
                 }}
                 onDragOver={(e) => {
