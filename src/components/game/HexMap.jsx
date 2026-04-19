@@ -1440,7 +1440,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const line2 = words.slice(Math.ceil(words.length / 2)).join(' ');
             const isHovered = hoveredFactionLabel === fc.fid;
             return (
-              <g key={`fl${fc.fid}`} style={{ opacity: isHovered ? 0 : 1, transition: 'opacity 0.3s', pointerEvents: isHovered ? 'none' : 'all' }}
+              <g key={`fl${fc.fid}`} style={{ opacity: isHovered ? 0 : 1, transition: 'opacity 0.3s', pointerEvents: 'none' }}
                 onMouseEnter={() => setHoveredFactionLabel(fc.fid)}
                 onMouseLeave={() => setHoveredFactionLabel(null)}>
                 <text x={cx} y={cy - (line2 ? 10 : 0)} textAnchor="middle" fontSize={26}
