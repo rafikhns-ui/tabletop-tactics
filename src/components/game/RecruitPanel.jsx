@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UNIT_DEFS, FACTION_UNITS } from './ardoniaData';
+import { UNIT_DEFS, FACTION_UNITS, BUILDING_DEFS } from './ardoniaData';
 
 // UNIT_UNLOCK is now resolved per-faction inside the component
 
@@ -30,19 +30,19 @@ export default function RecruitPanel({ currentPlayer, onRecruit }) {
 
   // Faction-specific units only
   const factionUnits = FACTION_UNITS[currentPlayer.factionId] || [];
-  const UNIT_UNLOCK = {
-    barracks:     factionUnits.filter(u => ['infantry','elite','spearmen_infantry'].includes(u)),
-    stables:      factionUnits.filter(u => ['cavalry','onishiman_cavalry'].includes(u)),
-    archerytower: factionUnits.filter(u => ['ranged','imperial_crossbow'].includes(u)),
-    siegeworks:   factionUnits.filter(u => ['siege','wildfire_thrower'].includes(u)),
-    shipyard:     factionUnits.filter(u => ['naval','infamous_reapership'].includes(u)),
-    omitoji_dojo: factionUnits.filter(u => ['onmmy_warlocks','night_blade_clan'].includes(u)),
-    fighting_pit: factionUnits.filter(u => ['elite','night_blade_clan'].includes(u)),
-  };
+  const buildings = currentPlayer.buildings || {};
 
-  const unlockedUnits = Object.entries(UNIT_UNLOCK)
-    .filter(([bId]) => ownedBuildings.includes(bId))
-    .flatMap(([, units]) => units);
+  // For each owned building, collect units unlocked up to (and including) the current level
+  const unlockedUnits = Object.entries(buildings).flatMap(([bId, bState]) => {
+    const def = BUILDING_DEFS[bId];
+    if (!def?.unlocks) return [];
+    const level = bState?.level ?? 1;
+    // Collect all unit IDs unlocked at or below current level
+    return Object.entries(def.unlocks)
+      .filter(([lvl]) => parseInt(lvl) <= level)
+      .map(([, unitId]) => unitId)
+      .filter(unitId => factionUnits.includes(unitId) && UNIT_DEFS[unitId]);
+  });
   const uniqueUnits = [...new Set(unlockedUnits)];
 
   const s = { fontFamily: "'Cinzel',serif" };

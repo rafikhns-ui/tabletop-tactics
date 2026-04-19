@@ -43,17 +43,17 @@ export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, o
   const factionBuildableIds = FACTION_BUILDINGS[currentPlayer.factionId] || Object.keys(BUILDING_DEFS).filter(id => !['mine','lumber_mill','farm','treasury'].includes(id));
   const buildable = factionBuildableIds.filter(id => !ownedBuildings.includes(id));
 
-  // Faction-specific unit unlock
+  // Faction-specific unit unlock — show all units a building CAN unlock (for build preview)
   const factionUnits = FACTION_UNITS[currentPlayer.factionId] || [];
-  const UNIT_UNLOCK_LOCAL = {
-    barracks:     factionUnits.filter(u => ['infantry','elite','spearmen_infantry'].includes(u)),
-    stables:      factionUnits.filter(u => ['cavalry','onishiman_cavalry'].includes(u)),
-    archerytower: factionUnits.filter(u => ['ranged','imperial_crossbow'].includes(u)),
-    siegeworks:   factionUnits.filter(u => ['siege','wildfire_thrower'].includes(u)),
-    shipyard:     factionUnits.filter(u => ['naval','infamous_reapership'].includes(u)),
-    omitoji_dojo: factionUnits.filter(u => ['onmmy_warlocks','night_blade_clan'].includes(u)),
-    fighting_pit: factionUnits.filter(u => ['elite','night_blade_clan'].includes(u)),
-  };
+  // For each building, show all units it can ever unlock (full tech tree preview)
+  const UNIT_UNLOCK_LOCAL = Object.fromEntries(
+    Object.keys(BUILDING_DEFS).map(bId => {
+      const def = BUILDING_DEFS[bId];
+      const allUnits = Object.values(def?.unlocks || {})
+        .filter(uid => factionUnits.includes(uid) && UNIT_DEFS[uid]);
+      return [bId, allUnits];
+    })
+  );
 
   // (buildable and units are already set above from faction-specific data)
 
