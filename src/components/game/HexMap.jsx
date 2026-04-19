@@ -1820,7 +1820,6 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
             const typeNames = { infantry: 'Infantry', cavalry: 'Cavalry', elite: 'Elite Guard', ranged: 'Ranged', siege: 'Siege Engine', naval: 'Warship' };
 
             const toggleUnit = (idx) => {
-              if (!canMove) return;
               setSelectedPanelUnits(prev => {
                 const next = new Set(prev);
                 if (next.has(idx)) next.delete(idx);
@@ -1841,16 +1840,16 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                 <div style={{ color: '#d4a853', fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
                   UNITS ON HEX
                 </div>
-                {!canMove && alreadyMoved && (
-                   <div style={{ fontSize: 11, color: '#c08030', marginBottom: 8, padding: '6px 8px', background: 'rgba(192,128,48,0.1)', border: '1px solid #8a6a30', borderRadius: 4 }}>
-                     This unit already moved this turn
-                   </div>
-                 )}
-                {canMove && (
-                   <div style={{ fontSize: 11, color: '#7a9a7a', marginBottom: 8, padding: '6px 8px', background: 'rgba(100,160,100,0.1)', border: '1px solid #3a5a3a', borderRadius: 4 }}>
-                     Click units to select · then click destination on map
-                   </div>
-                 )}
+                {alreadyMoved && (
+                  <div style={{ fontSize: 11, color: '#c08030', marginBottom: 8, padding: '6px 8px', background: 'rgba(192,128,48,0.1)', border: '1px solid #8a6a30', borderRadius: 4 }}>
+                    This unit already moved this turn
+                  </div>
+                )}
+                {isMyHex && !currentPlayer?.isAI && (
+                  <div style={{ fontSize: 11, color: '#7a9a7a', marginBottom: 8, padding: '6px 8px', background: 'rgba(100,160,100,0.1)', border: '1px solid #3a5a3a', borderRadius: 4 }}>
+                    Click units to select · then click destination on map
+                  </div>
+                )}
                 {panelUnits.length > 0 ? (
                   <div>
                     {panelUnits.map((u, i) => {
@@ -1866,13 +1865,13 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                             borderBottom: '1px solid #2a2520',
                             padding: '8px',
                             borderRadius: 4,
-                            cursor: canMove ? 'pointer' : 'default',
+                            cursor: isMyHex && !currentPlayer?.isAI ? 'pointer' : 'default',
                             background: isSelected ? 'rgba(212,168,83,0.15)' : 'transparent',
                             border: isSelected ? '1px solid #d4a853' : '1px solid transparent',
                             transition: 'all 0.15s',
                             display: 'flex', alignItems: 'center', gap: 8,
                           }}>
-                          {canMove && (
+                          {isMyHex && !currentPlayer?.isAI && (
                             <div style={{
                               width: 14, height: 14, borderRadius: 3, border: '1.5px solid',
                               borderColor: isSelected ? '#d4a853' : '#555',
@@ -1891,7 +1890,7 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                         </div>
                       );
                     })}
-                    {canMove && selectedPanelUnits.size > 0 && (
+                    {isMyHex && !currentPlayer?.isAI && selectedPanelUnits.size > 0 && (
                       <button
                         onClick={handleMoveSelected}
                         style={{
