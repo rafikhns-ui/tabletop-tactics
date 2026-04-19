@@ -14,7 +14,7 @@ export const NATION_EMBLEMS = {
   kintei: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/720953d4f_Greiterkintei.png',
   hestia: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/hestia.png',
   republic: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/hestia.png',
-  inuvak: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/inuvak.png',
+  inuvak: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/efd6f732d_8F91CD0F-C0F2-47A2-A403-DFA223D61581.PNG',
   silver: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/03334c5b1_silverunion1.png',
   silverunion: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/03334c5b1_silverunion1.png',
   silver_union: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/03334c5b1_silverunion1.png',
