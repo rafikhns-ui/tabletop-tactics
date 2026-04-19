@@ -26,7 +26,7 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
   
   // Check if this is a Reapership (ranged naval unit)
   const isReapership = navalUnit?.type === 'infamous_reapership' || navalUnit?.type === 'naval';
-  const boatCanRangedAttack = boatOnWater && isReapership;
+  const boatCanRangedAttack = (boatOnWater || boatOnCoastal) && isReapership;
   
   // Find adjacent coastal hexes with enemy units or structures for bombardment
   const bombardmentTargets = adjacentCoastal.filter(nId => {
