@@ -1,4 +1,5 @@
 import React from 'react';
+import mapData from './ardonia_game_map.json';
 
 const ICONS = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };
 const TYPE_NAMES = { infantry: 'Infantry', cavalry: 'Cavalry', elite: 'Elite Guard', ranged: 'Ranged', siege: 'Siege Engine', naval: 'Warship' };
@@ -15,6 +16,25 @@ export default function TransportedUnitsPanel({
   addLog 
 }) {
   if (embarked.length === 0) return null;
+
+  // Check if boat can disembark (on water/coastal with adjacent coastal tiles, or directly on coastal)
+  const boatTerrain = mapData.hex_grid.find(h => `${h.col},${h.row}` === hexId)?.terrain;
+  const boatOnCoastal = boatTerrain === 'coastal';
+  
+  // Get adjacent coastal tiles
+  const [col, row] = hexId.split(',').map(Number);
+  const even = col % 2 === 0;
+  const neighbors = [
+    [col+1, even ? row-1 : row], [col+1, even ? row : row+1],
+    [col-1, even ? row-1 : row], [col-1, even ? row : row+1],
+    [col, row-1], [col, row+1],
+  ];
+  const adjacentCoastal = neighbors.filter(([c, r]) => {
+    const terrain = mapData.hex_grid.find(h => h.col === c && h.row === r)?.terrain;
+    return terrain === 'coastal';
+  }).length > 0;
+  
+  const canDisembark = boatOnCoastal || adjacentCoastal;
 
   return (
     <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #2a2520' }}>
@@ -38,6 +58,10 @@ export default function TransportedUnitsPanel({
             {isMyHex && !currentPlayer?.isAI && (
               <button
                 onClick={() => {
+                  if (!canDisembark) {
+                    addMessage(`⛔ Must be on or adjacent to coastal tile to disembark`);
+                    return;
+                  }
                   setGameState(prev => {
                     const hex = prev.hexes[hexId] || {};
                     const newEmbarked = embarked.map((e, idx) => idx === i ? { ...e, count: e.count - 1 } : e).filter(e => e.count > 0);
@@ -56,20 +80,22 @@ export default function TransportedUnitsPanel({
                   addMessage(`⚓ Disembarked 1 ${TYPE_NAMES[u.type]} from naval unit`);
                   addLog('disembark', `Disembarked 1 ${TYPE_NAMES[u.type]}`, null, 'Move');
                 }}
+                disabled={!canDisembark}
                 style={{
                   marginTop: 4,
                   width: '100%',
                   padding: '3px 4px',
                   fontSize: 8,
-                  background: '#2a4a4a',
-                  border: '1px solid #4488ff',
-                  color: '#88ccff',
+                  background: canDisembark ? '#2a4a4a' : '#1a2a2a',
+                  border: `1px solid ${canDisembark ? '#4488ff' : '#2a5a5a'}`,
+                  color: canDisembark ? '#88ccff' : '#4a6a6a',
                   borderRadius: 2,
-                  cursor: 'pointer',
+                  cursor: canDisembark ? 'pointer' : 'not-allowed',
                   fontFamily: "'Cinzel', serif",
                   fontWeight: 600,
+                  opacity: canDisembark ? 1 : 0.5,
                 }}>
-                Disembark
+                {canDisembark ? 'Disembark' : 'No Coast'}
               </button>
             )}
           </div>
