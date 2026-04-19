@@ -1018,12 +1018,12 @@ export default function HexMap({ gameState, selectedHex, selectedProvince, phase
                          azure: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/08a33f4a8_bluemoo.png',
                          icebound: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/011bfc403_thehorde.png',
                          ilalocatotlan: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/d92d76e51_photo-output3.png',
-                         kinetic: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/kinetic.png',
+                         kinetic: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/720953d4f_Greiterkintei.png',
                          hestia: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/hestia.png',
                          inuvak: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/inuvak.png',
-                         silver: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/silver.png',
-                         shadowsfall: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/shadowsfall.png',
-                         scorched: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/scorched.png',
+                         silver: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/03334c5b1_silverunion1.png',
+                         shadowsfall: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/5c05b18f1_Shadowsfall.png',
+                         scorched: 'https://media.base44.com/images/public/69b732e420481df67e8a6804/c116e858f_scorchedlands.png',
                        };
                        // Use unit's actual nation (from owner), not selected hex nation
                        const unitNationId = nationId ? normNationId(nationId) : normNationId(hex.nation_id);
