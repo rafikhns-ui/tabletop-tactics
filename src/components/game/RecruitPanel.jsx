@@ -60,13 +60,17 @@ export default function RecruitPanel({ currentPlayer, onRecruit }) {
         const queuedCount = (currentPlayer.pendingUnits || []).filter(uid => uid === id).length;
         const isNext = (currentPlayer.pendingUnits || [])[0] === id;
         return (
-          <div key={id} className="rounded p-2 transition-all cursor-pointer"
+          <div key={id}
+            onClick={() => affordable && onRecruit(id)}
             onMouseEnter={() => u.image && setPreviewImage(u.image)}
             onMouseLeave={() => setPreviewImage(null)}
+            className="rounded p-2 transition-all"
             style={{
               background: isNext ? 'hsl(43,50%,20%)' : 'hsl(35,20%,21%)',
               border: isNext ? '1px solid hsl(43,80%,55%)' : '1px solid hsl(35,20%,30%)',
               boxShadow: isNext ? '0 0 10px rgba(255,200,50,0.25)' : 'none',
+              cursor: affordable ? 'pointer' : 'not-allowed',
+              opacity: affordable ? 1 : 0.45,
             }}>
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold flex items-center gap-1" style={{ ...s, color: isNext ? 'hsl(43,90%,80%)' : 'hsl(40,30%,80%)' }}>
@@ -74,18 +78,7 @@ export default function RecruitPanel({ currentPlayer, onRecruit }) {
                 {isNext && <span className="text-xs px-1 rounded" style={{ background: 'hsl(43,80%,30%)', color: 'hsl(43,90%,85%)', fontSize: '9px' }}>NEXT</span>}
                 {queuedCount > 0 && <span className="text-xs px-1 rounded-full" style={{ background: 'hsl(43,70%,28%)', color: 'hsl(43,90%,75%)' }}>×{queuedCount}</span>}
               </span>
-              <button
-                onClick={() => onRecruit(id)}
-                disabled={!affordable}
-                className="text-xs px-2 py-0.5 rounded font-bold transition-all hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
-                style={{
-                  ...s,
-                  background: isNext ? 'hsl(43,70%,30%)' : 'hsl(130,40%,22%)',
-                  border: isNext ? '1px solid hsl(43,80%,55%)' : '1px solid hsl(130,50%,35%)',
-                  color: isNext ? 'hsl(43,90%,85%)' : 'hsl(130,50%,75%)',
-                }}>
-                +1
-              </button>
+              <span className="text-xs px-2 py-0.5 rounded font-bold" style={{ ...s, background: 'hsl(130,40%,22%)', border: '1px solid hsl(130,50%,35%)', color: 'hsl(130,50%,75%)' }}>+1</span>
             </div>
             <div className="text-xs mt-0.5 opacity-55" style={{ color: 'hsl(40,20%,65%)' }}>{u.description}</div>
             <div className="text-xs mt-0.5" style={{ color: 'hsl(43,70%,55%)' }}>
