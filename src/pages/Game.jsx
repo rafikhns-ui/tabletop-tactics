@@ -360,6 +360,17 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     return player?.id || null;
   };
 
+  // Helper: get neighbor hex IDs
+  const getNeighborHexIds = (hexId) => {
+    const [col, row] = hexId.split(',').map(Number);
+    const even = col % 2 === 0;
+    return [
+      [col+1, even ? row-1 : row], [col+1, even ? row : row+1],
+      [col-1, even ? row-1 : row], [col-1, even ? row : row+1],
+      [col, row-1], [col, row+1],
+    ].map(([c, r]) => `${c},${r}`);
+  };
+
   const handleTerritoryClick = (hexId) => {
     if (!gameState || winner) return;
     
@@ -405,6 +416,46 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
     if (phase === 'deploy') {
       const pending = currentPlayer.pendingUnits || [];
       const hexOwner = resolveHexOwner(hexId);
+
+      // Port click: recruit a Reapership and deploy it to an adjacent water hex
+      const clickedHex = gameState.hexes[hexId] || {};
+      const hasPort = clickedHex.buildings?.port || clickedHex.buildings?.crimson_port;
+      if (hexOwner === currentPlayer.id && hasPort && pending.length === 0) {
+        const portDef = UNIT_DEFS['infamous_reapership'];
+        if (portDef) {
+          const cost = portDef.cost || {};
+          const canAfford = Object.entries(cost).every(([k, v]) => (currentPlayer.resources?.[k] ?? 0) >= v);
+          if (!canAfford) {
+            addMessage(`⛔ Not enough resources to recruit Reapership (need ${Object.entries(cost).map(([k,v]) => `${v} ${k}`).join(', ')})`);
+          } else {
+            // Find adjacent water hex
+            const waterHex = getNeighborHexIds(hexId).find(nId => HEX_TERRAIN_LOOKUP[nId] === 'water');
+            if (!waterHex) {
+              addMessage(`⛔ No adjacent water hex to deploy the Reapership`);
+            } else {
+              setGameState(prev => {
+                const player = prev.players.find(p => p.id === currentPlayer.id);
+                const newResources = { ...player.resources };
+                Object.entries(cost).forEach(([k, v]) => { newResources[k] = (newResources[k] || 0) - v; });
+                const destHex = prev.hexes[waterHex] || {};
+                const destUnits = [...(destHex.units || [])];
+                const existing = destUnits.find(u => u.type === 'infamous_reapership');
+                if (existing) existing.count += 1;
+                else destUnits.push({ type: 'infamous_reapership', count: 1 });
+                return {
+                  ...prev,
+                  hexes: { ...prev.hexes, [waterHex]: { ...destHex, units: destUnits, owner: currentPlayer.id } },
+                  players: prev.players.map(p => p.id === currentPlayer.id ? { ...p, resources: newResources } : p),
+                };
+              });
+              addMessage(`⛵ Infamous Reapership launched from port to adjacent water!`);
+              addLog('recruit', `Recruited Infamous Reapership`, null, 'Deploy');
+            }
+          }
+        }
+        return;
+      }
+
       if (hexOwner === currentPlayer.id && pending.length > 0) {
         const unitType = pending[0]; // deploy the first queued unit
         if (!canDeployUnit(hexId, unitType)) {
