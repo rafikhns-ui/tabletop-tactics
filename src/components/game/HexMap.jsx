@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import mapData from './ardonia_game_map.json';
-import { FACTIONS, FACTION_TO_NATION_ID } from './ardoniaData';
+import { FACTION_TO_NATION_ID } from './ardoniaData';
 import PortRecruitSection from './PortRecruitSection';
 import DisembarkPanel from './DisembarkPanel';
 import UnitsTabPanel from './UnitsTabPanel';
@@ -1585,7 +1585,7 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
             color: '#555', fontSize: 16, cursor: 'pointer', lineHeight: 1,
             borderBottom: '2px solid transparent',
             transition: 'color 0.15s',
-          }} onMouseEnter={e => e.target.style.color='#d4a853'} onMouseLeave={e => e.target.style.color='#555'}>✕</button>
+          }} onMouseEnter={e => e.currentTarget.style.color='#d4a853'} onMouseLeave={e => e.currentTarget.style.color='#555'}>✕</button>
         </div>
 
         {/* Panel content */}
@@ -1809,6 +1809,11 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
               _prov_capital: { icon: '◆', name: 'Provincial Capital', effect: 'Controls province', color: '#c8b860', desc: 'The capital of this province. Whoever holds this hex owns all hexes of the province.' },
             };
             // Add capital pseudo-entries
+            // Typed as [string, any][] to match Object.entries(...) so the
+            // merged `entries` destructure (`[key]` below) narrows `key` to
+            // `string` rather than `string | boolean` (which isn't a valid
+            // React.Key).
+            /** @type {[string, any][]} */
             const capitalEntries = capInfo?.isNatCap ? [['_nat_capital', true]] : capInfo?.isProvCap ? [['_prov_capital', true]] : [];
             const entries = [...capitalEntries, ...Object.entries(hexBuildings)];
             return (

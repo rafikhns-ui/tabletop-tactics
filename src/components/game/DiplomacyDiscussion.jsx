@@ -35,9 +35,14 @@ export default function DiplomacyDiscussion({ gameState, currentPlayer, targetPl
       // If AI suggests an action, parse and execute it
       if (response.data?.suggestedAction) {
         const action = response.data.suggestedAction;
-        // Auto-execute trade offer if suggested
-        if (action.type === 'trade_offer' && window.onDiplomacyAction) {
-          window.onDiplomacyAction(action);
+        // Auto-execute trade offer if suggested.
+        // `window.onDiplomacyAction` is a runtime bridge installed by Game.jsx
+        // for the AI-suggested-action flow — the global isn't in the DOM lib.
+        // Casting via `any` keeps the bridge intact without polluting global
+        // typings with a half-public contract.
+        const w = /** @type {any} */ (window);
+        if (action.type === 'trade_offer' && w.onDiplomacyAction) {
+          w.onDiplomacyAction(action);
         }
       }
     } catch (error) {

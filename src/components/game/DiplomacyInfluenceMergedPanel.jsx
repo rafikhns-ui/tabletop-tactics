@@ -173,7 +173,9 @@ export default function DiplomacyInfluenceMergedPanel({ gameState, currentPlayer
 
 function TradeContent({ gameState, currentPlayer, onDiplomacyAction, tradeOffers, onAcceptTrade, onDeclineTrade, onOpenTreaty }) {
   const [tradeTarget, setTradeTarget] = React.useState(null);
+  /** @type {[Record<string, number>, React.Dispatch<React.SetStateAction<Record<string, number>>>]} */
   const [tradeOffer, setTradeOffer] = React.useState({});
+  /** @type {[Record<string, number>, React.Dispatch<React.SetStateAction<Record<string, number>>>]} */
   const [tradeRequest, setTradeRequest] = React.useState({});
   
   if (!gameState || !currentPlayer) return null;

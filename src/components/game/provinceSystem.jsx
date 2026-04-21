@@ -1,5 +1,4 @@
 import mapData from './ardonia_game_map.json';
-import { FACTION_TO_NATION_ID } from './ardoniaData';
 
 // ════ BUILDINGS ════
 export const BUILDINGS = {

@@ -333,6 +333,14 @@ export default function PlayerPanel({ player, isActive, territories, isSelf, pro
   );
 }
 
+/**
+ * @param {{
+ *   label?: any,
+ *   value?: any,
+ *   max?: number,
+ *   color?: string
+ * }} props
+ */
 function StatBadge({ label, value, max, color }) {
   return (
     <div className="flex flex-col px-1.5 py-1 rounded text-xs"

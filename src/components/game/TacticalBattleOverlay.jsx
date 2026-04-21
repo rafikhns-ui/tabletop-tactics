@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FACTIONS, LEADERS, HEROES, UNIT_DEFS } from './ardoniaData';
+import { FACTIONS, UNIT_DEFS } from './ardoniaData';
 
 const DIE_FACES = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
@@ -87,7 +87,10 @@ function SectionHeader({ icon, label, color }) {
 }
 
 // Modifier row
-function ModifierRow({ icon, label, value, color, sublabel }) {
+// Note: `color` was originally in the signature but never read in the body —
+// the +/0/- coloring is hard-coded from `value`. Dropped to match the actual
+// runtime contract and match every caller's prop shape.
+function ModifierRow({ icon, label, value, sublabel }) {
   const isPos = value > 0;
   const isNeg = value < 0;
   return (

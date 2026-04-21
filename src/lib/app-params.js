@@ -1,6 +1,22 @@
 const isNode = typeof window === 'undefined';
-const windowObj = isNode ? { localStorage: new Map() } : window;
-const storage = windowObj.localStorage;
+// In Node (SSR / tooling), window.localStorage isn't available. The former
+// `new Map()` stub had the wrong shape — `Storage` methods (`getItem`,
+// `setItem`, `removeItem`) collide with Map's (`get`, `set`, `delete`), so
+// the inferred union `Map | Storage` couldn't be narrowed and every call
+// site tripped TS2339. A Storage-shaped noop stub makes the type a clean
+// `Storage` and keeps behavior identical — getAppParamValue returns early
+// on isNode before touching storage anyway.
+/** @type {Storage} */
+const nodeStorageStub = {
+	length: 0,
+	clear: () => {},
+	getItem: () => null,
+	key: () => null,
+	removeItem: () => {},
+	setItem: () => {},
+};
+/** @type {Storage} */
+const storage = isNode ? nodeStorageStub : window.localStorage;
 
 const toSnakeCase = (str) => {
 	return str.replace(/([A-Z])/g, '_$1').toLowerCase();

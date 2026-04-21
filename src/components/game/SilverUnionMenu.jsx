@@ -222,7 +222,11 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
                 </div>
                 
                 {selectedLoan === null ? (
-                  <div style={{ space: 'y-2' }}>
+                  // Bare <div> — previous `style={{ space: 'y-2' }}` was a
+                  // Tailwind utility misplaced in inline styles (invalid CSS,
+                  // silent no-op). The child buttons already supply their
+                  // own vertical spacing via marginBottom.
+                  <div>
                     {loanTerms.map((term, i) => (
                       <button key={i} onClick={() => setSelectedLoan(term)}
                         style={{
@@ -230,8 +234,8 @@ export default function SilverUnionMenu({ gameState, currentPlayer, setGameState
                           border: '1px solid hsl(35,20%,30%)', borderRadius: 6, cursor: 'pointer',
                           color: '#c8c0b0', textAlign: 'left', transition: 'all 0.2s'
                         }}
-                        onMouseEnter={e => e.target.style.background = 'hsl(38,70%,28%)'}
-                        onMouseLeave={e => e.target.style.background = 'hsl(35,20%,21%)'}>
+                        onMouseEnter={e => e.currentTarget.style.background = 'hsl(38,70%,28%)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'hsl(35,20%,21%)'}>
                         <div style={{ fontWeight: 600, marginBottom: 4 }}>
                           {term.emoji} {term.turns}-Turn Loan
                         </div>

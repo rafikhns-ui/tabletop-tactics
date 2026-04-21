@@ -10,6 +10,16 @@ const EFFECT_ICONS = {
   avatar: '👹',
 };
 
+/**
+ * @param {{
+ *   icon?: any,
+ *   label?: any,
+ *   text?: any,
+ *   color?: string,
+ *   duration?: number,
+ *   isMalus?: boolean
+ * }} props
+ */
 function EffectRow({ icon, label, text, color, duration, isMalus }) {
   return (
     <div className="rounded-lg px-3 py-2 mb-1.5 flex gap-2.5"

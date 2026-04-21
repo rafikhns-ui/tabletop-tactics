@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import mapData from './ardonia_game_map.json';
 
 const ICONS = { infantry: '🏃', cavalry: '🐴', elite: '⭐', ranged: '🏹', siege: '🏰', naval: '⚓' };

@@ -53,7 +53,10 @@ function CostTag({ cost, resources }) {
   );
 }
 
-export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onUpgrade, onSetBuildingPlacementMode, buildingPlacementMode, onDragPlaceStart, onDragPlaceEnd, phase }) {
+// `phase` dropped from the signature — destructured but never read in the
+// body. No caller in Game.jsx was passing it either, which is what tripped
+// the TS2741 "missing required property phase" error.
+export default function BuildRecruitPanel({ currentPlayer, gameState, onBuild, onUpgrade, onSetBuildingPlacementMode, buildingPlacementMode, onDragPlaceStart, onDragPlaceEnd }) {
   const [tab, setTab] = useState('build'); // 'build' | 'upgrade' | 'queue'
   const [previewImage, setPreviewImage] = useState(null);
   const { resources } = currentPlayer;

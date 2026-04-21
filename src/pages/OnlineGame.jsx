@@ -9,7 +9,7 @@ import EventModal from '../components/game/EventModal';
 import BattleLog from '../components/game/BattleLog';
 import DiplomacyPanel from '../components/game/DiplomacyPanel';
 import HeroPanel from '../components/game/HeroPanel';
-import { createGameState, collectIncome, executeAttack, resolveBattle, checkObjective } from '../components/game/ardoniaLogic';
+import { createGameState, collectIncome, executeAttack, checkObjective } from '../components/game/ardoniaLogic';
 import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, HEROES } from '../components/game/ardoniaData';
 
 export default function OnlineGame({ session: initialSession, onLeave }) {
@@ -67,8 +67,12 @@ export default function OnlineGame({ session: initialSession, onLeave }) {
   }, [session?.id, phase]);
 
   // Initialize game from session (host triggers this)
-  const handleFactionConfirm = async (choices, playersArr) => {
-    const state = createGameState('multiplayer', choices, playersArr);
+  // FactionSelect.onConfirm(choices, players) — `choices` is keyed by
+  // player id, `players` is the ordered array. createGameState only needs
+  // the ordered array (it re-derives per-player state from it). The older
+  // 3-arg call was a leftover from a prior API shape.
+  const handleFactionConfirm = async (_choices, playersArr) => {
+    const state = createGameState('multiplayer', playersArr);
     const collected = collectIncome(state);
     // Attach userIds to players from session
     const enriched = {
@@ -441,7 +445,21 @@ export default function OnlineGame({ session: initialSession, onLeave }) {
           <div className="flex flex-wrap gap-1 p-1">
             {gameState.players.map((p, i) => (
               <div key={p.id} className="flex-1 min-w-[100px]">
-                <PlayerPanel player={p} isActive={i === gameState.currentPlayerIndex} territories={gameState.territories} isSelf={p.userId === user?.id} />
+                {/* PlayerPanel gained provinces/gameState/onHighlight/isHighlighted
+                    after OnlineGame was last touched. OnlineGame is a stripped-down
+                    multiplayer shell that doesn't yet surface province highlighting;
+                    we wire gameState/provinces so tooltips etc. still render, and
+                    pass undefined callbacks so the highlight hover is inert. */}
+                <PlayerPanel
+                  player={p}
+                  isActive={i === gameState.currentPlayerIndex}
+                  territories={gameState.territories}
+                  isSelf={p.userId === user?.id}
+                  provinces={gameState.provinces}
+                  gameState={gameState}
+                  onHighlight={undefined}
+                  isHighlighted={false}
+                />
               </div>
             ))}
           </div>
@@ -470,15 +488,25 @@ export default function OnlineGame({ session: initialSession, onLeave }) {
 
           <div className="flex-1 overflow-y-auto">
             {bottomTab === 'action' && isMyTurn && (
+              // ActionBar's public prop API is now deploy/drag-based
+              // (onDrawCard, onSelectDeployUnit, onDragDeployStart,
+              // onDragDeployEnd, isDraggingDeploy) and no longer calls
+              // onBuild/onRecruit. OnlineGame is a stripped-down multiplayer
+              // shell without drag-deploy UX yet, so we pass no-ops for the
+              // deploy callbacks. handleBuild/handleRecruit are preserved
+              // above for a future refactor wiring the proper UX.
               <ActionBar
                 gameState={gameState}
                 currentPlayer={currentPlayer}
                 phase={phase}
                 onAdvancePhase={advancePhase}
                 isAI={false}
-                onBuild={handleBuild}
-                onRecruit={handleRecruit}
                 onPlayCard={handlePlayCard}
+                onDrawCard={undefined}
+                onSelectDeployUnit={undefined}
+                onDragDeployStart={undefined}
+                onDragDeployEnd={undefined}
+                isDraggingDeploy={false}
               />
             )}
             {bottomTab === 'action' && !isMyTurn && (
@@ -487,7 +515,17 @@ export default function OnlineGame({ session: initialSession, onLeave }) {
               </div>
             )}
             {bottomTab === 'heroes' && isMyTurn && myPlayer && (
-              <HeroPanel gameState={gameState} currentPlayer={currentPlayer} onRecruit={handleRecruitHero} onAssign={handleAssignHero} />
+              // HeroPanel's current contract is
+              // (gameState, currentPlayer, onRecruit, onTriggerAbility).
+              // onAssign was dropped when hero placement moved to the board
+              // click flow; OnlineGame hasn't wired onTriggerAbility yet.
+              // handleAssignHero is preserved above for a future refactor.
+              <HeroPanel
+                gameState={gameState}
+                currentPlayer={currentPlayer}
+                onRecruit={handleRecruitHero}
+                onTriggerAbility={undefined}
+              />
             )}
             {bottomTab === 'diplomacy' && isMyTurn && (
               <DiplomacyPanel gameState={gameState} currentPlayer={currentPlayer} onDiplomacyAction={handleDiplomacyAction} tradeOffers={tradeOffers} onAcceptTrade={handleAcceptTrade} onDeclineTrade={handleDeclineTrade} />

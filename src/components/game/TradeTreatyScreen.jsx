@@ -1,5 +1,4 @@
-import React, { useState, useRef } from 'react';
-import { FACTIONS } from './ardoniaData';
+import React, { useState } from 'react';
 
 const RESOURCE_DEFS = [
   { id: 'gold',    label: 'Gold',    icon: '🪙', color: '#d4a853' },
@@ -16,7 +15,9 @@ const TREATY_TYPES = [
   { id: 'vassalage',     label: 'Vassalage',           icon: '👑', desc: 'Target pays 2 Gold/turn as tribute. They receive military protection in return.', duration: 6 },
 ];
 
-function ResourcePicker({ resources, onAdd, label, color }) {
+// `label` was destructured but never read in the body — per-resource labels
+// come from RESOURCE_DEFS entries. Drop from signature to match callers.
+function ResourcePicker({ resources, onAdd, color }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
       {RESOURCE_DEFS.map(r => {

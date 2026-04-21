@@ -23,6 +23,17 @@ const HERO_TYPE_ICONS = {
   Strategist: '🗺️', Healer: '💚',
 };
 
+/**
+ * @param {{
+ *   hero?: any,
+ *   status?: any,
+ *   owned?: boolean,
+ *   onRecruit?: (...args: any[]) => void,
+ *   territories?: any,
+ *   currentPlayer?: any,
+ *   onTriggerAbility?: (...args: any[]) => void
+ * }} props
+ */
 function HeroCard({ hero, status, owned, onRecruit, territories, currentPlayer, onTriggerAbility }) {
   const [showPreview, setShowPreview] = React.useState(false);
   const canAfford = Object.entries(hero.cost || {}).every(([k, v]) => {

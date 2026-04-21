@@ -5,18 +5,16 @@ import OnlineGame from './OnlineGame';
 import HeroPanel from '../components/game/HeroPanel';
 import { createInitialProvinceState } from '../components/game/provinceSystem';
 import { HEROES, LEADERS } from '../components/game/ardoniaData';
-import { getHeroCombatBonus } from '../components/game/ardoniaLogic';
-import { HexUtils, canUnitEnter, getReachableHexes, findMovementPath, UNIT_SPEED } from '../components/game/hexGridSystem';
+import { UNIT_SPEED } from '../components/game/hexGridSystem';
 import FactionSelectStep from '../components/game/FactionSelectStep';
 import ObjectivesStep from '../components/game/ObjectivesStep';
 import LeaderSelectStep from '../components/game/LeaderSelectStep';
-import GameBoard from '../components/game/GameBoard';
 import HexMap from '../components/game/HexMap';
 import PlayerPanel from '../components/game/PlayerPanel';
 import ActionBar from '../components/game/ActionBar';
 import BattleModal from '../components/game/BattleModal';
 import EventModal from '../components/game/EventModal';
-import { createGameState, collectIncome, executeAttack, resolveBattle, doAiTurn, getAiTurnSteps, checkObjective, calculateUnitBonuses, applyEventEffect } from '../components/game/ardoniaLogic';
+import { createGameState, collectIncome, executeAttack, getAiTurnSteps, checkObjective, applyEventEffect } from '../components/game/ardoniaLogic';
 import mapData from '../components/game/ardonia_game_map.json';
 import { FACTION_TO_NATION_ID } from '../components/game/ardoniaData';
 import UnifiedLog from '../components/game/UnifiedLog';
@@ -78,16 +76,25 @@ import RecruitPanel from '../components/game/RecruitPanel';
 import { EVENT_CARDS, BUILDING_DEFS, UNIT_DEFS, AVATARS, ACTION_CARDS } from '../components/game/ardoniaData';
 import AvatarPanel from '../components/game/AvatarPanel';
 import AiSetupModal from '../components/game/AiSetupModal';
-import AdvisorPanel from '../components/game/AdvisorPanel';
 import EffectsPanel from '../components/game/EffectsPanel';
 import MiniMap from '../components/game/MiniMap';
-import { NATION_PERSONALITIES, scoreTradeOffer, shouldAcceptAlliance, shouldDeclareWar, initializeSentiment, decaySentiment, applyEventSentiment, executeInfluenceAction, tickInfluenceModifiers, getSentimentLabel } from '../components/game/aiPersonalities';
+import { NATION_PERSONALITIES, scoreTradeOffer, initializeSentiment, decaySentiment, applyEventSentiment, executeInfluenceAction, tickInfluenceModifiers } from '../components/game/aiPersonalities';
 import DiplomacyInfluenceMergedPanel from '../components/game/DiplomacyInfluenceMergedPanel';
+import Inbox from '../components/game/diplomacy/Inbox';
+import { onTurnStart as diplomacyOnTurnStart, onTurnEnd as diplomacyOnTurnEnd } from '../lib/diplomacy/turnHooks';
+import { getUnreadCount, getPersonality } from '../lib/diplomacy';
+
+function formatAiDecision(d) {
+  const name = getPersonality(d.target)?.leaderName || d.target;
+  const label = String(d.type || 'offer').replace(/_/g, ' ').toLowerCase();
+  if (d.choice === 'accept') return `✉️ ${name} accepted your ${label}.`;
+  if (d.choice === 'reject') return `✉️ ${name} refused your ${label}.`;
+  return `✉️ ${name}: ${label} — ${d.choice}.`;
+}
 import CardPlayOverlay from '../components/game/CardPlayOverlay';
-import { applyInstantCardEffects, getPlayerCombatCardBonus } from '../components/game/cardEffects';
+import { getPlayerCombatCardBonus } from '../components/game/cardEffects';
 import { buildPlayCardHandler } from '../lib/cardHandler';
 import { isNavalUnit, isLandUnit, embarkUnits } from '../lib/embarkationLogic';
-import { processEmbarkMovement } from '../lib/embarkMovementHandler';
 import MarketPanel from '../components/game/MarketPanel';
 import SilverUnionMenu from '../components/game/SilverUnionMenu';
 import TopBar from '../components/game/TopBar';
@@ -132,6 +139,17 @@ export default function Game() {
   const [showDiplomacyInfluenceModal, setShowDiplomacyInfluenceModal] = useState(false);
   const [showInfluenceOverlay, setShowInfluenceOverlay] = useState(false);
   const [showSilverUnionMenu, setShowSilverUnionMenu] = useState(false);
+  // LLM-driven diplomacy (vertical slice)
+  const [showInbox, setShowInbox] = useState(false);
+  const [hegemonResult, setHegemonResult] = useState(null);
+  const lastCommissionedTurnRef = useRef({ turn: -1, player: -1 });
+  // The end-of-turn diplomacy hook MUST run at most once per
+  // (turn, currentPlayerIndex) — runTurnTick + advanceMercantileStreaks
+  // each clone the state and the streak counter increments unconditionally
+  // when the qualifies condition holds, so re-firing on every gameState
+  // change would let mercantile victory trip after 3 React renders rather
+  // than 3 actual turns. Track the last (turn, player) we ran for.
+  const lastTurnEndedRef = useRef({ turn: -1, player: -1 });
   const [openModal, setOpenModal] = useState(null); // 'action' | 'build' | 'recruit' | 'heroes' | 'avatars' | 'effects' | 'unifiedlog' | 'advisor' | 'market' | null
   const [draggingDeployUnit, setDraggingDeployUnit] = useState(null); // unit type being dragged for deploy
 
@@ -155,6 +173,96 @@ export default function Game() {
       setProvinces(initProvinces);
     }
   }, [gameState, provinces]);
+
+  // LLM-driven diplomacy: run the event commissioning pass once at the
+  // start of the human player's turn, and check Hegemon victory after
+  // every state change.
+  useEffect(() => {
+    if (!gameState || winner || hegemonResult) return;
+    const human = gameState.players?.find(p => !p.isAI);
+    if (!human) return;
+    const isHumanTurn =
+      gameState.players[gameState.currentPlayerIndex]?.id === human.id;
+    if (!isHumanTurn) return;
+    const playerFactionId = human.faction?.id || human.factionId;
+    if (!playerFactionId) return;
+    const seen = lastCommissionedTurnRef.current;
+    if (seen.turn === gameState.turn && seen.player === human.id) return;
+    // Capture the token we're commissioning for. The .then handler uses
+    // this to decide whether the result is still relevant.
+    //
+    // We deliberately do NOT use a `let cancelled = false` + cleanup
+    // sentinel — that would cancel on every dep re-render, including the
+    // re-render the player triggers by building a barracks mid-commission,
+    // which would silently throw away the LLM events we just paid the
+    // network round-trip for. Token comparison only invalidates when a
+    // genuinely newer commission has superseded this one (i.e., the turn
+    // or player has advanced).
+    const commissionToken = { turn: gameState.turn, player: human.id };
+    lastCommissionedTurnRef.current = commissionToken;
+    diplomacyOnTurnStart({ gameState, playerFactionId })
+      .then(next => {
+        if (!next) return;
+        const cur = lastCommissionedTurnRef.current;
+        if (cur.turn !== commissionToken.turn || cur.player !== commissionToken.player) {
+          // A newer commission (next turn / different player) replaced us.
+          return;
+        }
+        // The LLM commission call can take several seconds — long enough
+        // for the player to build, move, recruit, etc. We must NOT do a
+        // wholesale setGameState(next) because `next` was derived from
+        // a stale gameState snapshot and would clobber those changes.
+        // onTurnStart only mutates diplomacy.events and diplomacy.offerLog,
+        // so merge just those slices into whatever state is current.
+        setGameState(prev => ({
+          ...prev,
+          diplomacy: {
+            ...(prev.diplomacy || {}),
+            events: next.diplomacy?.events ?? prev.diplomacy?.events ?? [],
+            offerLog: next.diplomacy?.offerLog ?? prev.diplomacy?.offerLog ?? [],
+          },
+        }));
+      })
+      .catch(err => console.warn('Diplomacy turn-start failed:', err));
+  }, [gameState, winner, hegemonResult]);
+
+  useEffect(() => {
+    if (!gameState || winner || hegemonResult) return;
+    // Fire at most once per (turn, currentPlayerIndex). Without this
+    // guard, every setGameState inside the effect re-triggers it on the
+    // fresh reference and advanceMercantileStreaks++ the streak on each
+    // pass — a qualifying faction would cheat into mercantile victory
+    // after 3 React renders instead of 3 actual turns.
+    const turn = gameState.turn || 0;
+    const playerIdx = gameState.currentPlayerIndex ?? -1;
+    const seen = lastTurnEndedRef.current;
+    if (seen.turn === turn && seen.player === playerIdx) return;
+    lastTurnEndedRef.current = { turn, player: playerIdx };
+
+    const human = gameState.players?.find(p => !p.isAI);
+    const playerFactionId = human?.faction?.id || human?.factionId;
+    const result = diplomacyOnTurnEnd({ gameState, playerFactionId });
+    // onTurnEnd auto-resolves AI-targeted offers, runs the maintenance
+    // tick, and advances mercantile-dominance streak counters; persist
+    // that state so every change propagates.
+    if (result.nextState && result.nextState !== gameState) {
+      setGameState(result.nextState);
+    }
+    // Surface each AI offer decision so the player sees the outcome.
+    if (Array.isArray(result.aiDecisions) && result.aiDecisions.length) {
+      for (const d of result.aiDecisions) {
+        addMessage(formatAiDecision(d));
+      }
+    }
+    if (result.gameOver) {
+      setHegemonResult(result);
+      const winnerPlayer = gameState.players.find(
+        p => (p.faction?.id || p.factionId) === result.result.winner,
+      );
+      if (winnerPlayer) setWinner(winnerPlayer);
+      if (result.announcement) addMessage(result.announcement);
+    }
+  }, [gameState, winner, hegemonResult]);
 
   // Reorder pendingUnits so the selected type comes first
   const handleSelectDeployUnit = (unitType) => {
@@ -1601,9 +1709,16 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
 
       {/* Winner banner */}
       {winner && (
-        <div className="text-center py-3 text-lg font-bold animate-pulse"
+        <div className="text-center py-3 animate-pulse"
           style={{ background: 'hsl(43,80%,30%)', color: 'hsl(43,90%,85%)', fontFamily: "'Cinzel',serif" }}>
-          🏆 {winner.name} of the {winner.faction?.name} has conquered Ardonia! 🏆
+          <div className="text-lg font-bold">
+            🏆 {winner.name} of the {winner.faction?.name} has conquered Ardonia! 🏆
+          </div>
+          {hegemonResult?.announcement && (
+            <div className="text-sm mt-1" style={{ opacity: 0.9, fontFamily: "'Crimson Text', serif" }}>
+              {hegemonResult.announcement}
+            </div>
+          )}
         </div>
       )}
 
@@ -1665,8 +1780,18 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
                   `${Object.values(gameState.territories).filter(t => t.owner === currentPlayer.id).length} territories owned` : ''}
               </span>
             </div>
+            {/*
+              LATENT BUG — intentionally NOT passing `ref={hexMapRef}` here.
+              HexMap is a plain function component (not wrapped in
+              React.forwardRef) and exposes no `panTo` method. The ref prop
+              was silently discarded by React, so the MiniMap `onPanTo`
+              handler below has always been a no-op. Leaving the ref prop
+              in place crashes typecheck (TS2322) and falsely advertises a
+              working pan integration. Ref left defined so the imperative
+              wiring is easy to restore once HexMap is refactored into a
+              forwardRef with useImperativeHandle({ panTo }).
+            */}
             <HexMap
-              ref={hexMapRef}
               gameState={gameState}
               setGameState={setGameState}
               selectedHex={selectedTerritory}
@@ -1861,7 +1986,7 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               <button onClick={() => setOpenModal(null)} style={{
                 background: 'none', border: 'none', color: 'hsl(43,80%,60%)', fontSize: 24,
                 cursor: 'pointer', opacity: 0.7, transition: 'opacity 0.2s',
-              }} onMouseEnter={e => e.target.style.opacity = '1'} onMouseLeave={e => e.target.style.opacity = '0.7'}>
+              }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}>
                 ×
               </button>
             </div>
@@ -1986,6 +2111,63 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
           }}
         />
       )}
+
+      {/* LLM-driven diplomacy: floating button + inbox panel */}
+      {gameState && currentPlayer && (() => {
+        const human = gameState.players?.find(p => !p.isAI) || currentPlayer;
+        const playerFactionId = human?.faction?.id || human?.factionId;
+        if (!playerFactionId) return null;
+        const unread = getUnreadCount(gameState);
+        return (
+          <>
+            <button
+              onClick={() => setShowInbox(s => !s)}
+              title="Diplomatic inbox"
+              style={{
+                position: 'fixed',
+                right: 14,
+                bottom: 14,
+                zIndex: 40,
+                padding: '10px 14px',
+                background: unread > 0 ? 'hsl(38,80%,38%)' : 'hsl(35,22%,18%)',
+                color: '#fff3c0',
+                border: '1px solid hsl(38,80%,55%)',
+                borderRadius: 8,
+                fontFamily: "'Cinzel',serif",
+                fontSize: 12,
+                letterSpacing: 2,
+                cursor: 'pointer',
+                boxShadow: '0 6px 18px rgba(0,0,0,0.4)',
+              }}
+            >
+              COURT {unread > 0 ? `· ${unread}` : ''}
+            </button>
+            {showInbox && (
+              <div
+                style={{
+                  position: 'fixed',
+                  right: 14,
+                  bottom: 64,
+                  top: 64,
+                  width: 420,
+                  zIndex: 40,
+                  background: 'linear-gradient(180deg, hsl(35,22%,12%), hsl(35,18%,9%))',
+                  border: '1px solid hsl(38,40%,35%)',
+                  borderRadius: 10,
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.55)',
+                  overflow: 'hidden',
+                }}
+              >
+                <Inbox
+                  gameState={gameState}
+                  playerFactionId={playerFactionId}
+                  onStateChange={setGameState}
+                />
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {/* Card play cinematic overlay */}
       <CardPlayOverlay

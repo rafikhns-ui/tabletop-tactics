@@ -195,8 +195,8 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
                         transition: 'all 0.15s',
                         fontWeight: 600,
                       }}
-                      onMouseEnter={(e) => { e.target.style.background = 'linear-gradient(135deg, #2a6a5a, #1a3a2a)'; e.target.style.color = '#aacaaa'; }}
-                      onMouseLeave={(e) => { e.target.style.background = 'linear-gradient(135deg, #1a4a3a, #0a2a1a)'; e.target.style.color = '#8aaa9a'; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #2a6a5a, #1a3a2a)'; e.currentTarget.style.color = '#aacaaa'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #1a4a3a, #0a2a1a)'; e.currentTarget.style.color = '#8aaa9a'; }}
                     >
                       Land [{nh.col},{nh.row}]
                     </button>
@@ -215,8 +215,8 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
                           transition: 'all 0.15s',
                           fontWeight: 700,
                         }}
-                        onMouseEnter={(e) => { e.target.style.background = 'linear-gradient(135deg, #6a4a3a, #4a2a1a)'; e.target.style.color = '#ffaa66'; }}
-                        onMouseLeave={(e) => { e.target.style.background = 'linear-gradient(135deg, #4a2a1a, #2a1a0a)'; e.target.style.color = '#ff8844'; }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #6a4a3a, #4a2a1a)'; e.currentTarget.style.color = '#ffaa66'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #4a2a1a, #2a1a0a)'; e.currentTarget.style.color = '#ff8844'; }}
                       >
                         Attack [{nh.col},{nh.row}]
                       </button>
@@ -257,8 +257,8 @@ export default function DisembarkPanel({ selHexId, gameState, currentPlayer, set
                     transition: 'all 0.15s',
                     fontWeight: 700,
                   }}
-                  onMouseEnter={(e) => { e.target.style.background = 'linear-gradient(135deg, #6a4a3a, #4a2a1a)'; e.target.style.color = '#ffaa66'; }}
-                  onMouseLeave={(e) => { e.target.style.background = 'linear-gradient(135deg, #4a2a1a, #2a1a0a)'; e.target.style.color = '#ff8844'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #6a4a3a, #4a2a1a)'; e.currentTarget.style.color = '#ffaa66'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #4a2a1a, #2a1a0a)'; e.currentTarget.style.color = '#ff8844'; }}
                 >
                   🔥 Bombard [{nh.col},{nh.row}]
                 </button>
