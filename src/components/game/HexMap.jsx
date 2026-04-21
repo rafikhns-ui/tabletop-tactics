@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import mapData from './ardonia_game_map.json';
 import { FACTION_TO_NATION_ID } from './ardoniaData';
 import PortRecruitSection from './PortRecruitSection';
@@ -202,7 +202,7 @@ function estimateCombat(attackerUnits, defenderUnits, hasFortress) {
   };
 }
 
-export default function HexMap({ gameState, setGameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit, showInfluenceOverlay, sentiment, draggingDeployUnit, onDragDeployDrop, onRecruitReapership, addMessage, addLog, getNeighborHexIds }) {
+const HexMap = forwardRef(function HexMap(/** @type {any} */ { gameState, setGameState, selectedHex, selectedProvince, phase, currentPlayer, onHexClick, onProvincClick, movementState, movedHexes, highlightPlayerId, reachableHexes, attackableHexes, onZoomChange, onSelectPanelUnit, showInfluenceOverlay, sentiment, draggingDeployUnit, onDragDeployDrop, onRecruitReapership, addMessage, addLog, getNeighborHexIds }, ref) {
   const hexGrid = mapData.hex_grid;
   const nations = mapData.nations;
   const [selected, setSelected] = useState(null);
@@ -419,6 +419,42 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
     };
     setZoomTransform(zt);
   };
+
+  // Imperative handle for MiniMap → HexMap panning.
+  //
+  // MiniMap#handleClick converts the clicked pixel to map-space (same coord
+  // system as hex.x/hex.y — a 0..100-ish range) and calls
+  // onPanTo(mapX, mapY). Game.jsx forwards that to hexMapRef.current.panTo.
+  //
+  // panTo recentres the SVG viewport on (mapX, mapY) at the current
+  // zoomLevel, mirroring the translate formula used by the in-map zoom
+  // handlers above (tx = SVG_W/2 - cx*scale, ty = SVG_H/2 - cy*scale).
+  //
+  // Notes:
+  //   - MiniMap is only rendered by Game.jsx while mapZoomTransform is
+  //     truthy, i.e. while we're already zoomed in, so zoomLevel is always
+  //     4..8 here. The `|| 4` fallback is just belt-and-braces in case a
+  //     future caller invokes panTo from an unzoomed state.
+  //   - We notify the parent via onZoomChange so the MiniMap viewport
+  //     rectangle repositions in the same frame. Without this, panning
+  //     would move the main map but the minimap's viewport outline would
+  //     lag behind until the next zoom action.
+  //   - We do NOT touch `selected` here. A minimap pan is a camera move,
+  //     not a selection change — the currently selected hex (if any) stays
+  //     selected even if it scrolls off-screen.
+  useImperativeHandle(ref, () => ({
+    panTo(mapX, mapY) {
+      const { cx, cy } = toSVG(mapX, mapY);
+      const scale = zoomLevel || 4;
+      const zt = {
+        tx: SVG_W / 2 - cx * scale,
+        ty: SVG_H / 2 - cy * scale,
+        scale,
+      };
+      setZoomTransform(zt);
+      if (onZoomChange) onZoomChange(zt);
+    },
+  }), [zoomLevel, onZoomChange]);
 
 
 
@@ -1879,4 +1915,6 @@ export default function HexMap({ gameState, setGameState, selectedHex, selectedP
       )}
     </div>
   );
-}
+});
+
+export default HexMap;

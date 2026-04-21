@@ -1781,17 +1781,14 @@ setTimeout(() => addMessage(`🏆 ${player.name} completed objective: ${obj.cate
               </span>
             </div>
             {/*
-              LATENT BUG — intentionally NOT passing `ref={hexMapRef}` here.
-              HexMap is a plain function component (not wrapped in
-              React.forwardRef) and exposes no `panTo` method. The ref prop
-              was silently discarded by React, so the MiniMap `onPanTo`
-              handler below has always been a no-op. Leaving the ref prop
-              in place crashes typecheck (TS2322) and falsely advertises a
-              working pan integration. Ref left defined so the imperative
-              wiring is easy to restore once HexMap is refactored into a
-              forwardRef with useImperativeHandle({ panTo }).
+              HexMap is wrapped in React.forwardRef and exposes a
+              `panTo(mapX, mapY)` imperative method via useImperativeHandle.
+              MiniMap clicks are converted to map-space coords and routed
+              here via onPanTo → hexMapRef.current.panTo, which re-centres
+              the SVG viewport at the current zoomLevel.
             */}
             <HexMap
+              ref={hexMapRef}
               gameState={gameState}
               setGameState={setGameState}
               selectedHex={selectedTerritory}
